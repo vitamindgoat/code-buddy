@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeBuddy – Learn to code with a friend</title>
+
+  <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+
+  <!-- CodeMirror 5: the code editor library (styles + core + JavaScript mode).
+       Shipped in vendor/ so the app has no outside dependency at runtime. -->
+  <link rel="stylesheet" href="vendor/codemirror/codemirror.css" />
+  <script src="vendor/codemirror/codemirror.js"></script>
+  <script src="vendor/codemirror/javascript.js"></script>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">CodeBuddy</span>
+    </div>
+    <div class="topbar-right">
+      <span class="pill">Lesson 1 · Hello, world!</span>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- LEFT: lesson instructions (real lessons come in a later step) -->
+    <section class="card lesson">
+      <h1 class="lesson-title">Say hello</h1>
+      <p class="lesson-text">
+        Computers can show messages on the screen. In JavaScript, you use
+        <code>console.log()</code> to print something.
+      </p>
+      <p class="lesson-text">
+        Try it: make the program print <strong>Hello, world!</strong> and then press
+        <strong>Run</strong>.
+      </p>
+    </section>
+
+    <!-- CENTER: editor + run + output -->
+    <section class="workspace">
+      <div class="card editor-card">
+        <div class="card-header">
+          <span class="card-label">Your code</span>
+          <div class="actions">
+            <button id="reset-btn" class="btn btn-ghost" type="button">Reset</button>
+            <button id="run-btn" class="btn btn-primary" type="button">
+              <span class="btn-icon">▶</span> Run
+            </button>
+          </div>
+        </div>
+
+        <!-- CodeMirror replaces this textarea with a real editor -->
+        <textarea id="code" spellcheck="false">// Write your code below
+console.log("Hello, world!");
+</textarea>
+      </div>
+
+      <div class="card output-card">
+        <div class="card-header">
+          <span class="card-label">Output</span>
+          <span id="status" class="status"></span>
+        </div>
+        <pre id="output" class="output"><span class="output-hint">Press Run to see what your code does.</span></pre>
+      </div>
+    </section>
+
+    <!-- RIGHT: the buddy lives here (SVG + animations come in the next step) -->
+    <aside class="card buddy-card">
+      <div id="buddy" class="buddy-placeholder" aria-hidden="true"></div>
+      <div class="speech" id="speech">Hi! I'm your coding buddy. Press Run when you're ready.</div>
+    </aside>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
