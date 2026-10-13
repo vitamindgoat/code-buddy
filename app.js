@@ -385,10 +385,6 @@ function startWorker() {
       runBtn.disabled = false;
       setStatus("", "");
       editorCard.classList.remove("loading");
-      if (!tutor.current.lesson) {
-        open({ lessonIndex: progress.lessonIndex || 0, stage: progress.stage || "lesson" });
-        if (!progress.toured) firstVisitTour();
-      }
       return;
     }
     if (!active) return;
@@ -559,9 +555,26 @@ function syncSettingsUI() {
   $("set-voice").checked = voice.on;
   fillVoices(); $("set-voicepick").innerHTML = voicePick.innerHTML;
 }
-const settingsEl = $("settings"), settingsBackdrop = $("settings-backdrop");
-function openSettings() { syncSettingsUI(); settingsEl.hidden = false; settingsBackdrop.hidden = false; sfx.pop(); }
-function closeSettings() { settingsEl.hidden = true; settingsBackdrop.hidden = true; }
+const settingsLayer = $("settings-layer"), settingsBackdrop = $("settings-backdrop");
+let settingsClosing = null;
+function openSettings() {
+  if (settingsClosing) { clearTimeout(settingsClosing); settingsClosing = null; }
+  settingsLayer.classList.remove("closing"); settingsBackdrop.classList.remove("closing");
+  syncSettingsUI();
+  settingsBackdrop.hidden = false; settingsLayer.hidden = false;
+  sfx.pop();
+}
+function closeSettings() {
+  if (settingsLayer.hidden || settingsClosing) return;
+  // play the exit animation, then actually hide
+  settingsLayer.classList.add("closing"); settingsBackdrop.classList.add("closing");
+  settingsClosing = setTimeout(() => {
+    settingsLayer.hidden = true; settingsBackdrop.hidden = true;
+    settingsLayer.classList.remove("closing"); settingsBackdrop.classList.remove("closing");
+    settingsClosing = null;
+  }, 170);
+}
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !settingsLayer.hidden) closeSettings(); });
 $("settings-btn").addEventListener("click", openSettings);
 $("settings-close").addEventListener("click", closeSettings);
 settingsBackdrop.addEventListener("click", closeSettings);
@@ -601,8 +614,9 @@ applySettings();
 renderHeader();
 renderSidebar();
 editorCard.classList.add("loading");
-buddy.say("# One sec\nI'm waking up Python…", "thinking");
-startWorker(); // the lesson opens once Python is ready (see "ready" above)
+startWorker(); // Python loads in the background; Run stays disabled until it's ready
+open({ lessonIndex: progress.lessonIndex || 0, stage: progress.stage || "lesson" });
+if (!progress.toured) firstVisitTour();
 window.addEventListener("resize", () => floatBuddyToLine(editor.getCursor().line));
 
 // Dev helper: add ?debug to the URL to get buddy state buttons + "show all 5"

@@ -699,8 +699,16 @@ body { background: var(--bg); }
 .vis-gate-svg text { font: 800 14px Nunito, sans-serif; fill: var(--blue-ink); }
 
 /* ---------- Settings ---------- */
-.settings { position: fixed; z-index: 82; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 440px; max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); overflow: auto; animation: pop 0.25s ease-out; }
-.settings[hidden] { display: none; }
+/* The modal sits inside a fixed, flex-centered layer, so its own entrance
+   animation can use transform freely (no translate(-50%) to fight with). */
+.settings-layer { position: fixed; inset: 0; z-index: 82; display: flex; align-items: center; justify-content: center; padding: 16px; pointer-events: none; }
+.settings-layer[hidden] { display: none; }
+.settings { width: 440px; max-width: 100%; max-height: 100%; overflow: auto; pointer-events: auto; animation: settings-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+@keyframes settings-in { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
+.settings-layer.closing .settings { animation: settings-out 0.16s ease-in both; }
+.settings-backdrop.closing { animation: fade-out 0.16s ease-in both; }
+@keyframes settings-out { to { opacity: 0; transform: translateY(8px) scale(0.98); } }
+@keyframes fade-out { to { opacity: 0; } }
 .settings-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
 .settings-body { padding: 10px 18px 18px; }
 .set-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--line); font-weight: 700; }
