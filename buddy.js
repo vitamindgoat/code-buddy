@@ -134,14 +134,23 @@ const buddy = (() => {
     const started = voice.speak(spoken, {
       // the speech engine tells us where it is; we keep the text in step
       onWord: (charIndex) => revealTo(charIndex + 18),
-      onEnd: finishTyping,
+      onEnd: () => finishTyping(false),
     });
     if (started) {
-      // safety net: if no word events arrive, fall back to the timer
-      typingTimer = setTimeout(() => { if (revealed === 0) tick(); }, 1200);
+      // Some voices (Chrome's Google ones) never send word events, so we
+      // also pace the reveal at roughly speaking speed. Word events, when
+      // they do arrive, snap it forward. The voice's own "end" finishes it.
+      paced();
     } else {
       tick();
     }
+  }
+
+  const SPEECH_MS_PER_CHAR = 70;   // ~14 characters a second at rate 1.0
+  function paced() {
+    if (revealed >= chars.length) return;        // wait for the voice to end
+    chars[revealed++].classList.add("on");
+    typingTimer = setTimeout(paced, SPEECH_MS_PER_CHAR);
   }
 
   // Vocabulary words get a color by category
@@ -199,11 +208,13 @@ const buddy = (() => {
     typingTimer = setTimeout(tick, pause);
   }
 
-  function finishTyping() {
+  // skipped = the learner clicked to skip ahead (then the voice stops too);
+  // otherwise the message ended naturally and the voice finishes on its own
+  function finishTyping(skipped = true) {
     clearTimeout(typingTimer);
     while (revealed < chars.length) chars[revealed++].classList.add("on");
     speechEl.classList.remove("typing");
-    voice.stop();
+    if (skipped) voice.stop();
     // done talking: a one-shot pose can relax now
     if (ONE_SHOT.includes(host.getAttribute("data-state"))) {
       clearTimeout(revertTimer);
@@ -211,7 +222,7 @@ const buddy = (() => {
     }
   }
 
-  speechEl.addEventListener("click", finishTyping);
+  speechEl.addEventListener("click", () => finishTyping(true));
 
   // Slide the whole floating group (buddy + bubble) so it sits level with
   // a line in the editor. CSS animates the move.
@@ -243,6 +254,7 @@ const voice = (() => {
   let on = false;
   let chosen = null;      // SpeechSynthesisVoice
   const PREFERRED = [
+    /Google UK English Male/i,
     /Google US English/i,
     /Microsoft (Aria|Jenny|Ana|Emma|Guy).*Natural/i,
     /Samantha/i,
@@ -267,22 +279,51 @@ const voice = (() => {
     window.speechSynthesis.addEventListener("voiceschanged", pickDefault);
   }
 
-  // Returns true if speech actually started (so the bubble can sync to it)
+  // Returns true if speech actually started (so the bubble can sync to it).
+  // The text is split into sentence-sized chunks: Chrome cuts off long
+  // utterances with its network voices, and short ones also give us
+  // cleaner "end" timing. Boundary events are offset back into the full text.
+  // Split after . ! ? : only when followed by a space or the end, so "1.1"
+  // and "3.14" stay whole. Each piece remembers where it started.
+  function chunk(text) {
+    const chunks = [];
+    let start = 0;
+    for (let i = 0; i < text.length; i++) {
+      if (/[.!?:]/.test(text[i]) && (i === text.length - 1 || /\s/.test(text[i + 1]))) {
+        let j = i + 1;
+        while (j < text.length && /\s/.test(text[j])) j++;
+        if (text.slice(start, j).trim()) chunks.push({ text: text.slice(start, j), offset: start });
+        start = j; i = j - 1;
+      }
+    }
+    if (start < text.length && text.slice(start).trim()) chunks.push({ text: text.slice(start), offset: start });
+    return chunks;
+  }
+
+  let generation = 0;
   function speak(text, { onWord, onEnd } = {}) {
     if (!on || !("speechSynthesis" in window)) return false;
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    if (chosen) u.voice = chosen;
-    u.rate = 1.0;
-    u.pitch = 1.1;
-    u.onboundary = (e) => { if (e.name === "word" && onWord) onWord(e.charIndex); };
-    u.onend = () => onEnd && onEnd();
-    u.onerror = () => onEnd && onEnd();
-    window.speechSynthesis.speak(u);
+    const gen = ++generation;
+    const chunks = chunk(text);
+    if (!chunks.length) return false;
+    chunks.forEach((c, i) => {
+      const u = new SpeechSynthesisUtterance(c.text);
+      if (chosen) u.voice = chosen;
+      u.rate = 1.0;
+      u.pitch = 1.05;
+      u.onboundary = (e) => { if (gen === generation && e.name === "word" && onWord) onWord(c.offset + e.charIndex); };
+      if (i === chunks.length - 1) {
+        u.onend = () => { if (gen === generation && onEnd) onEnd(); };
+        u.onerror = (e) => { if (gen === generation && e.error !== "interrupted" && e.error !== "canceled" && onEnd) onEnd(); };
+      }
+      window.speechSynthesis.speak(u);
+    });
     return true;
   }
 
   function stop() {
+    generation++;                       // ignore events from the old utterances
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   }
 
@@ -297,5 +338,5 @@ const voice = (() => {
     try { localStorage.setItem("codebuddy.voice", name); } catch {}
   }
 
-  return { speak, stop, toggle, choose, voices, get on() { return on; }, get chosen() { return chosen; } };
+  return { speak, stop, toggle, choose, voices, chunk, get on() { return on; }, get chosen() { return chosen; } };
 })();
