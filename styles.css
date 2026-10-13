@@ -571,7 +571,7 @@ body { background: var(--bg); }
 .complete.show .done-card { animation: done-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.25) both; }
 @keyframes done-in { from { transform: translateY(24px) scale(0.92); opacity: 0; } to { transform: none; opacity: 1; } }
 /* soft spinning light behind the buddy */
-.done-rays { position: absolute; left: 50%; top: 86px; width: 360px; height: 360px; margin-left: -180px; border-radius: 50%; pointer-events: none;
+.done-rays { position: absolute; left: 50%; top: 87px; width: 320px; height: 320px; margin: -160px 0 0 -160px; border-radius: 50%; pointer-events: none;
   background: conic-gradient(from 0deg, rgba(116, 188, 254, 0) 0 20deg, rgba(116, 188, 254, 0.28) 20deg 40deg, rgba(116, 188, 254, 0) 40deg 60deg, rgba(116, 188, 254, 0.28) 60deg 80deg, rgba(116, 188, 254, 0) 80deg 100deg, rgba(116, 188, 254, 0.28) 100deg 120deg, rgba(116, 188, 254, 0) 120deg 140deg, rgba(116, 188, 254, 0.28) 140deg 160deg, rgba(116, 188, 254, 0) 160deg 180deg, rgba(116, 188, 254, 0.28) 180deg 200deg, rgba(116, 188, 254, 0) 200deg 220deg, rgba(116, 188, 254, 0.28) 220deg 240deg, rgba(116, 188, 254, 0) 240deg 260deg, rgba(116, 188, 254, 0.28) 260deg 280deg, rgba(116, 188, 254, 0) 280deg 300deg, rgba(116, 188, 254, 0.28) 300deg 320deg, rgba(116, 188, 254, 0) 320deg 340deg, rgba(116, 188, 254, 0.28) 340deg 360deg);
   -webkit-mask: radial-gradient(circle, #000 0, #000 35%, transparent 70%); mask: radial-gradient(circle, #000 0, #000 35%, transparent 70%);
   animation: rays 14s linear infinite; }
