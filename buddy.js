@@ -83,6 +83,7 @@ const buddy = (() => {
   function say(message, state) {
     clearTimeout(typingTimer);
     chars = []; spokenIndex = []; revealed = 0; spoken = "";
+    target = 0; carry = 0; lastFrame = 0; cancelAnimationFrame(smoothRaf); smoothRaf = 0;
     speechEl.innerHTML = "";
     speechEl.classList.add("typing");
 
@@ -189,6 +190,30 @@ const buddy = (() => {
     // start event moves the limit forward
     revealTo(Math.min(pos, pacedLimit));
     typingTimer = setTimeout(paced, 40);
+  }
+
+  // Letters never pop in as a block. revealTo only moves the TARGET; a
+  // frame loop walks the reveal toward it a letter or two at a time, a bit
+  // faster when it has further to catch up, so a snap to the end of a
+  // sentence looks like quick typing instead of a jump.
+  let target = 0, smoothRaf = 0, lastFrame = 0, carry = 0;
+  function smooth(now) {
+    smoothRaf = 0;
+    if (revealed >= chars.length) return;
+    const behind = target - revealed;
+    if (behind <= 0) { lastFrame = 0; return; }
+    const dt = lastFrame ? Math.min(50, now - lastFrame) : 16;
+    lastFrame = now;
+    // base ~60 letters/s, up to ~200/s when far behind
+    const perMs = Math.min(0.2, 0.06 + behind * 0.004);
+    carry += dt * perMs;
+    let n = Math.floor(carry); carry -= n;
+    while (n-- > 0 && revealed < target && revealed < chars.length) chars[revealed++].classList.add("on");
+    smoothRaf = requestAnimationFrame(smooth);
+  }
+  function setTarget(n) {
+    target = Math.max(target, Math.min(n, chars.length));
+    if (!smoothRaf && target > revealed) smoothRaf = requestAnimationFrame(smooth);
   }
 
   const KEEP_CAPS = new Set(["CSP", "RLE", "API", "JPEG", "PNG", "URL", "HTML", "CSS"]);
@@ -324,10 +349,9 @@ const buddy = (() => {
   }
 
   function revealTo(spokenPos) {
-    while (revealed < chars.length && spokenIndex[revealed] <= spokenPos) {
-      chars[revealed].classList.add("on");
-      revealed++;
-    }
+    let n = target;
+    while (n < chars.length && spokenIndex[n] <= spokenPos) n++;
+    setTarget(n);
   }
 
   function tick() {
@@ -343,7 +367,12 @@ const buddy = (() => {
   // otherwise the message ended naturally and the voice finishes on its own
   function finishTyping(skipped = true) {
     clearTimeout(typingTimer);
-    while (revealed < chars.length) chars[revealed++].classList.add("on");
+    if (skipped) {
+      cancelAnimationFrame(smoothRaf); smoothRaf = 0;
+      while (revealed < chars.length) chars[revealed++].classList.add("on");
+    } else {
+      setTarget(chars.length);    // the voice is done: type out whatever is left, quickly
+    }
     speechEl.classList.remove("typing");
     if (skipped) voice.stop();
     // done talking: a one-shot pose can relax now
