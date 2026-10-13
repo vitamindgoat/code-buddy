@@ -6,18 +6,18 @@
    ============================================================ */
 
 .buddy {
-  width: 200px;
-  height: 180px;
+  width: 220px;
   display: grid;
   place-items: center;
 }
 
+/* Every pose shares the same viewBox (520x400), so the character is the
+   same size and position in all five and swapping is seamless. */
 .buddy .pose {
-  width: 200px;
-  height: 180px;
+  width: 220px;
+  aspect-ratio: 520 / 400;
   display: none;
-  overflow: visible;       /* sparkles poke outside the viewBox on purpose */
-  transform-origin: 50% 90%; /* bounces pivot from the bottom of the blob */
+  overflow: visible;
 }
 
 /* Show the pose that matches the current state */
@@ -27,7 +27,9 @@
 .buddy[data-state="pointing"]  .pose[data-pose="pointing"],
 .buddy[data-state="celebrate"] .pose[data-pose="celebrate"] { display: block; }
 
-/* Parts inside the SVG rotate/scale around their own box, not the page */
+/* Parts we animate are plain <g> wrappers with no transform of their own
+   (the cleanup script guarantees that), so CSS transforms can't clobber
+   anything in the artwork. fill-box = rotate/scale around the part itself. */
 .buddy .arm-left, .buddy .arm-right, .buddy .hand,
 .buddy .eye-left, .buddy .eye-right,
 .buddy .question, .buddy .sparkles, .buddy .stars {
@@ -41,8 +43,8 @@
 /* ---------- Animations ---------- */
 
 @keyframes breathe {
-  0%, 100% { transform: scale(1, 1); }
-  50%      { transform: scale(1.02, 0.98); }
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
 }
 
 @keyframes blink {
@@ -61,17 +63,16 @@
 }
 
 @keyframes bounce {
-  0%   { transform: translateY(0) scale(1, 1); }
-  30%  { transform: translateY(-18px) scale(0.96, 1.06); }
-  60%  { transform: translateY(0) scale(1.05, 0.94); }
-  100% { transform: translateY(0) scale(1, 1); }
+  0%   { transform: translateY(0); }
+  35%  { transform: translateY(-18px); }
+  70%  { transform: translateY(0); }
+  85%  { transform: translateY(-5px); }
+  100% { transform: translateY(0); }
 }
 
 @keyframes jump {
-  0%, 100% { transform: translateY(0) scale(1, 1); }
-  20%      { transform: translateY(0) scale(1.08, 0.9); }
-  50%      { transform: translateY(-26px) scale(0.95, 1.08); }
-  80%      { transform: translateY(0) scale(1.05, 0.95); }
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-26px); }
 }
 
 @keyframes pop-in {
