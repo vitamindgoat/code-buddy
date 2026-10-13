@@ -299,8 +299,13 @@ const buddy = (() => {
 
 const voice = (() => {
   let on = false;
+  try { on = localStorage.getItem("codebuddy.voiceOn") === "on"; } catch {}
   let chosen = null;      // SpeechSynthesisVoice
   let rate = 1;
+  // Browsers refuse to speak until the page has been clicked or typed in.
+  // If the first message gets refused, say it again on the first click.
+  let blockedText = null;
+  document.addEventListener("pointerdown", () => { if (blockedText && on) { const t = blockedText; blockedText = null; speak(t); } }, true);
   function setRate(r) { rate = r; }
   const PREFERRED = [
     /Google UK English Male/i,
@@ -356,16 +361,19 @@ const voice = (() => {
     const gen = ++generation;
     const chunks = chunk(text);
     if (!chunks.length) return false;
+    blockedText = null;
     chunks.forEach((c, i) => {
       const u = new SpeechSynthesisUtterance(c.text);
       if (chosen) u.voice = chosen;
       u.rate = rate;
       u.pitch = 1.05;
       u.onboundary = (e) => { if (gen === generation && e.name === "word" && onWord) onWord(c.offset + e.charIndex); };
-      if (i === chunks.length - 1) {
-        u.onend = () => { if (gen === generation && onEnd) onEnd(); };
-        u.onerror = (e) => { if (gen === generation && e.error !== "interrupted" && e.error !== "canceled" && onEnd) onEnd(); };
-      }
+      u.onerror = (e) => {
+        if (gen !== generation) return;
+        if (e.error === "not-allowed") { blockedText = text; generation++; if (onEnd) onEnd(); return; }
+        if (i === chunks.length - 1 && e.error !== "interrupted" && e.error !== "canceled" && onEnd) onEnd();
+      };
+      if (i === chunks.length - 1) u.onend = () => { if (gen === generation && onEnd) onEnd(); };
       window.speechSynthesis.speak(u);
     });
     return true;
@@ -379,6 +387,7 @@ const voice = (() => {
   function toggle() {
     on = !on;
     if (!on) stop();
+    try { localStorage.setItem("codebuddy.voiceOn", on ? "on" : "off"); } catch {}
     return on;
   }
 

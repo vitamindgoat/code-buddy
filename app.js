@@ -511,6 +511,7 @@ function setVoice(on, { greet = true } = {}) {
   if (on) { fillVoices(); if (greet) voice.speak("Hi! I'm your coding buddy."); }
 }
 voiceBtn.addEventListener("click", () => setVoice(!voice.on));
+if (voice.on) setVoice(true, { greet: false });   // remembered from last visit
 voicePick.addEventListener("change", () => { voice.choose(voicePick.value); voice.speak("How's this voice?"); });
 if ("speechSynthesis" in window) window.speechSynthesis.addEventListener("voiceschanged", () => { if (!voicePick.hidden) fillVoices(); });
 
