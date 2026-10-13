@@ -127,7 +127,8 @@ const buddy = (() => {
         if (isCode && !isLabel) spoken += " ";
         line.appendChild(el);
       });
-      if (!isLabel) spoken += " ";
+      if (isLabel) spoken += spokenLabel(lineText);   // said out loud, not shown
+      else spoken += " ";
       speechEl.appendChild(line);
     }
     // ALL-CAPS words like OR, AND, NOT get spelled out letter by letter by
@@ -241,6 +242,40 @@ const buddy = (() => {
     for (const [cls, words] of Object.entries(TERMS)) if (words.includes(t)) return "term-" + cls;
     return "term-blue";
   }
+  // Section labels are shown as short headers ("Goal", "Hint 2 of 3") but
+  // spoken as a natural lead-in ("Here's your goal for this practice.").
+  const LABEL_SPEECH = [
+    [/^✓/, ""],                                   // the "✓ `code`" chip header: the explanation follows
+    [/^(type|now type|next|input)$/i, ""],       // the body line already says it
+    [/^goal$/i, "Here's your goal for this practice."],
+    [/^stuck\?$/i, "If you get stuck,"],
+    [/^what now\?$/i, "So, what now?"],
+    [/^hint (\d) of 3$/i, (m) => `Here's hint ${m[1]}.`],
+    [/^hint$/i, "Here's a hint."],
+    [/^no hints left$/i, "No hints left."],
+    [/^next line$/i, "Now the next line."],
+    [/^whole program typed!$/i, "That's the whole program!"],
+    [/^all typed!$/i, "Everything is typed!"],
+    [/^ran your code/i, "I ran your code."],
+    [/^running$/i, "Running!"],
+    [/^infinite loop!$/i, "Uh oh, an infinite loop!"],
+    [/^python stopped(.*)$/i, (m) => `Python stopped${m[1]}.`],
+    [/^tip$/i, "Here's a tip."],
+    [/^line (\d+)$/i, (m) => `Here's line ${m[1]} again.`],
+    [/^not yet$/i, "Not yet!"],
+    [/^lesson (\S+) · (.+)$/i, (m) => `Lesson ${m[1]}: ${m[2]}.`],
+    [/^practice · (.+)$/i, (m) => `Practice time: ${m[1]}.`],
+    [/^testing$/i, "Testing!"],
+  ];
+  function spokenLabel(text) {
+    const plain = text.replace(/`[^`]*`/g, "").replace(/[*]/g, "").trim();
+    for (const [re, out] of LABEL_SPEECH) {
+      const m = plain.match(re);
+      if (m) { const t = typeof out === "function" ? out(m) : out; return t ? t + " " : ""; }
+    }
+    return plain ? plain.replace(/[.!?:]?$/, ".") + " " : "";
+  }
+
   function labelClass(text) {
     if (text.startsWith("✓")) return "label-ok";
     if (/^(hmm|hint|not yet|no hints)/i.test(text)) return "label-warn";

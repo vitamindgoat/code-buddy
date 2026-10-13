@@ -474,7 +474,7 @@ async function runCode() {
     setStatus("bad", "Error");
     sfx.error();
     replayClass(outputCard, "error-shake");
-    buddy.say(`# Python stopped${r.line ? ` on line ${r.line}` : ""}\nPython stopped${r.line ? ` on line ${r.line}` : ""} and said:\n\`${r.error}\`\n# Tip\nRead the last line of an *error* first: it names the problem.`, "pointing");
+    buddy.say(`# Python stopped${r.line ? ` on line ${r.line}` : ""}\nHere's what it said:\n\`${r.error}\`\n# Tip\nRead the last line of an *error* first: it names the problem.`, "pointing");
   } else {
     if (outputLines.length === 0) appendOutput("(your program ran, but it didn't print anything)");
     setStatus("ok", "Ran successfully");
