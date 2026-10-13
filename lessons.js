@@ -6,15 +6,15 @@
    MESSAGE FORMAT (anything the buddy says):
      A string. "\n" starts a new line in the bubble. Text wrapped in
      backticks, like `print`, is shown as a code chip in its own color.
-     Keep lines short: beginners don't read paragraphs.
+     A line starting with "# " is a section label. Keep lines short.
 
    A lesson:
      id, title, intro   shown in the lesson panel
      steps              one object per LINE of code the learner types:
         code            the exact full line (what we compare against)
         parts           the line split into pieces, typed in order:
-           text         the piece of code
-           say          what the buddy says when it's time to type it
+           text         the piece of code (the tutor shows it as a chip)
+           say          one short line about WHY, shown above the chip
            explain      what the buddy says once it's typed (the lesson!)
         hints           optional [{ match: /regex on the typed line/, say }]
                         checked when the learner drifts off course,
@@ -27,32 +27,32 @@ const LESSONS = [
   {
     id: "hello",
     title: "Say hello",
-    intro: "Let's make the computer show words on the screen. One line of code is all it takes.",
+    intro: "Make the computer show words on the screen. One line of code is all it takes.",
     steps: [
       {
         code: 'print("Hello, world!")',
         parts: [
           {
             text: "print",
-            say: "First, type the name of the function:\n`print`",
+            say: "Start with the name of the function.",
             explain: "`print` is a function.\nA function is a command that does one job.\nprint's job: show things on the screen.",
           },
           {
             text: '("Hello, world!")',
-            say: "Now give print something to show.\nType this right after it:\n`(\"Hello, world!\")`",
+            say: "Give print something to show.",
             explain: "The ( ) hold what you give the function.\nThe quotes mean \"these are words, not code.\"",
           },
         ],
         hints: [
-          { match: /^\s*(prnt|pirnt|pritn|pint|prin)\b/i, say: "Check the spelling.\nIt's p-r-i-n-t:\n`print`" },
-          { match: /^\s*print\s*"/, say: "print needs parentheses around the words:\n`print(\"Hello, world!\")`" },
-          { match: /^\s*print\s*\(\s*[^"'\s)]/, say: "Put the words inside quotes,\nso Python knows they're text:\n`print(\"Hello, world!\")`" },
+          { match: /^\s*(prnt|pirnt|pritn|pint|prin)\b/i, say: "Check the spelling.\nIt's p-r-i-n-t." },
+          { match: /^\s*print\s*"/, say: "print needs parentheses around the words." },
+          { match: /^\s*print\s*\(\s*[^"'\s)]/, say: "Put the words inside quotes,\nso Python knows they're text." },
           { match: /^\s*print\s*\(\s*"[^"]*"\s*$/, say: "Almost there.\nClose it with a `)` at the end." },
         ],
       },
     ],
     expectedOutput: "Hello, world!",
-    done: "You wrote your first program!\nEvery programmer in the world started with exactly this line.",
+    done: "You wrote your first program!\nEvery programmer started with exactly this line.",
   },
 
   {
@@ -65,12 +65,12 @@ const LESSONS = [
         parts: [
           {
             text: "age",
-            say: "Let's make a variable.\nStart with its name:\n`age`",
+            say: "A variable starts with its name.",
             explain: "`age` is a variable.\nA variable is a name that remembers a value for you.",
           },
           {
             text: "= 10",
-            say: "Now put a value in it:\n`= 10`",
+            say: "Now put a value in it.",
             explain: "One `=` means \"store this.\"\nNow the variable age holds 10.",
           },
         ],
@@ -84,12 +84,12 @@ const LESSONS = [
         parts: [
           {
             text: "print",
-            say: "Press Enter for a new line.\nThen type our function again:\n`print`",
+            say: "Press Enter for a new line, then our function again.",
             explain: "Same function as before.\nThis time we'll give it math instead of words.",
           },
           {
             text: "(age + 1)",
-            say: "Now give it the math:\n`(age + 1)`",
+            say: "Give it the math.",
             explain: "Python looks up age, finds 10, and adds 1.\nNo quotes, so it calculates instead of showing the words.",
           },
         ],
@@ -112,17 +112,17 @@ const LESSONS = [
         parts: [
           {
             text: "for",
-            say: "Loops start with a keyword.\nType:\n`for`",
+            say: "Loops start with a keyword.",
             explain: "`for` is a keyword.\nIt tells Python: \"repeat what comes next.\"",
           },
           {
             text: "i in range(3)",
-            say: "Now say how many times:\n`i in range(3)`",
+            say: "Say how many times.",
             explain: "`range(3)` makes the numbers 0, 1, 2.\n`i` takes each one in turn.\nThree numbers = three repeats.",
           },
           {
             text: ":",
-            say: "Finish the line with a colon:\n`:`",
+            say: "Finish the line with a colon.",
             explain: "The `:` means \"the repeated part starts below.\"",
           },
         ],
@@ -136,12 +136,12 @@ const LESSONS = [
         parts: [
           {
             text: "print",
-            say: "Press Enter.\nSee the line move in? That's indenting.\nNow type:\n`print`",
+            say: "Press Enter. The line moves in: that's indenting.",
             explain: "Indented lines belong to the loop.\nSo this print will run 3 times.",
           },
           {
             text: '("Hip hip hooray!")',
-            say: "Give it something to shout:\n`(\"Hip hip hooray!\")`",
+            say: "Give it something to shout.",
             explain: "Words in quotes, inside the parentheses.\nYou've got this pattern down.",
           },
         ],

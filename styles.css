@@ -391,3 +391,68 @@ code {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ============================================================
+   Ghost letters, wrong characters, voice picker, tour, shake
+   ============================================================ */
+
+/* What's left to type, shown in gray inside the editor */
+.ghost { color: #9aa6ba; opacity: 0.8; font-style: italic; pointer-events: none; }
+
+/* The character where the line went wrong */
+.wrong-char {
+  background: var(--red-soft);
+  border-bottom: 2px solid var(--red);
+  border-radius: 2px;
+}
+
+.voice-pick {
+  font: inherit; font-size: 13px; font-weight: 700;
+  color: var(--blue-dark); background: var(--blue-soft);
+  border: 1px solid var(--blue-line); border-radius: 10px;
+  padding: 6px 8px; max-width: 180px;
+}
+
+/* Next lesson: shake for the 2nd+ completed lesson */
+@keyframes shake-btn {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-4deg) scale(1.04); }
+  40% { transform: rotate(4deg) scale(1.04); }
+  60% { transform: rotate(-3deg); }
+  80% { transform: rotate(3deg); }
+}
+.btn.shake { animation: shake-btn 0.7s ease-in-out infinite; animation-delay: 0.5s; box-shadow: 0 6px 16px rgba(30, 111, 217, 0.35); }
+
+/* ---------- Tour: spotlight + tip ---------- */
+
+.tour-spot {
+  position: fixed; z-index: 70;
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px rgba(6, 51, 126, 0.55), 0 0 0 3px var(--blue-mid);
+  pointer-events: none;          /* the spotlighted thing stays clickable */
+  opacity: 0;
+  transition: left 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+              width 0.4s ease, height 0.4s ease, opacity 0.3s ease;
+}
+.tour-spot.on { opacity: 1; }
+
+.tour-tip {
+  position: fixed; z-index: 71;
+  width: 300px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 12px 40px rgba(6, 51, 126, 0.35);
+  opacity: 0; transform: translateY(6px);
+  transition: left 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+.tour-tip.on { opacity: 1; transform: none; pointer-events: auto; }
+.tour-tip h3 { margin: 0 0 6px; font-size: 18px; color: var(--blue-ink); }
+.tour-tip p { margin: 0; color: var(--ink-soft); line-height: 1.45; }
+.tour-count { font-size: 11px; font-weight: 800; letter-spacing: 0.6px; color: var(--blue); margin-bottom: 6px; }
+.tour-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.tour-actions:empty { display: none; }
+
+/* While touring, the buddy keeps still so the spotlight lines up */
+body.touring .buddy-float { transition: none; }

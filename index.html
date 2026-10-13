@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="9" />
+  <meta name="build" content="11" />
   <title>CodeBuddy – Learn to code with a friend</title>
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
@@ -18,8 +18,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=9" />
-  <link rel="stylesheet" href="buddy.css?v=9" />
+  <link rel="stylesheet" href="styles.css?v=11" />
+  <link rel="stylesheet" href="buddy.css?v=11" />
 </head>
 <body>
 
@@ -31,6 +31,7 @@
     <div class="topbar-right">
       <span class="pill" id="lesson-pill">Lesson 1</span>
       <button id="voice-btn" class="btn btn-ghost btn-icon-only" type="button" title="Read the buddy's messages out loud" aria-pressed="false">🔇 Voice off</button>
+      <select id="voice-pick" class="voice-pick" title="Pick a voice" hidden></select>
     </div>
   </header>
 
@@ -72,8 +73,14 @@
 
           <!-- The buddy floats here, level with the line being typed -->
           <div id="buddy-float" class="buddy-float">
-            <div class="speech" id="speech" title="Click to skip ahead"></div>
-            <div id="buddy"></div>
+            <div class="speech-col">
+              <div class="speech" id="speech" title="Click to skip ahead"></div>
+              <div id="buddy-menu" class="buddy-menu" hidden>
+                <button id="stuck-btn" class="btn btn-primary" type="button">🙋 I'm stuck</button>
+                <button id="gotit-btn" class="btn btn-ghost" type="button">💪 I got this</button>
+              </div>
+            </div>
+            <div id="buddy" title="Click me if you're stuck"></div>
           </div>
         </div>
       </div>
@@ -89,10 +96,11 @@
 
   </main>
 
-  <script src="fx.js?v=9"></script>
-  <script src="lessons.js?v=9"></script>
-  <script src="buddy.js?v=9"></script>
-  <script src="tutor.js?v=9"></script>
-  <script src="app.js?v=9"></script>
+  <script src="fx.js?v=11"></script>
+  <script src="lessons.js?v=11"></script>
+  <script src="buddy.js?v=11"></script>
+  <script src="tutor.js?v=11"></script>
+  <script src="tour.js?v=11"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

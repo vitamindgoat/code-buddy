@@ -93,8 +93,19 @@ function openLesson(index) {
   // slide-in animation for the panel and a soft flash on the editor
   replayClass(document.querySelector(".lesson"), "swap-in");
   replayClass(document.querySelector(".editor-card"), "swap-in");
-  nextBtn.classList.remove("glow");
+  nextBtn.classList.remove("shake");
   editor.focus();
+}
+
+// The first time someone opens the app: a quick spotlight tour
+function firstVisitTour() {
+  tour.run([
+    { target: "#steps", title: "Your lesson", text: "Each row is one line of code you'll type. They turn green as you go.", place: "right" },
+    { target: ".editor-wrap", title: "Type here", text: "The editor starts empty on purpose: you write every line yourself.", place: "left" },
+    { target: "#buddy-float", title: "Meet your buddy", text: "He explains each piece as you type it. Click him if you're ever stuck.", place: "left" },
+    { target: "#run-btn", title: "Run your code", text: "Press Run (or Ctrl+Enter) to see what your program does.", place: "bottom" },
+    { target: "#voice-btn", title: "Want him to talk?", text: "Turn on Voice and he'll read everything out loud.", place: "bottom" },
+  ], () => { progress.toured = true; saveProgress(); editor.focus(); });
 }
 
 // Remove-and-re-add a class so its CSS animation plays again
@@ -118,7 +129,37 @@ tutor.ui.unlockNext = (lessonId) => {
   renderLessonHeader();
   fx.confetti();
   replayClass(document.querySelector(".output-card"), "success-flash");
-  if (!nextBtn.disabled) nextBtn.classList.add("glow");
+  if (nextBtn.disabled) return;
+  if (progress.completed.length === 1) {
+    // their very first finished lesson: a game-style spotlight on Next
+    setTimeout(() => tour.run([{
+      target: "#next-btn", place: "top", waitForClick: true,
+      title: "Lesson complete! 🎉",
+      text: "Click <strong>Next lesson</strong> to keep going.",
+    }]), 1800);
+  } else {
+    nextBtn.classList.add("shake");
+  }
+};
+
+// Ghost letters: gray text after the cursor showing what's left to type.
+// CodeMirror "bookmarks" let us pin a widget at a position in the text.
+let ghostMark = null;
+tutor.ui.ghost = (lineNumber, text) => {
+  if (ghostMark) { ghostMark.clear(); ghostMark = null; }
+  if (lineNumber === undefined || !text) return;
+  const span = document.createElement("span");
+  span.className = "ghost";
+  span.textContent = text;
+  ghostMark = editor.setBookmark({ line: lineNumber, ch: editor.getLine(lineNumber).length }, { widget: span, insertLeft: true });
+};
+
+// Red underline on the wrong part of a line
+let wrongMark = null;
+tutor.ui.markWrong = (lineNumber, fromCh, toCh) => {
+  if (wrongMark) { wrongMark.clear(); wrongMark = null; }
+  if (lineNumber === undefined || fromCh === null || fromCh === undefined) return;
+  wrongMark = editor.markText({ line: lineNumber, ch: fromCh }, { line: lineNumber, ch: Math.max(fromCh + 1, toCh) }, { className: "wrong-char" });
 };
 // A line was finished: flash it green and pop sparkles at its end
 tutor.ui.onStepDone = (lineNumber) => {
@@ -183,7 +224,10 @@ function startWorker() {
       runBtn.disabled = false;
       setStatus("", "");
       document.querySelector(".editor-card").classList.remove("loading");
-      if (!tutor.current.lesson) openLesson(progress.current || 0);
+      if (!tutor.current.lesson) {
+        openLesson(progress.current || 0);
+        if (!progress.toured) firstVisitTour();
+      }
     } else if (type === "log") {
       appendOutput(text);
     } else if (type === "error") {
@@ -291,19 +335,47 @@ function clearErrorLine() {
   }
 }
 
-// ---------- 8. Buttons ----------
+// ---------- 8. Clicking the buddy: stuck or got this ----------
+
+const buddyMenu = document.getElementById("buddy-menu");
+buddy.onClick(() => {
+  if (tutor.current.complete) return;
+  buddyMenu.hidden = !buddyMenu.hidden;
+  buddy.set("thinking");
+});
+document.getElementById("stuck-btn").addEventListener("click", () => {
+  buddyMenu.hidden = true;
+  tutor.stuck();
+  editor.focus();
+});
+document.getElementById("gotit-btn").addEventListener("click", () => {
+  buddyMenu.hidden = true;
+  tutor.gotThis();
+  editor.focus();
+});
+editor.on("change", () => { buddyMenu.hidden = true; });
+
+// ---------- 9. Buttons ----------
 
 runBtn.addEventListener("click", runCode);
 resetBtn.addEventListener("click", () => openLesson(lessonIndex));
 prevBtn.addEventListener("click", () => openLesson(lessonIndex - 1));
-nextBtn.addEventListener("click", () => openLesson(lessonIndex + 1));
+nextBtn.addEventListener("click", () => { nextBtn.classList.remove("shake"); openLesson(lessonIndex + 1); });
 
+const voicePick = document.getElementById("voice-pick");
+function fillVoices() {
+  const list = voice.voices();
+  voicePick.innerHTML = list.map((v) => `<option value="${v.name}" ${voice.chosen && v.name === voice.chosen.name ? "selected" : ""}>${v.name.replace(/^Microsoft |^Google /, "")}</option>`).join("");
+}
 voiceBtn.addEventListener("click", () => {
   const on = voice.toggle();
   voiceBtn.textContent = on ? "🔊 Voice on" : "🔇 Voice off";
   voiceBtn.setAttribute("aria-pressed", String(on));
-  if (on) voice.speak("Hi! I'm your coding buddy.");
+  voicePick.hidden = !on;
+  if (on) { fillVoices(); voice.speak("Hi! I'm your coding buddy."); }
 });
+voicePick.addEventListener("change", () => { voice.choose(voicePick.value); voice.speak("How's this voice?"); });
+if ("speechSynthesis" in window) window.speechSynthesis.addEventListener("voiceschanged", () => { if (!voicePick.hidden) fillVoices(); });
 
 // Click ripple on every button
 document.addEventListener("click", (e) => {
