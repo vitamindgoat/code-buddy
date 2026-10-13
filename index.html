@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="8" />
+  <meta name="build" content="9" />
   <title>CodeBuddy – Learn to code with a friend</title>
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
@@ -18,8 +18,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=8" />
-  <link rel="stylesheet" href="buddy.css?v=8" />
+  <link rel="stylesheet" href="styles.css?v=9" />
+  <link rel="stylesheet" href="buddy.css?v=9" />
 </head>
 <body>
 
@@ -72,7 +72,7 @@
 
           <!-- The buddy floats here, level with the line being typed -->
           <div id="buddy-float" class="buddy-float">
-            <div class="speech" id="speech">Give me a sec to wake up Python…</div>
+            <div class="speech" id="speech" title="Click to skip ahead"></div>
             <div id="buddy"></div>
           </div>
         </div>
@@ -89,9 +89,10 @@
 
   </main>
 
-  <script src="lessons.js?v=8"></script>
-  <script src="buddy.js?v=8"></script>
-  <script src="tutor.js?v=8"></script>
-  <script src="app.js?v=8"></script>
+  <script src="fx.js?v=9"></script>
+  <script src="lessons.js?v=9"></script>
+  <script src="buddy.js?v=9"></script>
+  <script src="tutor.js?v=9"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

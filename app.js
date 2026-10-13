@@ -64,12 +64,16 @@ function renderSteps(stepIndex) {
     const li = document.createElement("li");
     li.className = i < stepIndex ? "done" : i === stepIndex ? "current" : "";
     li.innerHTML = `<span class="step-mark"></span><code>${escapeHtml(step.code.trim())}</code>`;
+    li.title = "Click to hear this step again";
+    // Clicking a step rewinds the buddy's instructions to it. Code is untouched.
+    li.addEventListener("click", () => { tutor.review(i); editor.focus(); });
     stepsEl.appendChild(li);
   });
   if (stepIndex >= lesson.steps.length) {
     const li = document.createElement("li");
-    li.className = "current";
+    li.className = "current run-step";
     li.innerHTML = `<span class="step-mark"></span><span>Press <strong>Run</strong></span>`;
+    li.addEventListener("click", runCode);
     stepsEl.appendChild(li);
   }
 }
@@ -83,9 +87,21 @@ function openLesson(index) {
   progress.current = lessonIndex;
   saveProgress();
   clearOutput();
+  clearErrorLine();
   renderLessonHeader();
   tutor.start(lessonIndex);
+  // slide-in animation for the panel and a soft flash on the editor
+  replayClass(document.querySelector(".lesson"), "swap-in");
+  replayClass(document.querySelector(".editor-card"), "swap-in");
+  nextBtn.classList.remove("glow");
   editor.focus();
+}
+
+// Remove-and-re-add a class so its CSS animation plays again
+function replayClass(el, cls) {
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
 }
 
 // ---------- 4. Wire the tutor to the page ----------
@@ -100,6 +116,16 @@ tutor.ui.unlockNext = (lessonId) => {
   if (!progress.completed.includes(lessonId)) progress.completed.push(lessonId);
   saveProgress();
   renderLessonHeader();
+  fx.confetti();
+  replayClass(document.querySelector(".output-card"), "success-flash");
+  if (!nextBtn.disabled) nextBtn.classList.add("glow");
+};
+// A line was finished: flash it green and pop sparkles at its end
+tutor.ui.onStepDone = (lineNumber) => {
+  const handle = editor.addLineClass(lineNumber, "background", "done-line");
+  setTimeout(() => editor.removeLineClass(handle, "background", "done-line"), 900);
+  const end = editor.charCoords({ line: lineNumber, ch: editor.getLine(lineNumber).length }, "page");
+  fx.burst(end.right + 10, (end.top + end.bottom) / 2 - window.scrollY);
 };
 // Point the buddy at a line: highlight it and float next to it
 tutor.ui.markLine = (lineNumber) => {
@@ -156,6 +182,7 @@ function startWorker() {
       pythonReady = true;
       runBtn.disabled = false;
       setStatus("", "");
+      document.querySelector(".editor-card").classList.remove("loading");
       if (!tutor.current.lesson) openLesson(progress.current || 0);
     } else if (type === "log") {
       appendOutput(text);
@@ -167,10 +194,10 @@ function startWorker() {
       setStatus("bad", "Error");
       finishRun();
       buddy.set("pointing");
+      replayClass(document.querySelector(".output-card"), "error-shake");
       buddy.say(line
-        ? `Python stopped on line ${line}. The red text says what went wrong: ${text}`
-        : `Python stopped. The red text says what went wrong: ${text}`);
-      voice.speak("Python stopped. Read the red text, it says what went wrong.");
+        ? `Python stopped on line ${line}.\nThe red text says why:\n\`${text}\``
+        : `Python stopped.\nThe red text says why:\n\`${text}\``);
     } else if (type === "done") {
       if (outputLines.length === 0) appendOutput("(your program ran, but it didn't print anything)");
       setStatus("ok", "Ran successfully");
@@ -186,16 +213,23 @@ function startWorker() {
   };
 }
 
+let running = false;        // true while a run is in flight (blocks double-runs)
+
 function runCode() {
-  if (!pythonReady) return;
+  if (!pythonReady || running) return;   // ignore a second click mid-run
+  running = true;
+  if (timer) { clearTimeout(timer); timer = null; }
+  buddy.finishTyping();
   const code = editor.getValue();
 
   clearOutput();
+  document.querySelector(".output-card").classList.add("is-running");
   clearErrorLine();
   setStatus("running", "Running…");
   buddy.set("thinking");
   buddy.say("Running your code…");
   runBtn.disabled = true;
+  replayClass(runBtn, "pressed");
 
   worker.postMessage({ code });
 
@@ -209,13 +243,17 @@ function runCode() {
     buddy.say("Your program never finished, so I stopped it. Check your loops! Reloading Python…");
     worker.terminate();
     timer = null;
+    running = false;
+    document.querySelector(".output-card").classList.remove("is-running");
     startWorker();
   }, TIME_LIMIT_MS);
 }
 
 function finishRun() {
   if (timer) { clearTimeout(timer); timer = null; }
+  running = false;
   runBtn.disabled = false;
+  document.querySelector(".output-card").classList.remove("is-running");
 }
 
 // ---------- 7. Small helpers for the UI ----------
@@ -267,12 +305,21 @@ voiceBtn.addEventListener("click", () => {
   if (on) voice.speak("Hi! I'm your coding buddy.");
 });
 
+// Click ripple on every button
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".btn");
+  if (btn && !btn.disabled) fx.ripple(btn, e);
+});
+
 // Ctrl+Enter (or Cmd+Enter on Mac) runs the code
 editor.setOption("extraKeys", { "Ctrl-Enter": runCode, "Cmd-Enter": runCode });
 
 // ---------- 9. Go ----------
 
 renderLessonHeader();
+document.querySelector(".editor-card").classList.add("loading");
+buddy.say("Give me a sec,\nI'm waking up Python…");
+buddy.set("thinking");
 startWorker(); // the lesson opens once Python is ready (see "ready" above)
 window.addEventListener("resize", () => floatBuddyToLine(editor.getCursor().line));
 

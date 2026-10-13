@@ -6,7 +6,8 @@
      2. Exposes a tiny API the rest of the app uses:
           buddy.set("happy")       switch pose (+ its animation)
           buddy.set("happy", 1500) switch, then return to idle after 1.5s
-          buddy.say("Nice!")       change the speech bubble text
+          buddy.say("text")        speech bubble, typed out like a typewriter
+                                   ("\n" = new line, `code` = code chip)
           buddy.state              the current state name
           buddy.floatTo(y)         slide the floating buddy to y px (in the editor)
           buddy.mount(el)          put a second buddy somewhere (debug strip)
@@ -61,13 +62,73 @@ const buddy = (() => {
     }
   }
 
-  // Change the speech bubble. Same replay trick for the little "pop".
-  function say(text) {
-    speechEl.textContent = text;
+  // ---------- the speech bubble: a typewriter ----------
+
+  // A message is text with "\n" for new lines and `backticks` for code.
+  // We build the bubble with all the text already in place but hidden,
+  // then reveal one character at a time. Clicking the bubble reveals it
+  // all at once (and stops the voice).
+  const CHAR_MS = 16;
+  let typingTimer = null;
+  let pending = [];   // spans still waiting to be revealed, in order
+
+  function say(message) {
+    clearTimeout(typingTimer);
+    pending = [];
+    speechEl.innerHTML = "";
+    speechEl.classList.add("typing");
+
+    for (const lineText of message.split("\n")) {
+      const line = document.createElement("div");
+      line.className = "speech-line";
+      // split "text `code` text" into alternating pieces
+      lineText.split(/(`[^`]*`)/).forEach((piece) => {
+        if (!piece) return;
+        const isCode = piece.startsWith("`");
+        const text = isCode ? piece.slice(1, -1) : piece;
+        const el = document.createElement(isCode ? "code" : "span");
+        if (isCode) el.className = "chip";
+        for (const ch of text) {
+          const c = document.createElement("span");
+          c.className = "ch";
+          c.textContent = ch;
+          el.appendChild(c);
+          pending.push(c);
+        }
+        line.appendChild(el);
+      });
+      speechEl.appendChild(line);
+    }
+
+    // pop + start typing
     speechEl.classList.remove("pop");
     void speechEl.offsetWidth;
     speechEl.classList.add("pop");
+    typeNext();
+    voice.speak(message.replace(/`/g, ""));
   }
+
+  function typeNext() {
+    if (pending.length === 0) {
+      speechEl.classList.remove("typing");
+      return;
+    }
+    const c = pending.shift();
+    c.classList.add("on");
+    // punctuation gets a tiny pause, like real speech
+    const pause = /[.!?]/.test(c.textContent) ? 140 : CHAR_MS;
+    typingTimer = setTimeout(typeNext, pause);
+  }
+
+  function finishTyping() {
+    clearTimeout(typingTimer);
+    for (const c of pending) c.classList.add("on");
+    pending = [];
+    speechEl.classList.remove("typing");
+    voice.stop();
+  }
+
+  speechEl.addEventListener("click", finishTyping);
 
   // Slide the whole floating group (buddy + bubble) so it sits level with
   // a line in the editor. CSS animates the move.
@@ -78,7 +139,7 @@ const buddy = (() => {
   mount(host, "idle");
 
   return {
-    set, say, mount, floatTo,
+    set, say, mount, floatTo, finishTyping,
     get state() { return host.getAttribute("data-state"); },
   };
 })();
@@ -101,11 +162,15 @@ const voice = (() => {
     window.speechSynthesis.speak(u);
   }
 
+  function stop() {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  }
+
   function toggle() {
     on = !on;
-    if (!on) window.speechSynthesis?.cancel();
+    if (!on) stop();
     return on;
   }
 
-  return { speak, toggle, get on() { return on; } };
+  return { speak, stop, toggle, get on() { return on; } };
 })();

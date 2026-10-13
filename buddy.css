@@ -215,3 +215,40 @@
   .buddy *, .speech { animation: none !important; }
   .buddy[data-state="pointing"] .pose { transform: scaleX(-1); }
 }
+
+/* ---------- Bubble contents: short lines, code chips, typewriter ---------- */
+
+.speech { pointer-events: auto; cursor: pointer; }   /* clickable to skip */
+.speech-line { min-height: 1.2em; }
+.speech-line + .speech-line { margin-top: 4px; }
+
+/* Code the learner should type: its own color, its own line */
+.speech .chip {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  background: #fff4d6;
+  color: #9a5b00;
+  border: 1.5px solid #ffd77a;
+  border-radius: 8px;
+  padding: 2px 8px;
+  margin: 2px 0;
+}
+
+/* Typewriter: every character starts invisible, .on reveals it */
+.speech .ch { opacity: 0; }
+.speech .ch.on { opacity: 1; }
+
+/* Blinking caret while typing */
+.speech.typing::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -2px;
+  background: var(--blue);
+  animation: caret 0.8s steps(2) infinite;
+}
+@keyframes caret { 50% { opacity: 0; } }
