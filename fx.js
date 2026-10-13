@@ -17,7 +17,7 @@ const fx = (() => {
   document.body.appendChild(canvas);
   const ctx = canvas.getContext("2d");
 
-  const COLORS = ["#74bcfe", "#1e6fd9", "#ffb703", "#ff5d8f", "#17a673", "#8b5cf6", "#b6e3ff"];
+  const COLORS = ["#74bcfe", "#1e6fd9", "#06337e", "#17a673", "#7fd6b8", "#b6e3ff", "#ffffff"];  // theme blues + greens, no yellow
   let particles = [];
   let running = false;
 

@@ -228,9 +228,9 @@
   font-family: var(--mono);
   font-size: 13px;
   font-weight: 700;
-  background: #fff4d6;
-  color: #9a5b00;
-  border: 1.5px solid #ffd77a;
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+  border: 1.5px solid var(--blue-line);
   border-radius: 8px;
   padding: 2px 8px;
   margin: 2px 0;
@@ -287,22 +287,22 @@
 
 /* Section labels get a color by kind */
 .speech-label.label-ok   { color: var(--green); }
-.speech-label.label-warn { color: #d9480f; }
-.speech-label.label-type { color: #9a5b00; }
-.speech-label.label-win  { color: #7c3aed; }
+.speech-label.label-warn { color: var(--red); }
+.speech-label.label-type { color: var(--blue-dark); }
+.speech-label.label-win  { color: var(--green); }
 
 /* Vocabulary words, colored by category */
 .term { font-weight: 800; padding: 0 3px; border-radius: 4px; }
-.term-purple { color: #7c3aed; background: #f3e8ff; }
+.term-purple { color: #4338ca; background: #e0e7ff; }
 .term-teal   { color: #0f766e; background: #ccfbf1; }
-.term-pink   { color: #be185d; background: #fce7f3; }
+.term-pink   { color: #7e22ce; background: #f3e8ff; }
 .term-green  { color: #15803d; background: #dcfce7; }
-.term-orange { color: #c2410c; background: #ffedd5; }
+.term-orange { color: #06337e; background: #dbeafe; }
 .term-blue   { color: #1d4ed8; background: #dbeafe; }
 .term-red    { color: #b91c1c; background: #fee2e2; }
 
 /* Syntax colors inside code chips and the step list */
-.tok-kw      { color: #c026d3; }
+.tok-kw      { color: #7e22ce; }
 .tok-fn      { color: #1d4ed8; }
 .tok-str     { color: #15803d; }
 .tok-num     { color: #c2410c; }
