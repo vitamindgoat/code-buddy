@@ -88,25 +88,34 @@ const buddy = (() => {
       const isLabel = raw.startsWith("# ");
       const lineText = isLabel ? raw.slice(2) : raw;
       const line = document.createElement("div");
-      line.className = isLabel ? "speech-label" : "speech-line";
-      // split "text `code` text" into alternating pieces
-      lineText.split(/(`[^`]*`)/).forEach((piece) => {
+      line.className = isLabel ? "speech-label " + labelClass(lineText) : "speech-line";
+      // split into: `code chips`, *vocab terms*, and plain text
+      lineText.split(/(`[^`]*`|\*[^*]+\*)/).forEach((piece) => {
         if (!piece) return;
         const isCode = piece.startsWith("`");
-        const text = isCode ? piece.slice(1, -1) : piece;
-        const el = document.createElement(isCode ? "code" : "span");
-        if (isCode) el.className = "chip";
-        if (isLabel) {
-          el.textContent = text;            // labels show at once
-        } else {
-          for (const ch of text) {
-            const c = document.createElement("span");
-            c.className = "ch";
-            c.textContent = ch;
-            el.appendChild(c);
-            chars.push(c);
-            spokenIndex.push(spoken.length);
-            spoken += ch;
+        const isTerm = !isCode && piece.startsWith("*") && piece.length > 2;
+        const text = isCode || isTerm ? piece.slice(1, -1) : piece;
+        let el;
+        if (isCode) { el = document.createElement("code"); el.className = "chip"; }
+        else if (isTerm) { el = document.createElement("span"); el.className = "term " + termClass(text); }
+        else el = document.createElement("span");
+        // code chips get syntax colors: each token is its own span
+        const groups = isCode ? tokenize(text) : [{ cls: "", text }];
+        for (const g of groups) {
+          const holder = g.cls ? document.createElement("span") : el;
+          if (g.cls) { holder.className = "tok " + g.cls; el.appendChild(holder); }
+          if (isLabel) {
+            holder.appendChild(document.createTextNode(g.text));   // labels show at once
+          } else {
+            for (const ch of g.text) {
+              const c = document.createElement("span");
+              c.className = "ch";
+              c.textContent = ch;
+              holder.appendChild(c);
+              chars.push(c);
+              spokenIndex.push(spoken.length);
+              spoken += ch;
+            }
           }
         }
         line.appendChild(el);
@@ -133,6 +142,45 @@ const buddy = (() => {
     } else {
       tick();
     }
+  }
+
+  // Vocabulary words get a color by category
+  const TERMS = {
+    purple: ["function", "functions"],
+    teal: ["variable", "variables", "accumulator"],
+    pink: ["keyword", "keywords", "conditional", "if", "elif", "else"],
+    green: ["string", "strings"],
+    orange: ["repeat", "loop", "for loop", "while loop", "nested loop", "sequencing", "algorithm", "patterns"],
+    blue: ["boolean", "booleans", "binary", "bits", "integer", "float", "type", "cast", "casts", "casting", "modulus", "floor division", "escape sequence", "length"],
+    red: ["error", "errors", "entropy", "pauses"],
+  };
+  function termClass(text) {
+    const t = text.toLowerCase();
+    for (const [cls, words] of Object.entries(TERMS)) if (words.includes(t)) return "term-" + cls;
+    return "term-blue";
+  }
+  function labelClass(text) {
+    if (text.startsWith("✓")) return "label-ok";
+    if (/^(hmm|hint|not yet|no hints)/i.test(text)) return "label-warn";
+    if (/^(type|now type|next line|next|goal|stuck)/i.test(text)) return "label-type";
+    if (/^(yes|ran your|whole program|practice|lesson)/i.test(text)) return "label-win";
+    return "";
+  }
+  // A tiny Python tokenizer for coloring code chips
+  const KEYWORDS = /^(for|in|if|elif|else|while|and|or|not|True|False|break|continue|def|return|import)$/;
+  const BUILTINS = /^(print|input|int|str|float|len|type|bin|round|abs|max|min|range)$/;
+  function tokenize(code) {
+    const out = [];
+    const re = /("(?:[^"\\]|\\.)*"?|'(?:[^'\\]|\\.)*'?)|(\b\d+(?:\.\d+)?\b)|(#.*)|([A-Za-z_]\w*)|(\s+)|(.)/g;
+    let m;
+    while ((m = re.exec(code))) {
+      if (m[1]) out.push({ cls: "tok-str", text: m[1] });
+      else if (m[2]) out.push({ cls: "tok-num", text: m[2] });
+      else if (m[3]) out.push({ cls: "tok-comment", text: m[3] });
+      else if (m[4]) out.push({ cls: KEYWORDS.test(m[4]) ? "tok-kw" : BUILTINS.test(m[4]) ? "tok-fn" : "tok-name", text: m[4] });
+      else out.push({ cls: "", text: m[5] || m[6] });
+    }
+    return out;
   }
 
   function revealTo(spokenPos) {
@@ -178,7 +226,7 @@ const buddy = (() => {
   mount(host, "idle");
 
   return {
-    set, say, mount, floatTo, finishTyping, onClick,
+    set, say, mount, floatTo, finishTyping, onClick, tokenize,
     get state() { return host.getAttribute("data-state"); },
     get talking() { return speechEl.classList.contains("typing"); },
   };

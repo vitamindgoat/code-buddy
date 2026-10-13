@@ -1,34 +1,43 @@
 /* ============================================================
    tutor.js — the tutor engine
    Watches what the learner types and compares it, piece by piece,
-   against the current lesson. Decides when the buddy should speak,
-   what to say, and which line he should float next to.
+   against the current lesson. Decides when the buddy speaks, what the
+   editor shows (ghost letters, red underlines), and when to celebrate.
+
+   Two modes:
+     lesson    guided: ghost letters show what's left, the buddy explains
+               each piece as it's typed. Mistakes are silent (red underline
+               + ghost); clicking the buddy gives the hint.
+     practice  on your own: a task, no ghost, no explanations. Clicking the
+               buddy gives up to 3 hints; the 3rd turns ghost letters on.
 
    No AI here: every message comes from the lesson data or from a
    small set of rules. That makes hints instant, accurate, and safe.
 
    Public API (used by app.js):
-     tutor.start(lessonIndex)   load a lesson, clear the editor
+     tutor.start(lesson)        guided lesson
+     tutor.startPractice(lesson)
      tutor.onChange()           call whenever the editor text changes
      tutor.onRun(result)        call with { ok, output } after a run
+     tutor.hint()               the learner clicked the buddy
      tutor.review(stepIndex)    repeat a step's instructions (code untouched)
-     tutor.stuck()              show ghost letters for what's left
-     tutor.gotThis()            learner says they're fine
-     tutor.current              { lesson, stepIndex, partIndex, complete, celebrated }
+     tutor.current              { mode, lesson, stepIndex, partIndex, complete, celebrated }
    ============================================================ */
 
 const tutor = (() => {
-  const OFFER_HINT_MS = 30000; // quiet this long -> remind them they can click the buddy
+  const STUCK_AFTER_MISTAKE_MS = 6000;  // a wrong char sits there this long -> "Stuck?" tag
+  const STUCK_AFTER_IDLE_MS = 25000;    // no typing this long -> "Stuck?" tag
 
+  let mode = "lesson";
   let lesson = null;
   let stepIndex = 0;      // which step (line) the learner is on
   let partIndex = 0;      // which piece of that line they're on
   let complete = false;   // all lines typed correctly, waiting for Run
   let celebrated = false; // output matched at least once
-  let ghosting = false;   // showing ghost letters for the current line
+  let hintsUsed = 0;      // practice mode
   let lastSaid = "";
-  let offerTimer = null;
-  let offered = false;
+  let mistake = false;    // currently off course?
+  let stuckTimer = null;
   let diagnoseTimer = null;
 
   // Hooks that app.js fills in (keeps this file independent of the page)
@@ -40,8 +49,11 @@ const tutor = (() => {
     markLine: () => {},
     markWrong: () => {},      // (lineNumber, fromCh, toCh) or () to clear
     ghost: () => {},          // (lineNumber, text) or () to clear
-    onStepDone: () => {},
-    unlockNext: () => {},
+    stuckTag: () => {},       // (true/false) show the "Stuck?" callout
+    onPartDone: () => {},
+    onStepDone: () => {},     // (lineNumber)
+    onMistake: () => {},
+    onComplete: () => {},     // lesson or practice finished (output matched)
   };
 
   // ---------- normalizing: what counts as "the same code" ----------
@@ -68,12 +80,15 @@ const tutor = (() => {
   }
   const norm = (text) => normMap(text).s;
 
-  const isIndented = (line) => /^\s/.test(line);
+  // Indentation LEVEL (4 spaces or a tab = one level). The one place
+  // where spaces matter in Python.
+  function indentLevel(line) {
+    const lead = line.match(/^[ \t]*/)[0];
+    return Math.round((lead.replace(/\t/g, "    ").length) / 4);
+  }
 
   function lineMatches(typed, target) {
-    if (norm(typed) !== norm(target)) return false;
-    // indentation is the one place spaces DO matter in Python
-    return isIndented(typed) === isIndented(target);
+    return norm(typed) === norm(target) && indentLevel(typed) === indentLevel(target);
   }
 
   // How many of a step's parts has the typed line completed?
@@ -96,65 +111,47 @@ const tutor = (() => {
       .filter((l) => l.text.trim() !== "");
   }
 
-  // How many leading lines already match the lesson?
+  const targets = () => (mode === "practice" ? lesson.practice.solution : lesson.steps.map((s) => s.code));
+
+  // How many leading lines already match?
   function countCorrect(lines) {
+    const t = targets();
     let n = 0;
-    while (n < lesson.steps.length && n < lines.length && lineMatches(lines[n].text, lesson.steps[n].code)) n++;
+    while (n < t.length && n < lines.length && lineMatches(lines[n].text, t[n])) n++;
     return n;
   }
 
-  // ---------- turning a mistake into a kid-friendly sentence ----------
-
-  const NAMES = {
-    '"': 'a quote mark `"`', "(": "an open parenthesis `(`", ")": "a close parenthesis `)`",
-    ":": "a colon `:`", "=": "an equals sign `=`", "+": "a plus sign `+`", ",": "a comma `,`",
-    "!": "an exclamation mark `!`", " ": "a space",
-  };
-  const describe = (ch) => (ch === undefined ? "nothing more" : NAMES[ch] || `the letter \`${ch}\``);
-
-  // Returns { text, wrongAt } or null. wrongAt = index in the TYPED line of
-  // the first wrong character (so the editor can underline it), or null.
-  function diagnose(typed, step, left) {
+  // Where does a typed line diverge from its target? Returns
+  // { onTrack, wrongAt (index in typed), indent: "more"|"less"|null }
+  function compare(typed, target) {
     const { s: t, map } = normMap(typed);
-    const g = norm(step.code);
-    if (t === "") return null;
-    if (g.startsWith(t)) {
-      // on track so far; only indentation could be wrong
-      if (isIndented(step.code) && !isIndented(typed) && t.length > 2)
-        return { text: "This line needs to be indented.\nPut 4 spaces at the start\nso it's inside the loop.", wrongAt: 0 };
-      if (!isIndented(step.code) && isIndented(typed))
-        return { text: "Don't indent this line.\nDelete the spaces at the start.", wrongAt: 0 };
-      if (left) {
-        for (const h of step.hints || []) if (h.match.test(typed)) return { text: h.say, wrongAt: null };
-        return { text: `That line isn't finished yet.\nIt still needs ${describe(g[t.length])}.`, wrongAt: null };
-      }
-      return null;
-    }
-    // where does it go wrong?
+    const g = norm(target);
     let i = 0;
     while (i < t.length && i < g.length && t[i] === g[i]) i++;
-    const wrongAt = map[i] ?? typed.length;
-    // lesson-specific hints first
-    for (const h of step.hints || []) if (h.match.test(typed)) return { text: h.say, wrongAt };
-    // capital letters?
-    if (t.toLowerCase() === g.slice(0, t.length).toLowerCase())
-      return { text: "Careful with capital letters!\nPython is picky: it all needs to be lowercase here.", wrongAt };
-    const before = g.slice(Math.max(0, i - 8), i);
-    if (i >= g.length) return { text: `There's extra stuff at the end.\nThe line should stop after \`${before}\``, wrongAt };
-    return { text: `After \`${before || "the start"}\` I was expecting ${describe(g[i])},\nbut I see ${describe(t[i])}.`, wrongAt };
+    const onTrack = i === t.length;              // everything typed so far matches
+    const wrongAt = onTrack ? null : map[i];
+    let indent = null;
+    if (t.length > 0) {
+      const want = indentLevel(target), have = indentLevel(typed);
+      if (have < want) indent = "more"; else if (have > want) indent = "less";
+    }
+    return { onTrack, wrongAt, matched: i, indent };
   }
 
-  // ---------- composing messages ----------
-
-  const step = () => lesson.steps[stepIndex];
-  const part = () => step().parts[partIndex];
-
-  // "# Type" section: what the learner should type right now
-  function typeSection(label = "Type") {
-    if (complete) return "# Next\nPress Run!";
-    const p = part();
-    return `# ${label}\n${p.say}\n\`${p.text}\``;
+  // What's left of the target line, as it should be typed (for the ghost)
+  function remainder(typed, target) {
+    const { s: t } = normMap(typed);
+    const { s: g, map } = normMap(target);
+    // blank line: show the whole thing, minus any indentation already there
+    if (t === "") return target.slice(Math.min(typed.length, target.match(/^[ \t]*/)[0].length));
+    let i = 0;
+    while (i < t.length && i < g.length && t[i] === g[i]) i++;
+    if (i < t.length) return "";                 // off course: no ghost
+    const from = i < g.length ? map[i] : target.length;
+    return target.slice(from);
   }
+
+  // ---------- speaking ----------
 
   function say(text, state) {
     if (text === lastSaid) return;
@@ -162,17 +159,35 @@ const tutor = (() => {
     buddy.say(text, state);
   }
 
+  const step = () => lesson.steps[stepIndex];
+  const part = () => step().parts[partIndex];
+
+  // "Type" section: the piece the learner should type right now
+  function typeSection(label = "Type") {
+    if (complete) return "# Next\nPress Run!";
+    const p = part();
+    return `# ${label}\n${p.say}\n\`${p.text}\``;
+  }
+
   // ---------- the main loop: called on every edit ----------
 
   function onChange() {
     clearTimeout(diagnoseTimer);
-    resetOffer();
-    // wait until they pause for a moment so we don't nag every keystroke
-    diagnoseTimer = setTimeout(check, 400);
+    ui.stuckTag(false);
+    armStuck(STUCK_AFTER_IDLE_MS);
+    diagnoseTimer = setTimeout(check, mode === "practice" ? 250 : 350);
+  }
+
+  function armStuck(ms) {
+    clearTimeout(stuckTimer);
+    if (!lesson || complete) return;
+    stuckTimer = setTimeout(() => { if (!complete) ui.stuckTag(true); }, ms);
   }
 
   function check() {
     if (!lesson || complete) return;
+    if (mode === "practice") return checkPractice();
+
     const lines = codeLines();
     const n = countCorrect(lines);
 
@@ -180,18 +195,17 @@ const tutor = (() => {
       // they finished one or more whole lines
       const finished = lesson.steps[n - 1];
       const lastPart = finished.parts[finished.parts.length - 1];
-      stepIndex = n;
-      partIndex = 0;
-      offered = false;
-      stopGhost();
+      stepIndex = n; partIndex = 0; mistake = false;
       ui.renderSteps(stepIndex);
+      ui.markWrong();
       ui.onStepDone(lines[n - 1].number);
       if (stepIndex === lesson.steps.length) {
         complete = true;
-        ui.markLine(null);
+        ui.ghost(); ui.markLine(null); ui.stuckTag(false);
         say(`# ✓ \`${lastPart.text}\`\n${lastPart.explain}\n# Whole program typed!\nPress Run to see it work.`, "happy");
         return;
       }
+      showGhost(lines, n);
       ui.markLine(lines[n] ? lines[n].number : null);
       say(`# ✓ \`${lastPart.text}\`\n${lastPart.explain}\n${typeSection("Next line")}`, "happy");
       return;
@@ -199,96 +213,130 @@ const tutor = (() => {
 
     if (n < stepIndex) {
       // they broke a line that used to be right
-      stepIndex = n;
-      partIndex = 0;
+      stepIndex = n; partIndex = 0;
       ui.renderSteps(stepIndex);
     }
 
     const line = lines[stepIndex];
-    const left = line ? ui.getCursorLine() > line.number : false;
-    const problem = line ? diagnose(line.text, step(), left) : null;
+    const typed = line ? line.text : "";
+    const cmp = compare(typed, step().code);
+    const off = !cmp.onTrack || (cmp.indent && norm(typed).length > 1);
 
-    if (problem) {
+    if (off) {
+      // Silent: red underline + no ghost. The buddy only speaks if asked.
+      if (!mistake) { mistake = true; ui.onMistake(); }
       ui.markLine(line.number);
-      ui.markWrong(line.number, problem.wrongAt, line.text.length);
-      if (ghosting) ui.ghost(line.number, ghostText(line.text));
-      say(`# Hmm\n${problem.text}\n${typeSection()}`, "pointing");
+      ui.markWrong(line.number, cmp.wrongAt ?? 0, typed.length);
+      ui.ghost();
+      armStuck(STUCK_AFTER_MISTAKE_MS);
       return;
     }
 
+    mistake = false;
     ui.markWrong();
-    ui.markLine(line ? line.number : null);
-    if (ghosting) ui.ghost(line ? line.number : ui.getCursorLine(), ghostText(line ? line.text : ""));
+    ui.markLine(line ? line.number : ui.getCursorLine());
+    showGhost(lines, stepIndex);
 
-    // No problem: did they finish a PIECE of the line? Teach it.
-    const p = line ? countParts(line.text, step()) : 0;
+    // Did they finish a PIECE of the line? Teach it.
+    const p = line ? countParts(typed, step()) : 0;
     if (p > partIndex) {
       const done = step().parts[p - 1];
       partIndex = p;
-      offered = false;
+      ui.onPartDone();
       say(`# ✓ \`${done.text}\`\n${done.explain}\n${typeSection("Now type")}`, "happy");
     } else if (p < partIndex) {
       partIndex = p;
-    } else if (buddy.state === "pointing") {
-      say(`# That's it!\nKeep going.\n${typeSection()}`, "happy");
     }
   }
 
-  // ---------- stuck: ghost letters instead of a speech ----------
-
-  // What's left of the current line, as it should be typed
-  function ghostText(typed) {
-    const target = step().code;
-    const { s: t } = normMap(typed);
-    const { s: g, map } = normMap(target);
-    let i = 0;
-    while (i < t.length && i < g.length && t[i] === g[i]) i++;
-    if (i < t.length) return "";                 // they're off course: fix first
-    const from = i < g.length ? map[i] : target.length;
-    return target.slice(from);
+  // Ghost letters for the line being worked on (lesson mode, or practice
+  // after the 3rd hint)
+  function showGhost(lines, idx) {
+    if (mode === "practice" && hintsUsed < 3) return ui.ghost();
+    const target = targets()[idx];
+    if (!target) return ui.ghost();
+    const line = lines[idx];
+    const cursorLine = ui.getCursorLine();
+    if (!line) {
+      // the next line doesn't exist yet: if the cursor still sits on a
+      // finished line, the only thing to do is press Enter
+      const cursorText = ui.getCode().split("\n")[cursorLine] || "";
+      if (cursorText.trim() !== "") return ui.ghost(cursorLine, "  ⏎");
+      return ui.ghost(cursorLine, remainder(cursorText, target));
+    }
+    ui.ghost(line.number, remainder(line.text, target));
   }
 
-  function stuck() {
-    if (!lesson || complete) return;
-    ghosting = true;
+  function checkPractice() {
+    const lines = codeLines();
+    const n = countCorrect(lines);
+    ui.renderSteps(n);
+    if (hintsUsed >= 3) {
+      // ghost mode: behave like a lesson, but silent
+      const line = lines[n];
+      const typed = line ? line.text : "";
+      const target = lesson.practice.solution[n];
+      if (!target) { ui.ghost(); ui.markWrong(); return; }
+      const cmp = compare(typed, target);
+      if (!cmp.onTrack) { ui.markWrong(line.number, cmp.wrongAt ?? 0, typed.length); ui.ghost(); }
+      else { ui.markWrong(); showGhost(lines, n); }
+    }
+  }
+
+  // ---------- the learner clicked the buddy ----------
+
+  function hint() {
+    if (!lesson) return;
+    ui.stuckTag(false);
+    if (mode === "practice") return practiceHint();
+    if (complete) return say("# All typed!\nPress Run to see it work.", "pointing");
+
     const lines = codeLines();
     const line = lines[stepIndex];
-    ui.ghost(line ? line.number : ui.getCursorLine(), ghostText(line ? line.text : ""));
-    say(`# Here's a hint\nThe gray letters show what's left.\nType them and they turn real.\n${typeSection()}`, "pointing");
+    const typed = line ? line.text : "";
+    const cmp = compare(typed, step().code);
+    lastSaid = "";
+
+    if (cmp.indent === "more") return say(`# Hint\nThis line needs to be indented more.\nPress Tab at the start.\n${typeSection()}`, "pointing");
+    if (cmp.indent === "less") return say(`# Hint\nThis line is indented too much.\nPress Backspace at the start.\n${typeSection()}`, "pointing");
+    if (!cmp.onTrack) {
+      const s = step();
+      const h = (s.hints || []).find((h) => h.match.test(typed));
+      const g = norm(s.code), i = cmp.matched;
+      const generic = `The red part isn't right.\nAfter \`${g.slice(Math.max(0, i - 8), i) || "the start"}\` it should be ${describe(g[i])}.`;
+      return say(`# Hint\n${h ? h.say : generic}\nDelete the red part and follow the gray letters.\n${typeSection()}`, "pointing");
+    }
+    say(`# Hint\nYou're on track! The gray letters show what's left.\n${typeSection()}`, "pointing");
   }
 
-  function gotThis() {
-    stopGhost();
-    say(`# You've got this!\n${typeSection()}`, "happy");
-  }
+  const NAMES = {
+    '"': 'a quote mark `"`', "(": "an open parenthesis `(`", ")": "a close parenthesis `)`",
+    ":": "a colon `:`", "=": "an equals sign `=`", "+": "a plus sign `+`", ",": "a comma `,`",
+    "!": "an exclamation mark `!`", "*": "a star `*`", "#": "a hash `#`", "%": "a percent sign `%`", "/": "a slash `/`",
+  };
+  const describe = (ch) => (ch === undefined ? "nothing more" : NAMES[ch] || (/\d/.test(ch) ? `the number \`${ch}\`` : `the letter \`${ch}\``));
 
-  function stopGhost() {
-    ghosting = false;
-    ui.ghost();
-  }
-
-  // ---------- a gentle reminder that help exists ----------
-
-  function resetOffer() {
-    clearTimeout(offerTimer);
-    if (!lesson || complete) return;
-    offerTimer = setTimeout(() => {
-      if (complete || offered) return;
-      offered = true;
-      say(`# Need a hint?\nClick me anytime.\n${typeSection()}`, "thinking");
-    }, OFFER_HINT_MS);
+  function practiceHint() {
+    const p = lesson.practice;
+    if (hintsUsed >= 3) return say(`# No hints left\nThe gray letters show the answer.\n*Hint 3/3*`, "thinking");
+    hintsUsed++;
+    lastSaid = "";
+    const left = 3 - hintsUsed;
+    const extra = hintsUsed === 3 ? "\nGray letters are on now. Follow them." : `\n${left} hint${left === 1 ? "" : "s"} left.`;
+    say(`# Hint ${hintsUsed} of 3\n${p.hints[hintsUsed - 1]}${extra}`, "pointing");
+    if (hintsUsed === 3) checkPractice();
   }
 
   // ---------- clicking a step in the panel ----------
 
   function review(i) {
-    if (!lesson) return;
+    if (!lesson || mode === "practice") return;
     clearTimeout(diagnoseTimer);
     const s = lesson.steps[i];
     const lines = codeLines();
     if (lines[i]) ui.markLine(lines[i].number);
+    lastSaid = "";
     if (i < stepIndex) {
-      // a finished line: walk through what each piece meant
       const recap = s.parts.map((p) => `\`${p.text.trim()}\` ${p.explain.split("\n")[0]}`).join("\n");
       say(`# Line ${i + 1}\n${recap}`, "pointing");
     } else if (i === stepIndex) {
@@ -296,19 +344,25 @@ const tutor = (() => {
     } else {
       say(`# Not yet\nFirst finish line ${stepIndex + 1}.\n${typeSection()}`, "pointing");
     }
-    lastSaid = ""; // so the next real event can repeat itself if needed
   }
 
   // ---------- after Run ----------
 
   function onRun({ ok, output }) {
     if (!lesson || !ok) return; // errors are handled by app.js (it has the line number)
-    if (output.trim() === lesson.expectedOutput && !celebrated) {
+    const expected = mode === "practice" ? lesson.practice.expectedOutput : lesson.expectedOutput;
+    lastSaid = "";
+    if (output.trim() === expected && !celebrated) {
       celebrated = true;
-      say(`# Ran your code ✓\n# YES!\n${lesson.done}`, "celebrate");
-      ui.unlockNext(lesson.id);
+      complete = true;
+      ui.ghost(); ui.markWrong(); ui.stuckTag(false);
+      const done = mode === "practice" ? "You solved it on your own!" : lesson.done;
+      say(`# Ran your code ✓\n# YES!\n${done}`, "celebrate");
+      ui.onComplete(mode);
     } else if (celebrated) {
-      say("# Ran your code ✓\nNice experiment!\nChange something else and run it again,\nor go to the next lesson.", "happy");
+      say("# Ran your code ✓\nNice experiment!\nChange something else and run it again,\nor move on.", "happy");
+    } else if (mode === "practice") {
+      say(`# Ran your code ✓\nBut that's not the output we want yet.\n# Goal\n${lesson.practice.task}\nClick me for a hint.`, "thinking");
     } else if (!complete) {
       say(`# Ran your code ✓\nIt works so far! But we're not finished.\n${typeSection()}`, "happy");
     } else {
@@ -316,25 +370,41 @@ const tutor = (() => {
     }
   }
 
-  function start(index) {
-    lesson = LESSONS[index];
-    stepIndex = 0;
-    partIndex = 0;
-    complete = false;
-    celebrated = false;
-    offered = false;
+  // ---------- starting ----------
+
+  function reset(l) {
+    lesson = l;
+    stepIndex = 0; partIndex = 0; hintsUsed = 0;
+    complete = false; celebrated = false; mistake = false;
     lastSaid = "";
-    stopGhost();
-    ui.markWrong();
+    clearTimeout(stuckTimer); clearTimeout(diagnoseTimer);
+    ui.ghost(); ui.markWrong(); ui.stuckTag(false);
     ui.setCode("");
+  }
+
+  function start(l) {
+    mode = "lesson";
+    reset(l);
     ui.renderSteps(0);
     ui.markLine(0);
-    say(`# Lesson ${index + 1} · ${lesson.title}\n${lesson.intro}\n${typeSection()}`, "idle");
-    resetOffer();
+    const who = l.inputs ? `\n# The user will type\n\`${l.inputs.join("`, `")}\`` : "";
+    say(`# Lesson ${l.number} · ${l.title}\n${l.intro}${who}\n${typeSection()}`, "idle");
+    showGhost([], 0);
+    armStuck(STUCK_AFTER_IDLE_MS);
+  }
+
+  function startPractice(l) {
+    mode = "practice";
+    reset(l);
+    ui.renderSteps(0);
+    ui.markLine(0);
+    const who = l.practice.inputs ? `\n# The user will type\n\`${l.practice.inputs.join("`, `")}\`` : "";
+    say(`# Practice · ${l.title}\nYour turn, no help from me.\n# Goal\n${l.practice.task}${who}\n# Stuck?\nClick me. You get 3 hints.`, "idle");
+    armStuck(STUCK_AFTER_IDLE_MS);
   }
 
   return {
-    start, onChange, onRun, review, stuck, gotThis, ui,
-    get current() { return { lesson, stepIndex, partIndex, complete, celebrated }; },
+    start, startPractice, onChange, onRun, hint, review, ui,
+    get current() { return { mode, lesson, stepIndex, partIndex, complete, celebrated, hintsUsed }; },
   };
 })();

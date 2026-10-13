@@ -274,11 +274,45 @@
 .buddy { pointer-events: auto; cursor: pointer; transition: filter 0.2s ease; }
 .buddy:hover { filter: drop-shadow(0 4px 10px rgba(30, 111, 217, 0.35)); }
 
-/* Stuck / got this menu under the bubble */
-.buddy-menu { display: flex; gap: 6px; pointer-events: auto; animation: pop 0.25s ease-out; }
-.buddy-menu[hidden] { display: none; }
+/* "Stuck?" callout under the bubble, pointing at the buddy */
+.stuck-tag {
+  pointer-events: none;
+  background: #fff4d6; color: #9a5b00;
+  border: 2px solid #ffd77a;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px; font-weight: 800;
+  animation: pop 0.3s ease-out, nudge 1.2s ease-in-out 0.3s infinite;
+}
+.stuck-tag[hidden] { display: none; }
+@keyframes nudge { 50% { transform: translateX(4px); } }
 
 /* A chip stays invisible until its first letter is typed */
 .speech .chip:not(:has(.ch.on)) { opacity: 0; }
 .buddy-menu .btn { padding: 7px 12px; font-size: 13px; }
 .speech-label .chip { text-transform: none; font-size: 11px; padding: 0 6px; opacity: 1 !important; }
+
+/* Section labels get a color by kind */
+.speech-label.label-ok   { color: var(--green); }
+.speech-label.label-warn { color: #d9480f; }
+.speech-label.label-type { color: #9a5b00; }
+.speech-label.label-win  { color: #7c3aed; }
+
+/* Vocabulary words, colored by category */
+.term { font-weight: 800; padding: 0 3px; border-radius: 4px; }
+.term-purple { color: #7c3aed; background: #f3e8ff; }
+.term-teal   { color: #0f766e; background: #ccfbf1; }
+.term-pink   { color: #be185d; background: #fce7f3; }
+.term-green  { color: #15803d; background: #dcfce7; }
+.term-orange { color: #c2410c; background: #ffedd5; }
+.term-blue   { color: #1d4ed8; background: #dbeafe; }
+.term-red    { color: #b91c1c; background: #fee2e2; }
+
+/* Syntax colors inside code chips and the step list */
+.tok-kw      { color: #c026d3; }
+.tok-fn      { color: #1d4ed8; }
+.tok-str     { color: #15803d; }
+.tok-num     { color: #c2410c; }
+.tok-comment { color: #6b7280; font-style: italic; }
+.tok-name    { color: #0f766e; }
+.speech .chip { color: #1d2433; }   /* chip text takes token colors */

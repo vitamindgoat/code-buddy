@@ -44,7 +44,21 @@ const ready = (async () => {
 self.onmessage = async (event) => {
   await ready; // never run before Python has finished loading
 
-  const code = event.data.code;
+  const { code, inputs = [] } = event.data;
+
+  // input() can't pause for typing inside a worker, so the lesson says what
+  // "the user types" and we feed those answers in, echoing them the way a
+  // real terminal would. Works through builtins, so it survives the fresh
+  // globals below.
+  pyodide.runPython(`
+import builtins, json
+_cb_inputs = json.loads(${JSON.stringify(JSON.stringify(inputs))})
+def _cb_input(prompt=""):
+    value = _cb_inputs.pop(0) if _cb_inputs else ""
+    print(str(prompt) + value)
+    return value
+builtins.input = _cb_input
+`);
 
   try {
     // Fresh, empty globals every run so variables from the last run

@@ -61,9 +61,13 @@ const tour = (() => {
     spot.classList.add("on");
     tip.classList.add("on");
     place();
+    requestAnimationFrame(place);
+    sfx.pop();
   }
 
-  // Put the spotlight over the target and the tip beside it
+  // Put the spotlight over the target and the tip beside it, centered on
+  // it, with an arrow pointing at it. If the preferred side doesn't fit on
+  // screen, flip to the opposite side.
   function place() {
     const step = steps[index];
     if (!step) return;
@@ -72,24 +76,38 @@ const tour = (() => {
     el.scrollIntoView({ block: "nearest" });
     const r = el.getBoundingClientRect();
     const pad = 8;
-    spot.style.left = `${r.left - pad}px`;
-    spot.style.top = `${r.top - pad}px`;
-    spot.style.width = `${r.width + pad * 2}px`;
-    spot.style.height = `${r.height + pad * 2}px`;
+    const sp = { left: r.left - pad, top: r.top - pad, width: r.width + pad * 2, height: r.height + pad * 2 };
+    spot.style.left = `${sp.left}px`; spot.style.top = `${sp.top}px`;
+    spot.style.width = `${sp.width}px`; spot.style.height = `${sp.height}px`;
+    const cx = sp.left + sp.width / 2, cy = sp.top + sp.height / 2;
 
-    const tw = tip.offsetWidth, th = tip.offsetHeight, gap = 16;
+    const tw = tip.offsetWidth, th = tip.offsetHeight, gap = 18;
+    const W = window.innerWidth, H = window.innerHeight;
+    const fits = {
+      right:  sp.left + sp.width + gap + tw <= W - 12,
+      left:   sp.left - gap - tw >= 12,
+      bottom: sp.top + sp.height + gap + th <= H - 12,
+      top:    sp.top - gap - th >= 12,
+    };
+    const opposite = { right: "left", left: "right", top: "bottom", bottom: "top" };
+    let side = step.place || "right";
+    if (!fits[side]) side = fits[opposite[side]] ? opposite[side] : (["bottom", "top", "right", "left"].find((k) => fits[k]) || side);
+
     let left, top;
-    switch (step.place || "right") {
-      case "left":   left = r.left - tw - gap; top = r.top + r.height / 2 - th / 2; break;
-      case "top":    left = r.left + r.width / 2 - tw / 2; top = r.top - th - gap; break;
-      case "bottom": left = r.left + r.width / 2 - tw / 2; top = r.bottom + gap; break;
-      default:       left = r.right + gap; top = r.top + r.height / 2 - th / 2;
-    }
-    // keep it on screen
-    left = Math.max(12, Math.min(window.innerWidth - tw - 12, left));
-    top = Math.max(12, Math.min(window.innerHeight - th - 12, top));
+    if (side === "right")       { left = sp.left + sp.width + gap; top = cy - th / 2; }
+    else if (side === "left")   { left = sp.left - gap - tw;       top = cy - th / 2; }
+    else if (side === "bottom") { left = cx - tw / 2;              top = sp.top + sp.height + gap; }
+    else                        { left = cx - tw / 2;              top = sp.top - gap - th; }
+    left = Math.max(12, Math.min(W - tw - 12, left));
+    top = Math.max(12, Math.min(H - th - 12, top));
     tip.style.left = `${left}px`;
     tip.style.top = `${top}px`;
+    tip.dataset.side = side;
+    // the arrow sits on the tip's edge, lined up with the target's center
+    const ax = Math.max(18, Math.min(tw - 18, cx - left));
+    const ay = Math.max(18, Math.min(th - 18, cy - top));
+    tip.style.setProperty("--ax", `${ax}px`);
+    tip.style.setProperty("--ay", `${ay}px`);
   }
 
   function end() {

@@ -1,10 +1,12 @@
 /* ============================================================
    app.js — the main page
    Glues everything together:
-     1. CodeMirror editor (starts empty)
-     2. Lesson panel: steps, progress, next/back, saved progress
-     3. The buddy floats inside the editor, level with your line
-     4. Run button -> sandbox worker -> output -> tutor reacts
+     1. CodeMirror editor (starts empty), ghost letters, red underlines
+     2. Navigation: modules -> lessons -> stages (lesson, practice, quiz)
+     3. Lesson panel, sidebar, progress, saved in localStorage
+     4. The buddy floats inside the editor, level with your line
+     5. Run button -> sandbox worker -> output -> tutor reacts
+     6. Sounds, effects, banners, tours
    ============================================================ */
 
 const BUILD = document.querySelector('meta[name="build"]').content; // cache-busting, see index.html
@@ -25,51 +27,106 @@ const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
 
 // ---------- 2. Elements ----------
 
-const runBtn = document.getElementById("run-btn");
-const resetBtn = document.getElementById("reset-btn");
-const prevBtn = document.getElementById("prev-btn");
-const nextBtn = document.getElementById("next-btn");
-const voiceBtn = document.getElementById("voice-btn");
-const outputEl = document.getElementById("output");
-const statusEl = document.getElementById("status");
-const stepsEl = document.getElementById("steps");
+const $ = (id) => document.getElementById(id);
+const runBtn = $("run-btn"), resetBtn = $("reset-btn"), prevBtn = $("prev-btn"), nextBtn = $("next-btn");
+const voiceBtn = $("voice-btn"), voicePick = $("voice-pick"), soundBtn = $("sound-btn");
+const outputEl = $("output"), statusEl = $("status"), stepsEl = $("steps");
 const editorWrap = document.querySelector(".editor-wrap");
+const editorCard = document.querySelector(".editor-card"), outputCard = document.querySelector(".output-card");
+const quizCard = $("quiz-card"), stuckTag = $("stuck-tag");
 
-// ---------- 3. Lesson panel + saved progress ----------
+// ---------- 3. Where we are: lesson index + stage ----------
 
+// stage: "lesson" (guided) -> "practice" (on your own) -> for the last
+// lesson of a module, "quiz" -> next module
 let lessonIndex = 0;
-let progress = { completed: [], current: 0 };
+let stage = "lesson";
+let progress = { done: {}, lessonIndex: 0, stage: "lesson", toured: false, lessonsFinished: 0 };
 try { progress = { ...progress, ...JSON.parse(localStorage.getItem(SAVE_KEY) || "{}") }; } catch {}
 
 function saveProgress() {
+  progress.lessonIndex = lessonIndex; progress.stage = stage;
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(progress)); } catch {}
 }
 
-function renderLessonHeader() {
-  const lesson = LESSONS[lessonIndex];
-  document.getElementById("lesson-title").textContent = lesson.title;
-  document.getElementById("lesson-intro").textContent = lesson.intro;
-  document.getElementById("lesson-pill").textContent = `Lesson ${lessonIndex + 1} · ${lesson.title}`;
-  document.getElementById("progress-label").textContent = `Lesson ${lessonIndex + 1} of ${LESSONS.length}`;
-  document.getElementById("progress-fill").style.width = `${(progress.completed.length / LESSONS.length) * 100}%`;
-  prevBtn.disabled = lessonIndex === 0;
-  nextBtn.disabled = !progress.completed.includes(lesson.id) || lessonIndex === LESSONS.length - 1;
+const lesson = () => LESSONS[lessonIndex];
+const module_ = () => MODULES[lesson().moduleIndex];
+const isLastInModule = () => lesson().lessonIndex === module_().lessons.length - 1;
+const doneId = () => (stage === "lesson" ? lesson().id : stage === "practice" ? lesson().id + "-practice" : module_().id + "-quiz");
+const isDone = (id) => !!progress.done[id];
+
+// What the Next button leads to from the current stage
+function nextTarget() {
+  if (stage === "lesson") return { lessonIndex, stage: "practice", label: "Practice ▶" };
+  if (stage === "practice") {
+    if (isLastInModule()) return { lessonIndex, stage: "quiz", label: "Module quiz ▶" };
+    return { lessonIndex: lessonIndex + 1, stage: "lesson", label: "Next lesson ▶" };
+  }
+  if (lessonIndex + 1 < LESSONS.length) return { lessonIndex: lessonIndex + 1, stage: "lesson", label: "Next module ▶" };
+  return null;
+}
+function prevTarget() {
+  if (stage === "practice") return { lessonIndex, stage: "lesson" };
+  if (stage === "quiz") return { lessonIndex, stage: "practice" };
+  if (lessonIndex === 0) return null;
+  return { lessonIndex: lessonIndex - 1, stage: "practice" };
 }
 
-// The step list: a checkmark for done lines, a pointer for the current one
+// ---------- 4. Lesson panel ----------
+
+function renderHeader() {
+  const l = lesson(), m = module_();
+  const totalItems = LESSONS.length * 2 + MODULES.length;
+  const doneCount = Object.keys(progress.done).length;
+  $("progress-label").textContent = `Module ${l.moduleIndex + 1} · ${m.title}`;
+  $("progress-fill").style.width = `${Math.min(100, (doneCount / totalItems) * 100)}%`;
+  $("stage-badge").textContent = stage === "lesson" ? "Lesson" : stage === "practice" ? "Practice" : "Quiz";
+  $("stage-badge").className = "stage-badge stage-" + stage;
+  $("lesson-number").textContent = stage === "quiz" ? `Module ${l.moduleIndex + 1}` : l.number;
+  $("lesson-title").textContent = stage === "quiz" ? `${m.title} quiz` : l.title;
+  $("lesson-intro").innerHTML = stage === "practice" ? richText(l.practice.task) : stage === "quiz" ? `${m.quiz.length} questions. No help from the buddy on this one!` : richText(l.intro);
+  $("lesson-pill").textContent = stage === "quiz" ? `Quiz · Module ${l.moduleIndex + 1}` : `${stage === "practice" ? "Practice" : "Lesson"} ${l.number} · ${l.title}`;
+
+  const pb = $("practice-box");
+  pb.hidden = stage !== "practice";
+  if (stage === "practice") $("practice-expected").textContent = (l.practice.inputs ? `(user types: ${l.practice.inputs.join(", ")})\n` : "") + l.practice.expectedOutput;
+
+  prevBtn.disabled = !prevTarget();
+  const nt = nextTarget();
+  nextBtn.textContent = nt ? nt.label : "All done! 🎉";
+  nextBtn.disabled = !nt || !isDone(doneId());
+}
+
+// *term* -> colored span, `code` -> chip (for the lesson panel)
+function richText(s) {
+  return escapeHtml(s)
+    .replace(/`([^`]+)`/g, (_, c) => `<code class="chip">${c}</code>`)
+    .replace(/\*([^*]+)\*/g, (_, t) => `<span class="term term-blue">${t}</span>`);
+}
+
+// The step list: a checkmark for done lines, a pointer for the current one.
+// In practice mode the lines are hidden (that would be the answer!) and we
+// show how many lines are right so far.
 function renderSteps(stepIndex) {
-  const lesson = LESSONS[lessonIndex];
   stepsEl.innerHTML = "";
-  lesson.steps.forEach((step, i) => {
+  if (stage === "quiz") return;
+  if (stage === "practice") {
+    const n = lesson().practice.solution.length;
+    const li = document.createElement("li");
+    li.className = "current practice-count";
+    li.innerHTML = `<span class="step-mark"></span><span>${stepIndex} of ${n} lines look right</span>`;
+    stepsEl.appendChild(li);
+    return;
+  }
+  lesson().steps.forEach((step, i) => {
     const li = document.createElement("li");
     li.className = i < stepIndex ? "done" : i === stepIndex ? "current" : "";
-    li.innerHTML = `<span class="step-mark"></span><code>${escapeHtml(step.code.trim())}</code>`;
+    li.innerHTML = `<span class="step-mark"></span><code>${colorCode(step.code.trim())}</code>`;
     li.title = "Click to hear this step again";
-    // Clicking a step rewinds the buddy's instructions to it. Code is untouched.
     li.addEventListener("click", () => { tutor.review(i); editor.focus(); });
     stepsEl.appendChild(li);
   });
-  if (stepIndex >= lesson.steps.length) {
+  if (stepIndex >= lesson().steps.length) {
     const li = document.createElement("li");
     li.className = "current run-step";
     li.innerHTML = `<span class="step-mark"></span><span>Press <strong>Run</strong></span>`;
@@ -78,34 +135,70 @@ function renderSteps(stepIndex) {
   }
 }
 
+function colorCode(code) {
+  return buddy.tokenize(code).map((t) => (t.cls ? `<span class="tok ${t.cls}">${escapeHtml(t.text)}</span>` : escapeHtml(t.text))).join("");
+}
 function escapeHtml(s) {
-  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-function openLesson(index) {
-  lessonIndex = Math.max(0, Math.min(LESSONS.length - 1, index));
-  progress.current = lessonIndex;
+// ---------- 5. Opening a lesson / practice / quiz ----------
+
+function open(target) {
+  lessonIndex = Math.max(0, Math.min(LESSONS.length - 1, target.lessonIndex));
+  stage = target.stage;
   saveProgress();
   clearOutput();
   clearErrorLine();
-  renderLessonHeader();
-  tutor.start(lessonIndex);
-  // slide-in animation for the panel and a soft flash on the editor
-  replayClass(document.querySelector(".lesson"), "swap-in");
-  replayClass(document.querySelector(".editor-card"), "swap-in");
   nextBtn.classList.remove("shake");
-  editor.focus();
+  closeSidebar();
+
+  const showQuiz = stage === "quiz";
+  editorCard.hidden = showQuiz; outputCard.hidden = showQuiz; quizCard.hidden = !showQuiz;
+
+  renderHeader();
+  if (stage === "lesson") tutor.start(lesson());
+  else if (stage === "practice") tutor.startPractice(lesson());
+  else quiz.start(module_(), () => finishStage());
+
+  replayClass(document.querySelector(".lesson"), "swap-in");
+  replayClass(showQuiz ? quizCard : editorCard, "swap-in");
+  renderSidebar();
+  if (!showQuiz) editor.focus();
+  sfx.pop();
 }
 
-// The first time someone opens the app: a quick spotlight tour
-function firstVisitTour() {
-  tour.run([
-    { target: "#steps", title: "Your lesson", text: "Each row is one line of code you'll type. They turn green as you go.", place: "right" },
-    { target: ".editor-wrap", title: "Type here", text: "The editor starts empty on purpose: you write every line yourself.", place: "left" },
-    { target: "#buddy-float", title: "Meet your buddy", text: "He explains each piece as you type it. Click him if you're ever stuck.", place: "left" },
-    { target: "#run-btn", title: "Run your code", text: "Press Run (or Ctrl+Enter) to see what your program does.", place: "bottom" },
-    { target: "#voice-btn", title: "Want him to talk?", text: "Turn on Voice and he'll read everything out loud.", place: "bottom" },
-  ], () => { progress.toured = true; saveProgress(); editor.focus(); });
+// Something was finished (output matched, or quiz done)
+function finishStage() {
+  const first = !progress.done[doneId()];
+  progress.done[doneId()] = true;
+  if (stage === "lesson" && first) progress.lessonsFinished = (progress.lessonsFinished || 0) + 1;
+  saveProgress();
+  renderHeader();
+  renderSidebar();
+  showBanner(stage === "lesson" ? "Lesson complete!" : stage === "practice" ? "Practice complete!" : "Quiz finished!",
+             stage === "quiz" ? "On to the next module" : nextTarget()?.label.replace(" ▶", "") || "");
+  if (stage !== "quiz") { fx.confetti(); sfx.levelUp(); replayClass(outputCard, "success-flash"); }
+  if (nextBtn.disabled) return;
+  if (stage === "lesson" && progress.lessonsFinished === 1) {
+    // their very first finished lesson: a game-style spotlight on Next
+    setTimeout(() => tour.run([{
+      target: "#next-btn", place: "top", waitForClick: true,
+      title: "Lesson complete! 🎉", text: "Now try the <strong>Practice</strong>: same idea, no hand-holding.",
+    }]), 2200);
+  } else {
+    nextBtn.classList.add("shake");
+  }
+}
+
+function showBanner(title, sub) {
+  const b = $("banner");
+  $("banner-title").textContent = title;
+  $("banner-sub").textContent = sub;
+  b.hidden = false;
+  replayClass(b, "show");
+  clearTimeout(showBanner.t);
+  showBanner.t = setTimeout(() => { b.hidden = true; }, 2600);
 }
 
 // Remove-and-re-add a class so its CSS animation plays again
@@ -115,7 +208,48 @@ function replayClass(el, cls) {
   el.classList.add(cls);
 }
 
-// ---------- 4. Wire the tutor to the page ----------
+// ---------- 6. Sidebar ----------
+
+const sidebar = $("sidebar"), backdrop = $("sidebar-backdrop");
+function renderSidebar() {
+  const list = $("sidebar-list");
+  list.innerHTML = MODULES.map((m, mi) => `
+    <div class="sb-module">
+      <div class="sb-module-title"><span class="sb-num">${mi + 1}</span>${m.title}<span class="sb-blurb">${m.blurb}</span></div>
+      ${m.lessons.map((l, li) => {
+        const idx = LESSONS.findIndex((x) => x.id === l.id);
+        const cur = idx === lessonIndex && stage !== "quiz";
+        return `<button class="sb-lesson ${cur ? "current" : ""}" data-idx="${idx}" type="button">
+          <span class="sb-lnum">${mi + 1}.${li + 1}</span>
+          <span class="sb-ltitle">${l.title}</span>
+          <span class="sb-marks">
+            <span class="sb-mark ${isDone(l.id) ? "on" : ""}" title="Lesson">L</span>
+            <span class="sb-mark ${isDone(l.id + "-practice") ? "on" : ""}" title="Practice">P</span>
+          </span></button>`;
+      }).join("")}
+      <button class="sb-lesson sb-quiz ${lessonIndex === LESSONS.findIndex((x) => x.id === m.lessons[m.lessons.length - 1].id) && stage === "quiz" ? "current" : ""}" data-quiz="${mi}" type="button">
+        <span class="sb-lnum">★</span><span class="sb-ltitle">Module ${mi + 1} quiz</span>
+        <span class="sb-marks"><span class="sb-mark ${isDone(m.id + "-quiz") ? "on" : ""}">Q</span></span></button>
+    </div>`).join("");
+  list.querySelectorAll(".sb-lesson[data-idx]").forEach((b) => b.addEventListener("click", () => open({ lessonIndex: +b.dataset.idx, stage: "lesson" })));
+  list.querySelectorAll(".sb-lesson[data-quiz]").forEach((b) => b.addEventListener("click", () => {
+    const m = MODULES[+b.dataset.quiz];
+    open({ lessonIndex: LESSONS.findIndex((x) => x.id === m.lessons[m.lessons.length - 1].id), stage: "quiz" });
+  }));
+}
+function openSidebar() { sidebar.classList.add("open"); sidebar.setAttribute("aria-hidden", "false"); backdrop.hidden = false; sfx.pop(); }
+function closeSidebar() { sidebar.classList.remove("open"); sidebar.setAttribute("aria-hidden", "true"); backdrop.hidden = true; }
+$("menu-btn").addEventListener("click", () => (sidebar.classList.contains("open") ? closeSidebar() : openSidebar()));
+$("sidebar-close").addEventListener("click", closeSidebar);
+backdrop.addEventListener("click", closeSidebar);
+$("reset-btn-all").addEventListener("click", () => {
+  progress = { done: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0 };
+  saveProgress(); open({ lessonIndex: 0, stage: "lesson" });
+});
+$("redo-tour-btn").addEventListener("click", () => { closeSidebar(); firstVisitTour(); });
+$("tour-btn").addEventListener("click", firstVisitTour);
+
+// ---------- 7. Wire the tutor to the page ----------
 
 let activeLineHandle = null;   // the softly highlighted "you are here" line
 
@@ -123,23 +257,25 @@ tutor.ui.getCode = () => editor.getValue();
 tutor.ui.getCursorLine = () => editor.getCursor().line;
 tutor.ui.setCode = (text) => editor.setValue(text);
 tutor.ui.renderSteps = renderSteps;
-tutor.ui.unlockNext = (lessonId) => {
-  if (!progress.completed.includes(lessonId)) progress.completed.push(lessonId);
-  saveProgress();
-  renderLessonHeader();
-  fx.confetti();
-  replayClass(document.querySelector(".output-card"), "success-flash");
-  if (nextBtn.disabled) return;
-  if (progress.completed.length === 1) {
-    // their very first finished lesson: a game-style spotlight on Next
-    setTimeout(() => tour.run([{
-      target: "#next-btn", place: "top", waitForClick: true,
-      title: "Lesson complete! 🎉",
-      text: "Click <strong>Next lesson</strong> to keep going.",
-    }]), 1800);
-  } else {
-    nextBtn.classList.add("shake");
+tutor.ui.stuckTag = (show) => { stuckTag.hidden = !show; if (show) sfx.pop(); };
+tutor.ui.onPartDone = () => sfx.tick();
+tutor.ui.onMistake = () => sfx.error();
+tutor.ui.onComplete = () => finishStage();
+tutor.ui.markLine = (lineNumber) => {
+  if (activeLineHandle) editor.removeLineClass(activeLineHandle, "background", "active-line");
+  activeLineHandle = null;
+  if (lineNumber !== null && lineNumber !== undefined && lineNumber < editor.lineCount()) {
+    activeLineHandle = editor.addLineClass(lineNumber, "background", "active-line");
+    floatBuddyToLine(lineNumber);
   }
+};
+// A line was finished: flash it green and pop sparkles at its end
+tutor.ui.onStepDone = (lineNumber) => {
+  sfx.success();
+  const handle = editor.addLineClass(lineNumber, "background", "done-line");
+  setTimeout(() => editor.removeLineClass(handle, "background", "done-line"), 900);
+  const end = editor.charCoords({ line: lineNumber, ch: editor.getLine(lineNumber).length }, "page");
+  fx.burst(end.right + 10, (end.top + end.bottom) / 2 - window.scrollY);
 };
 
 // Ghost letters: gray text after the cursor showing what's left to type.
@@ -147,7 +283,7 @@ tutor.ui.unlockNext = (lessonId) => {
 let ghostMark = null;
 tutor.ui.ghost = (lineNumber, text) => {
   if (ghostMark) { ghostMark.clear(); ghostMark = null; }
-  if (lineNumber === undefined || !text) return;
+  if (lineNumber === undefined || !text || lineNumber >= editor.lineCount()) return;
   const span = document.createElement("span");
   span.className = "ghost";
   span.textContent = text;
@@ -161,71 +297,49 @@ tutor.ui.markWrong = (lineNumber, fromCh, toCh) => {
   if (lineNumber === undefined || fromCh === null || fromCh === undefined) return;
   wrongMark = editor.markText({ line: lineNumber, ch: fromCh }, { line: lineNumber, ch: Math.max(fromCh + 1, toCh) }, { className: "wrong-char" });
 };
-// A line was finished: flash it green and pop sparkles at its end
-tutor.ui.onStepDone = (lineNumber) => {
-  const handle = editor.addLineClass(lineNumber, "background", "done-line");
-  setTimeout(() => editor.removeLineClass(handle, "background", "done-line"), 900);
-  const end = editor.charCoords({ line: lineNumber, ch: editor.getLine(lineNumber).length }, "page");
-  fx.burst(end.right + 10, (end.top + end.bottom) / 2 - window.scrollY);
-};
-// Point the buddy at a line: highlight it and float next to it
-tutor.ui.markLine = (lineNumber) => {
-  if (activeLineHandle) editor.removeLineClass(activeLineHandle, "background", "active-line");
-  activeLineHandle = null;
-  if (lineNumber !== null && lineNumber < editor.lineCount()) {
-    activeLineHandle = editor.addLineClass(lineNumber, "background", "active-line");
-    floatBuddyToLine(lineNumber);
-  }
-};
 
-// ---------- 5. The floating buddy ----------
+// ---------- 8. The floating buddy ----------
 
-// Put the buddy level with a line of code. CodeMirror tells us where the
-// line is on the page; we convert that to a position inside the editor box.
+let lastFloatY = 8;
 function floatBuddyToLine(lineNumber) {
   const coords = editor.charCoords({ line: lineNumber, ch: 0 }, "page");
   const box = editorWrap.getBoundingClientRect();
   const lineCenter = (coords.top + coords.bottom) / 2 - box.top;
-  const floatEl = document.getElementById("buddy-float");
+  const floatEl = $("buddy-float");
   const half = floatEl.offsetHeight / 2 || 60;
   const y = Math.max(8, Math.min(box.height - half * 2 - 8, lineCenter - half));
+  if (Math.abs(y - lastFloatY) > 30) {
+    // a little sparkle trail when he glides a good distance
+    const r = $("buddy").getBoundingClientRect();
+    fx.burst(r.left + r.width / 2, r.top + r.height / 2, 6);
+  }
+  lastFloatY = y;
   buddy.floatTo(y);
 }
-
-// Follow the cursor wherever the learner goes
 editor.on("cursorActivity", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("scroll", () => floatBuddyToLine(editor.getCursor().line));
-editor.on("change", () => {
-  clearErrorLine();
-  tutor.onChange();
-});
+editor.on("change", () => { clearErrorLine(); tutor.onChange(); });
+buddy.onClick(() => { sfx.click(); tutor.hint(); editor.focus(); });
 
-// ---------- 6. Running code safely ----------
+// ---------- 9. Running code safely ----------
 
-let worker = null;          // the sandbox that runs Python
-let pythonReady = false;    // true once Pyodide has loaded inside the worker
-let timer = null;           // the countdown that catches infinite loops
-let errorLineHandle = null; // the editor line we highlighted red, if any
-let outputLines = [];       // everything the program printed this run
+let worker = null, pythonReady = false, timer = null, errorLineHandle = null, outputLines = [], running = false;
 
 function startWorker() {
   pythonReady = false;
   runBtn.disabled = true;
   setStatus("running", "Loading Python…");
-
-  // type: "module" lets runner.js use import(), which Pyodide needs.
   worker = new Worker(`runner.js?v=${BUILD}`, { type: "module" });
 
   worker.onmessage = (event) => {
     const { type, text, line } = event.data;
-
     if (type === "ready") {
       pythonReady = true;
       runBtn.disabled = false;
       setStatus("", "");
-      document.querySelector(".editor-card").classList.remove("loading");
+      editorCard.classList.remove("loading");
       if (!tutor.current.lesson) {
-        openLesson(progress.current || 0);
+        open({ lessonIndex: progress.lessonIndex || 0, stage: progress.stage || "lesson" });
         if (!progress.toured) firstVisitTour();
       }
     } else if (type === "log") {
@@ -237,11 +351,9 @@ function startWorker() {
       markErrorLine(line);
       setStatus("bad", "Error");
       finishRun();
-      buddy.set("pointing");
-      replayClass(document.querySelector(".output-card"), "error-shake");
-      buddy.say(line
-        ? `Python stopped on line ${line}.\nThe red text says why:\n\`${text}\``
-        : `Python stopped.\nThe red text says why:\n\`${text}\``);
+      sfx.error();
+      replayClass(outputCard, "error-shake");
+      buddy.say(`# Python stopped${line ? ` on line ${line}` : ""}\n\`${text}\`\n# Tip\nRead the last line of an *error* first: it names the problem.`, "pointing");
     } else if (type === "done") {
       if (outputLines.length === 0) appendOutput("(your program ran, but it didn't print anything)");
       setStatus("ok", "Ran successfully");
@@ -249,7 +361,6 @@ function startWorker() {
       tutor.onRun({ ok: true, output: outputLines.join("\n") });
     }
   };
-
   worker.onerror = (event) => {
     appendOutput(event.message || "Unknown error", true);
     setStatus("bad", "Error");
@@ -257,38 +368,35 @@ function startWorker() {
   };
 }
 
-let running = false;        // true while a run is in flight (blocks double-runs)
-
 function runCode() {
-  if (!pythonReady || running) return;   // ignore a second click mid-run
+  if (!pythonReady || running || stage === "quiz") return;   // ignore a second click mid-run
   running = true;
   if (timer) { clearTimeout(timer); timer = null; }
   buddy.finishTyping();
   const code = editor.getValue();
+  const inputs = stage === "practice" ? (lesson().practice.inputs || []) : (lesson().inputs || []);
 
   clearOutput();
-  document.querySelector(".output-card").classList.add("is-running");
   clearErrorLine();
+  outputCard.classList.add("is-running");
   setStatus("running", "Running…");
   buddy.set("thinking");
-  buddy.say("Running your code…");
+  buddy.say("# Running\nLet's see what it does…");
   runBtn.disabled = true;
   replayClass(runBtn, "pressed");
+  sfx.run();
 
-  worker.postMessage({ code });
+  worker.postMessage({ code, inputs });
 
   // Safety net: if we hear nothing for 3 seconds, assume an infinite loop.
-  // The only way to stop a stuck worker is to kill it, so we do that and
-  // start a fresh one (which means reloading Python).
   timer = setTimeout(() => {
     appendOutput("Stopped: your code ran for too long. Is there a loop that never ends?", true);
     setStatus("bad", "Timed out");
     buddy.set("thinking");
-    buddy.say("Your program never finished, so I stopped it. Check your loops! Reloading Python…");
+    buddy.say("# Infinite loop!\nYour program never finished, so I stopped it.\nDoes something inside the loop change?\nReloading Python…");
     worker.terminate();
-    timer = null;
-    running = false;
-    document.querySelector(".output-card").classList.remove("is-running");
+    timer = null; running = false;
+    outputCard.classList.remove("is-running");
     startWorker();
   }, TIME_LIMIT_MS);
 }
@@ -297,72 +405,42 @@ function finishRun() {
   if (timer) { clearTimeout(timer); timer = null; }
   running = false;
   runBtn.disabled = false;
-  document.querySelector(".output-card").classList.remove("is-running");
+  outputCard.classList.remove("is-running");
 }
 
-// ---------- 7. Small helpers for the UI ----------
+// ---------- 10. Small helpers for the UI ----------
 
 function clearOutput() {
   outputLines = [];
   outputEl.innerHTML = '<span class="output-hint">Press Run to see what your code does.</span>';
   setStatus("", "");
 }
-
 function appendOutput(text, isError = false) {
-  if (outputLines.length === 0) outputEl.textContent = "";
+  if (outputLines.length === 0 && !outputEl.querySelector(".err")) outputEl.textContent = "";
   if (!isError) outputLines.push(text);
   const line = document.createElement("div");
   line.textContent = text;
-  if (isError) line.classList.add("err");
+  line.className = isError ? "err out-line" : "out-line";
+  line.style.animationDelay = `${Math.min(outputEl.children.length, 12) * 40}ms`;
   outputEl.appendChild(line);
 }
-
-function setStatus(kind, text) {
-  statusEl.className = "status " + kind;
-  statusEl.textContent = text;
-}
-
+function setStatus(kind, text) { statusEl.className = "status " + kind; statusEl.textContent = text; }
 function markErrorLine(line) {
   if (!line) return;
   errorLineHandle = editor.addLineClass(line - 1, "background", "error-line");
   floatBuddyToLine(line - 1);
 }
-
 function clearErrorLine() {
-  if (errorLineHandle) {
-    editor.removeLineClass(errorLineHandle, "background", "error-line");
-    errorLineHandle = null;
-  }
+  if (errorLineHandle) { editor.removeLineClass(errorLineHandle, "background", "error-line"); errorLineHandle = null; }
 }
 
-// ---------- 8. Clicking the buddy: stuck or got this ----------
-
-const buddyMenu = document.getElementById("buddy-menu");
-buddy.onClick(() => {
-  if (tutor.current.complete) return;
-  buddyMenu.hidden = !buddyMenu.hidden;
-  buddy.set("thinking");
-});
-document.getElementById("stuck-btn").addEventListener("click", () => {
-  buddyMenu.hidden = true;
-  tutor.stuck();
-  editor.focus();
-});
-document.getElementById("gotit-btn").addEventListener("click", () => {
-  buddyMenu.hidden = true;
-  tutor.gotThis();
-  editor.focus();
-});
-editor.on("change", () => { buddyMenu.hidden = true; });
-
-// ---------- 9. Buttons ----------
+// ---------- 11. Buttons ----------
 
 runBtn.addEventListener("click", runCode);
-resetBtn.addEventListener("click", () => openLesson(lessonIndex));
-prevBtn.addEventListener("click", () => openLesson(lessonIndex - 1));
-nextBtn.addEventListener("click", () => { nextBtn.classList.remove("shake"); openLesson(lessonIndex + 1); });
+resetBtn.addEventListener("click", () => open({ lessonIndex, stage }));
+prevBtn.addEventListener("click", () => { const t = prevTarget(); if (t) open(t); });
+nextBtn.addEventListener("click", () => { const t = nextTarget(); if (t) open(t); });
 
-const voicePick = document.getElementById("voice-pick");
 function fillVoices() {
   const list = voice.voices();
   voicePick.innerHTML = list.map((v) => `<option value="${v.name}" ${voice.chosen && v.name === voice.chosen.name ? "selected" : ""}>${v.name.replace(/^Microsoft |^Google /, "")}</option>`).join("");
@@ -377,59 +455,72 @@ voiceBtn.addEventListener("click", () => {
 voicePick.addEventListener("change", () => { voice.choose(voicePick.value); voice.speak("How's this voice?"); });
 if ("speechSynthesis" in window) window.speechSynthesis.addEventListener("voiceschanged", () => { if (!voicePick.hidden) fillVoices(); });
 
-// Click ripple on every button
+function renderSoundBtn() {
+  soundBtn.textContent = sfx.on ? "🔔 Sound" : "🔕 Muted";
+  soundBtn.setAttribute("aria-pressed", String(sfx.on));
+}
+soundBtn.addEventListener("click", () => { sfx.toggle(); renderSoundBtn(); });
+renderSoundBtn();
+
+// Click sound + ripple on every button
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".btn");
-  if (btn && !btn.disabled) fx.ripple(btn, e);
+  const btn = e.target.closest(".btn, .quiz-choice, .sb-lesson, .steps li");
+  if (btn && !btn.disabled) { fx.ripple(btn, e); if (!btn.classList.contains("quiz-choice")) sfx.click(); }
 });
 
 // Ctrl+Enter (or Cmd+Enter on Mac) runs the code
 editor.setOption("extraKeys", { "Ctrl-Enter": runCode, "Cmd-Enter": runCode });
+window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSidebar(); });
 
-// ---------- 9. Go ----------
+// ---------- 12. The tutorial ----------
 
-renderLessonHeader();
-document.querySelector(".editor-card").classList.add("loading");
-buddy.say("Give me a sec,\nI'm waking up Python…");
-buddy.set("thinking");
+function firstVisitTour() {
+  closeSidebar();
+  if (stage === "quiz") open({ lessonIndex, stage: "lesson" });
+  tour.run([
+    { target: "#menu-btn", title: "All the lessons", text: "This menu lists every module and lesson. Jump anywhere, see what you've finished.", place: "bottom" },
+    { target: "#steps", title: "Your lesson", text: "Each row is one line of code you'll type. Click a row to hear it explained again.", place: "right" },
+    { target: ".editor-wrap", title: "Type here", text: "<span class='ghost-demo'>Gray letters</span> show exactly what to type next. Type over them and they turn real. A red underline means a typo.", place: "left" },
+    { target: "#buddy", title: "Meet your buddy", text: "He explains each piece as you type it. <strong>Click him</strong> whenever you're stuck. In practice you get 3 hints.", place: "left" },
+    { target: "#run-btn", title: "Run your code", text: "Press Run (or Ctrl+Enter) to see what your program does.", place: "bottom" },
+    { target: "#next-btn", title: "Lesson → Practice → Quiz", text: "Finish a lesson, then prove it in a Practice. Each module ends with a short quiz.", place: "top" },
+    { target: "#sound-btn", title: "Sound and voice", text: "Mute the sound effects here, or turn on Voice and he'll read everything out loud.", place: "bottom" },
+    { target: "#tour-btn", title: "See this again", text: "Click Tutorial any time to replay this walkthrough.", place: "bottom" },
+  ], () => { progress.toured = true; saveProgress(); editor.focus(); });
+}
+
+// ---------- 13. Go ----------
+
+renderHeader();
+renderSidebar();
+editorCard.classList.add("loading");
+buddy.say("# One sec\nI'm waking up Python…", "thinking");
 startWorker(); // the lesson opens once Python is ready (see "ready" above)
 window.addEventListener("resize", () => floatBuddyToLine(editor.getCursor().line));
 
 // Dev helper: add ?debug to the URL to get buddy state buttons + "show all 5"
 if (location.search.includes("debug")) {
-  const bar = document.getElementById("buddy-debug");
+  const bar = $("buddy-debug");
   bar.hidden = false;
   for (const state of ["idle", "thinking", "happy", "pointing", "celebrate"]) {
-    const b = document.createElement("button");
-    b.textContent = state;
-    b.onclick = () => buddy.set(state);
-    bar.appendChild(b);
+    const b = document.createElement("button"); b.textContent = state; b.onclick = () => buddy.set(state); bar.appendChild(b);
   }
   const all = document.createElement("button");
   all.textContent = "show all 5";
   all.onclick = () => {
-    let strip = document.getElementById("buddy-strip");
+    let strip = $("buddy-strip");
     if (strip) { strip.remove(); return; }
-    strip = document.createElement("div");
-    strip.id = "buddy-strip";
-    strip.className = "buddy-strip";
+    strip = document.createElement("div"); strip.id = "buddy-strip"; strip.className = "buddy-strip";
     for (const state of ["idle", "thinking", "happy", "pointing", "celebrate"]) {
-      const cell = document.createElement("div");
-      cell.className = "buddy-strip-cell";
-      const copy = document.createElement("div");
-      buddy.mount(copy, state);
-      cell.appendChild(copy);
-      cell.insertAdjacentHTML("beforeend", `<span>${state}</span>`);
-      strip.appendChild(cell);
+      const cell = document.createElement("div"); cell.className = "buddy-strip-cell";
+      const copy = document.createElement("div"); buddy.mount(copy, state); cell.appendChild(copy);
+      cell.insertAdjacentHTML("beforeend", `<span>${state}</span>`); strip.appendChild(cell);
     }
     document.body.appendChild(strip);
     const replay = setInterval(() => {
       if (!document.body.contains(strip)) return clearInterval(replay);
       for (const host of strip.querySelectorAll('.buddy[data-state="happy"], .buddy[data-state="celebrate"]')) {
-        const state = host.getAttribute("data-state");
-        host.removeAttribute("data-state");
-        void host.offsetWidth;
-        host.setAttribute("data-state", state);
+        const state = host.getAttribute("data-state"); host.removeAttribute("data-state"); void host.offsetWidth; host.setAttribute("data-state", state);
       }
     }, 3000);
   };
