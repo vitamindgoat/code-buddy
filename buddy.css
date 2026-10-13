@@ -274,18 +274,11 @@
 .buddy { pointer-events: auto; cursor: pointer; transition: filter 0.2s ease; }
 .buddy:hover { filter: drop-shadow(0 4px 10px rgba(30, 111, 217, 0.35)); }
 
-/* "Stuck?" callout under the bubble, pointing at the buddy */
-.stuck-tag {
-  pointer-events: none;
-  background: #fff4d6; color: #9a5b00;
-  border: 2px solid #ffd77a;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 13px; font-weight: 800;
-  animation: pop 0.3s ease-out, nudge 1.2s ease-in-out 0.3s infinite;
-}
+/* "Stuck?" callout under the bubble, pointing at the buddy (see .callout
+   in styles.css for the shared look) */
+.buddy-col { position: relative; flex: none; }
+.stuck-tag { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); margin-top: 2px; pointer-events: none; }
 .stuck-tag[hidden] { display: none; }
-@keyframes nudge { 50% { transform: translateX(4px); } }
 
 /* A chip stays invisible until its first letter is typed */
 .speech .chip:not(:has(.ch.on)) { opacity: 0; }
