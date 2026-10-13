@@ -53,9 +53,9 @@ const read = (() => {
       </div>
       <div class="read-foot">
         <button class="btn btn-ghost read-prev" type="button" ${index === 0 ? "disabled" : ""}>◀ Back</button>
+        <div class="read-buddy"><div id="read-buddy-host"></div></div>
         <button class="btn btn-primary read-next" type="button" ${c.check ? "disabled" : ""}>${last ? "Finish ✓" : "Continue ▶"}</button>
-      </div>
-      <div class="read-buddy"><div id="read-buddy-host"></div></div>`;
+      </div>`;
 
     buddy.mount(card.querySelector("#read-buddy-host"), "idle");
     card.querySelector(".read-prev").addEventListener("click", () => { if (index > 0) { index--; render(); } });
