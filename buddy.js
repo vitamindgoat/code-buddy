@@ -160,7 +160,9 @@ const buddy = (() => {
   function paced() {
     if (revealed >= chars.length) return;        // wait for the voice to end
     chars[revealed++].classList.add("on");
-    typingTimer = setTimeout(paced, Math.round(SPEECH_MS_PER_CHAR / speed));
+    // keep step with how fast the voice is REALLY speaking (it tops out
+    // before the slider does, see voice.setRate)
+    typingTimer = setTimeout(paced, Math.round(SPEECH_MS_PER_CHAR / voice.rate));
   }
 
   const KEEP_CAPS = new Set(["CSP", "RLE", "API", "JPEG", "PNG", "URL", "HTML", "CSS"]);
@@ -301,12 +303,20 @@ const voice = (() => {
   let on = false;
   try { on = localStorage.getItem("codebuddy.voiceOn") === "on"; } catch {}
   let chosen = null;      // SpeechSynthesisVoice
-  let rate = 1;
+  let rate = 1;           // what we actually ask the engine for
+  let wanted = 1;         // the slider value
   // Browsers refuse to speak until the page has been clicked or typed in.
   // If the first message gets refused, say it again on the first click.
   let blockedText = null;
   document.addEventListener("pointerdown", () => { if (blockedText && on) { const t = blockedText; blockedText = null; speak(t); } }, true);
-  function setRate(r) { rate = r; }
+  // Above ~1.4 the Google voices stop forming words (the local Microsoft
+  // and Mac voices hold up a bit longer). Faster slider positions still
+  // make the text and pauses quicker; the voice itself eases toward a cap.
+  function setRate(r) {
+    wanted = r;
+    const cap = chosen && !/Google/i.test(chosen.name) ? 1.7 : 1.4;
+    rate = r <= 1 ? r : Math.min(cap, 1 + (r - 1) * (cap - 1));
+  }
   const PREFERRED = [
     /Google UK English Male/i,
     /Google US English/i,
@@ -327,6 +337,7 @@ const voice = (() => {
     chosen = list.find((v) => v.name === saved)
       || PREFERRED.map((re) => list.find((v) => re.test(v.name) || re.test(v.lang))).find(Boolean)
       || list[0] || null;
+    setRate(wanted);
   }
   if ("speechSynthesis" in window) {
     pickDefault();
@@ -393,8 +404,9 @@ const voice = (() => {
 
   function choose(name) {
     chosen = voices().find((v) => v.name === name) || chosen;
+    setRate(wanted);   // the cap depends on which voice
     try { localStorage.setItem("codebuddy.voice", name); } catch {}
   }
 
-  return { speak, stop, toggle, choose, voices, chunk, setRate, get on() { return on; }, get chosen() { return chosen; } };
+  return { speak, stop, toggle, choose, voices, chunk, setRate, get rate() { return rate; }, get on() { return on; }, get chosen() { return chosen; } };
 })();
