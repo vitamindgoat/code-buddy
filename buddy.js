@@ -147,6 +147,7 @@ const buddy = (() => {
       // the speech engine tells us where it is; we keep the text in step
       // (and re-anchor the pacing cursor to the voice's real position)
       onChunk: (from, to) => { revealTo(from); startPacing(from, to); },
+      onChunkEnd: (from, to) => { learnSpeed(to - from, performance.now() - pacedStart); revealTo(to); },
       onWord: (charIndex) => { revealTo(charIndex + 18); startPacing(charIndex + 18, pacedLimit); },
       onEnd: () => finishTyping(false),
     });
@@ -169,12 +170,21 @@ const buddy = (() => {
   // header lead-ins, "open paren" for a "(") just makes the cursor take
   // longer to reach the next visible character, so the text waits for the
   // voice instead of running ahead of it.
-  const SPEECH_MS_PER_CHAR = 80;   // ~12 characters a second at rate 1.0
+  // Speaking speed is measured from the voice itself: every finished
+  // sentence tells us how long it took, and that keeps the estimate honest
+  // for whichever voice the learner picked (it starts at ~12 chars/second).
+  let msPerChar = 80;              // at rate 1.0
+  const LOOKAHEAD = 6;             // show a few characters ahead, like subtitles
   let pacedStart = 0, pacedBase = 0, pacedLimit = Infinity;
   function startPacing(fromSpokenPos = 0, limit = Infinity) { pacedBase = fromSpokenPos; pacedStart = performance.now(); pacedLimit = limit; }
+  function learnSpeed(spokenChars, ms) {
+    if (spokenChars < 12 || ms < 200) return;
+    const measured = (ms * voice.rate) / spokenChars;
+    msPerChar = Math.max(40, Math.min(140, msPerChar * 0.5 + measured * 0.5));
+  }
   function paced() {
     if (revealed >= chars.length) return;        // wait for the voice to end
-    const pos = pacedBase + ((performance.now() - pacedStart) * voice.rate) / SPEECH_MS_PER_CHAR;
+    const pos = pacedBase + ((performance.now() - pacedStart) * voice.rate) / msPerChar + LOOKAHEAD;
     // never run past the sentence the voice is on: the next sentence's
     // start event moves the limit forward
     revealTo(Math.min(pos, pacedLimit));
@@ -438,7 +448,7 @@ const voice = (() => {
   }
 
   let generation = 0;
-  function speak(text, { onWord, onEnd, onChunk } = {}) {
+  function speak(text, { onWord, onEnd, onChunk, onChunkEnd } = {}) {
     if (!on || !("speechSynthesis" in window)) return false;
     window.speechSynthesis.cancel();
     const gen = ++generation;
@@ -459,7 +469,11 @@ const voice = (() => {
         if (e.error === "not-allowed") { blockedText = text; generation++; if (onEnd) onEnd(); return; }
         if (i === chunks.length - 1 && e.error !== "interrupted" && e.error !== "canceled" && onEnd) onEnd();
       };
-      if (i === chunks.length - 1) u.onend = () => { if (gen === generation && onEnd) onEnd(); };
+      u.onend = () => {
+        if (gen !== generation) return;
+        if (onChunkEnd) onChunkEnd(c.offset, c.offset + c.text.length);
+        if (i === chunks.length - 1 && onEnd) onEnd();
+      };
       window.speechSynthesis.speak(u);
     });
     return true;
