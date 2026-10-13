@@ -145,26 +145,35 @@ const buddy = (() => {
 
     const started = voice.speak(spoken, {
       // the speech engine tells us where it is; we keep the text in step
-      onWord: (charIndex) => revealTo(charIndex + 18),
+      // (and re-anchor the pacing cursor to the voice's real position)
+      onWord: (charIndex) => { revealTo(charIndex + 18); startPacing(charIndex + 18); },
       onEnd: () => finishTyping(false),
     });
     if (started) {
       // Some voices (Chrome's Google ones) never send word events, so we
       // also pace the reveal at roughly speaking speed. Word events, when
       // they do arrive, snap it forward. The voice's own "end" finishes it.
+      startPacing(0);
       paced();
     } else {
       tick();
     }
   }
 
+  // The reveal follows a cursor moving through the SPOKEN text at speaking
+  // speed, and each visible character appears when the cursor passes its
+  // spoken position. Spoken text that has no visible characters (the
+  // header lead-ins, "open paren" for a "(") just makes the cursor take
+  // longer to reach the next visible character, so the text waits for the
+  // voice instead of running ahead of it.
   const SPEECH_MS_PER_CHAR = 70;   // ~14 characters a second at rate 1.0
+  let pacedStart = 0, pacedBase = 0;
+  function startPacing(fromSpokenPos = 0) { pacedBase = fromSpokenPos; pacedStart = performance.now(); }
   function paced() {
     if (revealed >= chars.length) return;        // wait for the voice to end
-    chars[revealed++].classList.add("on");
-    // keep step with how fast the voice is REALLY speaking (it tops out
-    // before the slider does, see voice.setRate)
-    typingTimer = setTimeout(paced, Math.round(SPEECH_MS_PER_CHAR / voice.rate));
+    const pos = pacedBase + ((performance.now() - pacedStart) * voice.rate) / SPEECH_MS_PER_CHAR;
+    revealTo(pos);
+    typingTimer = setTimeout(paced, 40);
   }
 
   const KEEP_CAPS = new Set(["CSP", "RLE", "API", "JPEG", "PNG", "URL", "HTML", "CSS"]);

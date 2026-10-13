@@ -2,7 +2,7 @@
    read.js — interactive reading lessons
    Cards you click through: a picture, a short explanation, and now and
    then a check question you must answer to continue. The voice reads
-   each card out loud when it's on. A buddy sits beside the card.
+   each card out loud when it's on.
 
      read.start(lesson, onDone)
    Renders into #read-card; app.js shows/hides that card.
@@ -53,11 +53,9 @@ const read = (() => {
       </div>
       <div class="read-foot">
         <button class="btn btn-ghost read-prev" type="button" ${index === 0 ? "disabled" : ""}>◀ Back</button>
-        <div class="read-buddy"><div id="read-buddy-host"></div></div>
         <button class="btn btn-primary read-next" type="button" ${c.check ? "disabled" : ""}>${last ? "Finish ✓" : "Continue ▶"}</button>
       </div>`;
 
-    buddy.mount(card.querySelector("#read-buddy-host"), "idle");
     card.querySelector(".read-prev").addEventListener("click", () => { if (index > 0) { index--; render(); } });
     card.querySelector(".read-next").addEventListener("click", (e) => { e.currentTarget.disabled = true; index++; index < lesson.cards.length ? render() : finish(); });
     if (c.check) {
@@ -82,9 +80,7 @@ const read = (() => {
     if (answered) return;
     answered = true;
     const right = items[i].correct;
-    const host = card.querySelector("#read-buddy-host");
-    if (right) { sfx.success(); host.setAttribute("data-state", "happy"); }
-    else { sfx.error(); host.setAttribute("data-state", "thinking"); }
+    if (right) sfx.success(); else sfx.error();
     card.querySelectorAll(".quiz-choice").forEach((b, j) => {
       b.disabled = true;
       if (items[j].correct) b.classList.add("right"); else if (j === i) b.classList.add("wrong");

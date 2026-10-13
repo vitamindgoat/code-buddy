@@ -666,12 +666,7 @@ body { background: var(--bg); }
 .read-text .chip { font-family: var(--mono); font-size: 14px; background: #fff4d6; color: #9a5b00; border: 1.5px solid #ffd77a; border-radius: 8px; padding: 1px 6px; }
 .read-check { margin-top: 14px; padding: 14px; border-radius: 14px; background: #fffaf0; border: 1px solid #ffd77a; animation: rise 0.4s ease-out; }
 .read-check-q { font-weight: 800; color: #9a5b00; margin-bottom: 10px; }
-/* footer: Back on the left, Continue on the right, the buddy sitting
-   between them so he never covers a button */
 .read-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; }
-.read-buddy { flex: 1; display: flex; justify-content: center; }
-.read-buddy .buddy, .read-buddy .buddy .pose { width: 96px; }
-.read-buddy .buddy, .read-buddy .buddy * { pointer-events: none; cursor: default; }
 
 /* visuals */
 .vis-bits { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; align-items: flex-end; }
