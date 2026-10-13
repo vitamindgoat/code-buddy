@@ -208,12 +208,13 @@ if (location.search.includes("debug")) {
     strip = document.createElement("div");
     strip.id = "buddy-strip";
     strip.className = "buddy-strip";
-    const poses = document.getElementById("buddy").innerHTML; // the 5 loaded SVGs
-
     for (const state of ["idle", "thinking", "happy", "pointing", "celebrate"]) {
       const cell = document.createElement("div");
       cell.className = "buddy-strip-cell";
-      cell.innerHTML = `<div class="buddy" data-state="${state}">${poses}</div><span>${state}</span>`;
+      const copy = document.createElement("div");
+      buddy.mount(copy, state);                   // its own copy, its own ids
+      cell.appendChild(copy);
+      cell.insertAdjacentHTML("beforeend", `<span>${state}</span>`);
       strip.appendChild(cell);
     }
     document.body.appendChild(strip);
