@@ -146,14 +146,17 @@ const buddy = (() => {
     const started = voice.speak(spoken, {
       // the speech engine tells us where it is; we keep the text in step
       // (and re-anchor the pacing cursor to the voice's real position)
-      onWord: (charIndex) => { revealTo(charIndex + 18); startPacing(charIndex + 18); },
+      onChunk: (from, to) => { revealTo(from); startPacing(from, to); },
+      onWord: (charIndex) => { revealTo(charIndex + 18); startPacing(charIndex + 18, pacedLimit); },
       onEnd: () => finishTyping(false),
     });
     if (started) {
       // Some voices (Chrome's Google ones) never send word events, so we
-      // also pace the reveal at roughly speaking speed. Word events, when
-      // they do arrive, snap it forward. The voice's own "end" finishes it.
-      startPacing(0);
+      // also pace the reveal at roughly speaking speed, sentence by
+      // sentence: each sentence's start event re-anchors the cursor and the
+      // text can't run past that sentence until the next one begins. The
+      // voice's own "end" finishes it.
+      startPacing(0, 0);       // nothing shows until the voice actually starts
       paced();
     } else {
       tick();
@@ -166,13 +169,15 @@ const buddy = (() => {
   // header lead-ins, "open paren" for a "(") just makes the cursor take
   // longer to reach the next visible character, so the text waits for the
   // voice instead of running ahead of it.
-  const SPEECH_MS_PER_CHAR = 70;   // ~14 characters a second at rate 1.0
-  let pacedStart = 0, pacedBase = 0;
-  function startPacing(fromSpokenPos = 0) { pacedBase = fromSpokenPos; pacedStart = performance.now(); }
+  const SPEECH_MS_PER_CHAR = 80;   // ~12 characters a second at rate 1.0
+  let pacedStart = 0, pacedBase = 0, pacedLimit = Infinity;
+  function startPacing(fromSpokenPos = 0, limit = Infinity) { pacedBase = fromSpokenPos; pacedStart = performance.now(); pacedLimit = limit; }
   function paced() {
     if (revealed >= chars.length) return;        // wait for the voice to end
     const pos = pacedBase + ((performance.now() - pacedStart) * voice.rate) / SPEECH_MS_PER_CHAR;
-    revealTo(pos);
+    // never run past the sentence the voice is on: the next sentence's
+    // start event moves the limit forward
+    revealTo(Math.min(pos, pacedLimit));
     typingTimer = setTimeout(paced, 40);
   }
 
@@ -433,7 +438,7 @@ const voice = (() => {
   }
 
   let generation = 0;
-  function speak(text, { onWord, onEnd } = {}) {
+  function speak(text, { onWord, onEnd, onChunk } = {}) {
     if (!on || !("speechSynthesis" in window)) return false;
     window.speechSynthesis.cancel();
     const gen = ++generation;
@@ -445,6 +450,9 @@ const voice = (() => {
       if (chosen) u.voice = chosen;
       u.rate = rate;
       u.pitch = 1.05;
+      // every voice fires start/end per sentence, even the ones that never
+      // report word positions: that's what keeps the text in step
+      u.onstart = () => { if (gen === generation && onChunk) onChunk(c.offset, c.offset + c.text.length); };
       u.onboundary = (e) => { if (gen === generation && e.name === "word" && onWord) onWord(c.offset + e.charIndex); };
       u.onerror = (e) => {
         if (gen !== generation) return;

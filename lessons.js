@@ -881,6 +881,18 @@ const MODULES = [
   },
 ];
 
+// Order inside a module: every module opens with a CODING lesson (nobody's
+// first lesson should be a reading), and each reading comes right after
+// the coding lesson on the same topic, as a deeper dive.
+for (const m of MODULES) {
+  const ordered = [], waiting = [];
+  for (const l of m.lessons) {
+    if (l.type === "read") waiting.push(l);
+    else { ordered.push(l); ordered.push(...waiting.splice(0)); }
+  }
+  m.lessons = [...ordered, ...waiting];
+}
+
 // Flat list of lessons, with module info attached, for navigation
 const LESSONS = MODULES.flatMap((m, mi) =>
   m.lessons.map((l, li) => ({ ...l, moduleId: m.id, moduleIndex: mi, lessonIndex: li, number: `${mi + 1}.${li + 1}` }))
