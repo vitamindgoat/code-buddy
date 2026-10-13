@@ -532,7 +532,7 @@ body { background: var(--bg); }
 .quiz-label { font-size: 12px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: #7c3aed; }
 .quiz-count { font-weight: 800; color: var(--ink-soft); }
 .quiz-progress { height: 6px; background: #f3e8ff; border-radius: 999px; overflow: hidden; margin-bottom: 18px; }
-.quiz-progress div { height: 100%; background: linear-gradient(90deg, #c4b5fd, #7c3aed); transition: width 0.4s ease; }
+.quiz-progress div { height: 100%; background: #7c3aed; transition: width 0.4s ease; }
 .quiz-q { font-size: 22px; margin: 0 0 16px; color: var(--blue-ink); white-space: pre-wrap; font-family: inherit; }
 .quiz-choices { display: grid; gap: 10px; }
 .quiz-choice {
