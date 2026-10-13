@@ -502,13 +502,15 @@ function fillVoices() {
   const list = voice.voices();
   voicePick.innerHTML = list.map((v) => `<option value="${v.name}" ${voice.chosen && v.name === voice.chosen.name ? "selected" : ""}>${v.name.replace(/^Microsoft |^Google /, "")}</option>`).join("");
 }
-voiceBtn.addEventListener("click", () => {
-  const on = voice.toggle();
+function setVoice(on, { greet = true } = {}) {
+  if (voice.on !== on) voice.toggle();
   voiceBtn.textContent = on ? "🔊 Voice on" : "🔇 Voice off";
   voiceBtn.setAttribute("aria-pressed", String(on));
   voicePick.hidden = !on;
-  if (on) { fillVoices(); voice.speak("Hi! I'm your coding buddy."); }
-});
+  $("set-voice").checked = on;
+  if (on) { fillVoices(); if (greet) voice.speak("Hi! I'm your coding buddy."); }
+}
+voiceBtn.addEventListener("click", () => setVoice(!voice.on));
 voicePick.addEventListener("change", () => { voice.choose(voicePick.value); voice.speak("How's this voice?"); });
 if ("speechSynthesis" in window) window.speechSynthesis.addEventListener("voiceschanged", () => { if (!voicePick.hidden) fillVoices(); });
 
@@ -592,11 +594,15 @@ $("set-ghost").addEventListener("change", (e) => { settings.ghost = e.target.val
 $("set-size").addEventListener("change", (e) => { settings.textSize = e.target.value; applySettings(); });
 $("set-motion").addEventListener("change", (e) => { settings.motion = e.target.checked ? "on" : "off"; applySettings(); });
 $("set-sound").addEventListener("change", () => { sfx.toggle(); renderSoundBtn(); });
-$("set-voice").addEventListener("change", () => { voiceBtn.click(); });
+$("set-voice").addEventListener("change", (e) => setVoice(e.target.checked));
 $("set-voicepick").addEventListener("change", (e) => { voice.choose(e.target.value); voicePick.value = e.target.value; voice.speak("How's this voice?"); });
 $("set-tour").addEventListener("click", () => { closeSettings(); firstVisitTour(); });
 $("set-reset").addEventListener("click", () => { closeSettings(); $("reset-btn-all").click(); });
-$("set-test").addEventListener("click", () => buddy.say("# Testing\nThis is how fast I talk.\nYou can change it any time.", "happy"));
+$("set-test").addEventListener("click", () => {
+  // testing the voice means you want to hear it: switch it on if it's off
+  if (!voice.on) setVoice(true, { greet: false });
+  buddy.say("# Testing\nThis is how fast I talk.\nYou can change it any time.", "happy");
+});
 
 // ---------- 13. The tutorial ----------
 
