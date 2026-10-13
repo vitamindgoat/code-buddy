@@ -64,9 +64,11 @@ const read = (() => {
     }
     card.classList.remove("swap-in"); void card.offsetWidth; card.classList.add("swap-in");
     sfx.pop();
-    // read it out loud (labels and the check options aren't spoken)
+    // the voice says one short key line per card (the check question on a
+    // check card), not the whole text: reading is the learner's job
     voice.stop();
-    voice.speak(`${c.title}. ${c.text.replace(/[*`]/g, "")}${c.check ? ` ${c.check.q}` : ""}`);
+    const line = c.check ? c.check.q : c.say;
+    if (line) voice.speak(line.replace(/[*`]/g, ""));
   }
 
   function shuffle(check) {
