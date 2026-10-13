@@ -249,7 +249,6 @@ const buddy = (() => {
     [/^(type|now type|next|input)$/i, ""],       // the body line already says it
     [/^goal$/i, "Here's your goal for this practice."],
     [/^stuck\?$/i, "If you get stuck,"],
-    [/^what now\?$/i, "So, what now?"],
     [/^hint (\d) of 3$/i, (m) => `Here's hint ${m[1]}.`],
     [/^hint$/i, "Here's a hint."],
     [/^no hints left$/i, "No hints left."],
