@@ -35,6 +35,7 @@ const LESSON_EXPECTED = "Hello, world!";
 
 // ---------- 3. The sandbox ----------
 
+const BUILD = document.querySelector('meta[name="build"]').content; // cache-busting, see index.html
 const TIME_LIMIT_MS = 3000; // if code runs longer than this, we stop it
 let worker = null;          // the sandbox that runs Python
 let pythonReady = false;    // true once Pyodide has loaded inside the worker
@@ -47,7 +48,7 @@ function startWorker() {
   setStatus("running", "Loading Python…");
 
   // type: "module" lets runner.js use import(), which Pyodide needs.
-  worker = new Worker("runner.js", { type: "module" });
+  worker = new Worker(`runner.js?v=${BUILD}`, { type: "module" });
 
   // Messages from the sandbox arrive here, one at a time.
   worker.onmessage = (event) => {

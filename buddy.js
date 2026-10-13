@@ -26,7 +26,7 @@ const buddy = (() => {
   // can mount as many copies as we like.
   const posesReady = Promise.all(
     BUDDY_STATES.map((state) =>
-      fetch(`assets/buddy/${state}.svg`).then((res) => res.text())
+      fetch(`assets/buddy/${state}.svg?v=${document.querySelector('meta[name="build"]').content}`).then((res) => res.text())
     )
   );
 
