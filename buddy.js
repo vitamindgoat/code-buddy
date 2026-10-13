@@ -7,6 +7,8 @@
           buddy.set("happy")       switch pose (+ its animation)
           buddy.set("happy", 1500) switch, then return to idle after 1.5s
           buddy.say("Nice!")       change the speech bubble text
+          buddy.state              the current state name
+          buddy.floatTo(y)         slide the floating buddy to y px (in the editor)
           buddy.mount(el)          put a second buddy somewhere (debug strip)
 
    The current state is a data-state attribute on the host box.
@@ -18,6 +20,7 @@ const BUDDY_STATES = ["idle", "thinking", "happy", "pointing", "celebrate"];
 
 const buddy = (() => {
   const host = document.getElementById("buddy");
+  const floatEl = document.getElementById("buddy-float");
   const speechEl = document.getElementById("speech");
   let revertTimer = null;
   let instances = 0;
@@ -66,7 +69,43 @@ const buddy = (() => {
     speechEl.classList.add("pop");
   }
 
+  // Slide the whole floating group (buddy + bubble) so it sits level with
+  // a line in the editor. CSS animates the move.
+  function floatTo(y) {
+    floatEl.style.setProperty("--y", `${Math.round(y)}px`);
+  }
+
   mount(host, "idle");
 
-  return { set, say, mount };
+  return {
+    set, say, mount, floatTo,
+    get state() { return host.getAttribute("data-state"); },
+  };
+})();
+
+/* ============================================================
+   voice — text-to-speech using the browser's built-in voices.
+   Free, works offline, nothing to install. Off until the learner
+   clicks the speaker button.
+   ============================================================ */
+
+const voice = (() => {
+  let on = false;
+
+  function speak(text) {
+    if (!on || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();              // don't pile up sentences
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.0;
+    u.pitch = 1.15;                               // a touch higher = friendlier
+    window.speechSynthesis.speak(u);
+  }
+
+  function toggle() {
+    on = !on;
+    if (!on) window.speechSynthesis?.cancel();
+    return on;
+  }
+
+  return { speak, toggle, get on() { return on; } };
 })();

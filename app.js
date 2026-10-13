@@ -1,15 +1,18 @@
 /* ============================================================
    app.js — the main page
-   Three jobs:
-     1. Set up the CodeMirror editor
-     2. On Run: send the code to the sandbox worker
-     3. Show whatever comes back (output, errors, timeouts)
+   Glues everything together:
+     1. CodeMirror editor (starts empty)
+     2. Lesson panel: steps, progress, next/back, saved progress
+     3. The buddy floats inside the editor, level with your line
+     4. Run button -> sandbox worker -> output -> tutor reacts
    ============================================================ */
 
-// ---------- 1. Editor setup ----------
+const BUILD = document.querySelector('meta[name="build"]').content; // cache-busting, see index.html
+const TIME_LIMIT_MS = 3000; // if code runs longer than this, we stop it
+const SAVE_KEY = "codebuddy.progress";
 
-// CodeMirror takes over the <textarea id="code"> and turns it into a
-// real editor with line numbers and syntax highlighting.
+// ---------- 1. Editor ----------
+
 const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
   mode: "python",
   lineNumbers: true,
@@ -17,30 +20,126 @@ const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
   tabSize: 4,
   indentWithTabs: false,
   lineWrapping: true,
+  autofocus: true,
 });
 
-// Remember the starter code so Reset can bring it back.
-const starterCode = editor.getValue();
-
-// ---------- 2. Grab the elements we update ----------
+// ---------- 2. Elements ----------
 
 const runBtn = document.getElementById("run-btn");
 const resetBtn = document.getElementById("reset-btn");
+const prevBtn = document.getElementById("prev-btn");
+const nextBtn = document.getElementById("next-btn");
+const voiceBtn = document.getElementById("voice-btn");
 const outputEl = document.getElementById("output");
 const statusEl = document.getElementById("status");
+const stepsEl = document.getElementById("steps");
+const editorWrap = document.querySelector(".editor-wrap");
 
-// TEMPORARY: lesson 1's expected output, so "celebrate" can be tested.
-// This moves into a proper lessons file when the lesson engine is built.
-const LESSON_EXPECTED = "Hello, world!";
+// ---------- 3. Lesson panel + saved progress ----------
 
-// ---------- 3. The sandbox ----------
+let lessonIndex = 0;
+let progress = { completed: [], current: 0 };
+try { progress = { ...progress, ...JSON.parse(localStorage.getItem(SAVE_KEY) || "{}") }; } catch {}
 
-const BUILD = document.querySelector('meta[name="build"]').content; // cache-busting, see index.html
-const TIME_LIMIT_MS = 3000; // if code runs longer than this, we stop it
+function saveProgress() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(progress)); } catch {}
+}
+
+function renderLessonHeader() {
+  const lesson = LESSONS[lessonIndex];
+  document.getElementById("lesson-title").textContent = lesson.title;
+  document.getElementById("lesson-intro").textContent = lesson.intro;
+  document.getElementById("lesson-pill").textContent = `Lesson ${lessonIndex + 1} · ${lesson.title}`;
+  document.getElementById("progress-label").textContent = `Lesson ${lessonIndex + 1} of ${LESSONS.length}`;
+  document.getElementById("progress-fill").style.width = `${(progress.completed.length / LESSONS.length) * 100}%`;
+  prevBtn.disabled = lessonIndex === 0;
+  nextBtn.disabled = !progress.completed.includes(lesson.id) || lessonIndex === LESSONS.length - 1;
+}
+
+// The step list: a checkmark for done lines, a pointer for the current one
+function renderSteps(stepIndex) {
+  const lesson = LESSONS[lessonIndex];
+  stepsEl.innerHTML = "";
+  lesson.steps.forEach((step, i) => {
+    const li = document.createElement("li");
+    li.className = i < stepIndex ? "done" : i === stepIndex ? "current" : "";
+    li.innerHTML = `<span class="step-mark"></span><code>${escapeHtml(step.code.trim())}</code>`;
+    stepsEl.appendChild(li);
+  });
+  if (stepIndex >= lesson.steps.length) {
+    const li = document.createElement("li");
+    li.className = "current";
+    li.innerHTML = `<span class="step-mark"></span><span>Press <strong>Run</strong></span>`;
+    stepsEl.appendChild(li);
+  }
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function openLesson(index) {
+  lessonIndex = Math.max(0, Math.min(LESSONS.length - 1, index));
+  progress.current = lessonIndex;
+  saveProgress();
+  clearOutput();
+  renderLessonHeader();
+  tutor.start(lessonIndex);
+  editor.focus();
+}
+
+// ---------- 4. Wire the tutor to the page ----------
+
+let activeLineHandle = null;   // the softly highlighted "you are here" line
+
+tutor.ui.getCode = () => editor.getValue();
+tutor.ui.getCursorLine = () => editor.getCursor().line;
+tutor.ui.setCode = (text) => editor.setValue(text);
+tutor.ui.renderSteps = renderSteps;
+tutor.ui.unlockNext = (lessonId) => {
+  if (!progress.completed.includes(lessonId)) progress.completed.push(lessonId);
+  saveProgress();
+  renderLessonHeader();
+};
+// Point the buddy at a line: highlight it and float next to it
+tutor.ui.markLine = (lineNumber) => {
+  if (activeLineHandle) editor.removeLineClass(activeLineHandle, "background", "active-line");
+  activeLineHandle = null;
+  if (lineNumber !== null && lineNumber < editor.lineCount()) {
+    activeLineHandle = editor.addLineClass(lineNumber, "background", "active-line");
+    floatBuddyToLine(lineNumber);
+  }
+};
+
+// ---------- 5. The floating buddy ----------
+
+// Put the buddy level with a line of code. CodeMirror tells us where the
+// line is on the page; we convert that to a position inside the editor box.
+function floatBuddyToLine(lineNumber) {
+  const coords = editor.charCoords({ line: lineNumber, ch: 0 }, "page");
+  const box = editorWrap.getBoundingClientRect();
+  const lineCenter = (coords.top + coords.bottom) / 2 - box.top;
+  const floatEl = document.getElementById("buddy-float");
+  const half = floatEl.offsetHeight / 2 || 60;
+  const y = Math.max(8, Math.min(box.height - half * 2 - 8, lineCenter - half));
+  buddy.floatTo(y);
+}
+
+// Follow the cursor wherever the learner goes
+editor.on("cursorActivity", () => floatBuddyToLine(editor.getCursor().line));
+editor.on("scroll", () => floatBuddyToLine(editor.getCursor().line));
+editor.on("change", () => {
+  clearErrorLine();
+  tutor.onChange();
+});
+
+// ---------- 6. Running code safely ----------
+
 let worker = null;          // the sandbox that runs Python
 let pythonReady = false;    // true once Pyodide has loaded inside the worker
 let timer = null;           // the countdown that catches infinite loops
 let errorLineHandle = null; // the editor line we highlighted red, if any
+let outputLines = [];       // everything the program printed this run
 
 function startWorker() {
   pythonReady = false;
@@ -50,7 +149,6 @@ function startWorker() {
   // type: "module" lets runner.js use import(), which Pyodide needs.
   worker = new Worker(`runner.js?v=${BUILD}`, { type: "module" });
 
-  // Messages from the sandbox arrive here, one at a time.
   worker.onmessage = (event) => {
     const { type, text, line } = event.data;
 
@@ -58,40 +156,29 @@ function startWorker() {
       pythonReady = true;
       runBtn.disabled = false;
       setStatus("", "");
-      buddy.set("idle");
-      buddy.say("Python is ready! Press Run when you are.");
+      if (!tutor.current.lesson) openLesson(progress.current || 0);
     } else if (type === "log") {
       appendOutput(text);
     } else if (type === "error") {
       appendOutput(text, true);
     } else if (type === "exception") {
-      // The learner's code threw an error. Show it, mark the line, stop.
       appendOutput(text, true);
       markErrorLine(line);
       setStatus("bad", "Error");
       finishRun();
       buddy.set("pointing");
       buddy.say(line
-        ? `Hmm, something went wrong on line ${line}. Read the red text, it tells you what happened.`
-        : "Hmm, something went wrong. Read the red text, it tells you what happened.");
+        ? `Python stopped on line ${line}. The red text says what went wrong: ${text}`
+        : `Python stopped. The red text says what went wrong: ${text}`);
+      voice.speak("Python stopped. Read the red text, it says what went wrong.");
     } else if (type === "done") {
-      // The program finished with no errors.
-      if (outputEl.textContent === "") {
-        appendOutput("(your program ran, but it didn't print anything)");
-      }
+      if (outputLines.length === 0) appendOutput("(your program ran, but it didn't print anything)");
       setStatus("ok", "Ran successfully");
       finishRun();
-      if (outputEl.textContent.trim() === LESSON_EXPECTED) {
-        buddy.set("celebrate", 2600);
-        buddy.say("YES! You did it! That's exactly right.");
-      } else {
-        buddy.set("happy", 1500);
-        buddy.say("Nice! Your code ran with no errors.");
-      }
+      tutor.onRun({ ok: true, output: outputLines.join("\n") });
     }
   };
 
-  // If the worker itself crashes (rare), surface that too.
   worker.onerror = (event) => {
     appendOutput(event.message || "Unknown error", true);
     setStatus("bad", "Error");
@@ -101,18 +188,15 @@ function startWorker() {
 
 function runCode() {
   if (!pythonReady) return;
+  const code = editor.getValue();
 
-  const code = editor.getValue(); // text currently in the editor
-
-  // Clear the output area and show "Running…"
-  outputEl.textContent = "";
+  clearOutput();
   clearErrorLine();
   setStatus("running", "Running…");
   buddy.set("thinking");
   buddy.say("Running your code…");
   runBtn.disabled = true;
 
-  // Send the code into the sandbox. This is the moment it starts running.
   worker.postMessage({ code });
 
   // Safety net: if we hear nothing for 3 seconds, assume an infinite loop.
@@ -123,24 +207,28 @@ function runCode() {
     setStatus("bad", "Timed out");
     buddy.set("thinking");
     buddy.say("Your program never finished, so I stopped it. Check your loops! Reloading Python…");
-    worker.terminate(); // instantly kills the sandbox, even mid-loop
+    worker.terminate();
     timer = null;
     startWorker();
   }, TIME_LIMIT_MS);
 }
 
-// Called after every run, success or error: stop the clock, re-enable Run.
 function finishRun() {
-  if (timer) {
-    clearTimeout(timer);
-    timer = null;
-  }
+  if (timer) { clearTimeout(timer); timer = null; }
   runBtn.disabled = false;
 }
 
-// ---------- 4. Small helpers for the UI ----------
+// ---------- 7. Small helpers for the UI ----------
+
+function clearOutput() {
+  outputLines = [];
+  outputEl.innerHTML = '<span class="output-hint">Press Run to see what your code does.</span>';
+  setStatus("", "");
+}
 
 function appendOutput(text, isError = false) {
+  if (outputLines.length === 0) outputEl.textContent = "";
+  if (!isError) outputLines.push(text);
   const line = document.createElement("div");
   line.textContent = text;
   if (isError) line.classList.add("err");
@@ -152,10 +240,10 @@ function setStatus(kind, text) {
   statusEl.textContent = text;
 }
 
-// Tint the line where the error happened so the learner can find it.
 function markErrorLine(line) {
   if (!line) return;
   errorLineHandle = editor.addLineClass(line - 1, "background", "error-line");
+  floatBuddyToLine(line - 1);
 }
 
 function clearErrorLine() {
@@ -165,29 +253,30 @@ function clearErrorLine() {
   }
 }
 
-// ---------- 5. Wire up the buttons ----------
+// ---------- 8. Buttons ----------
 
 runBtn.addEventListener("click", runCode);
+resetBtn.addEventListener("click", () => openLesson(lessonIndex));
+prevBtn.addEventListener("click", () => openLesson(lessonIndex - 1));
+nextBtn.addEventListener("click", () => openLesson(lessonIndex + 1));
 
-resetBtn.addEventListener("click", () => {
-  editor.setValue(starterCode);
-  clearErrorLine();
-  outputEl.innerHTML = '<span class="output-hint">Press Run to see what your code does.</span>';
-  setStatus("", "");
-  buddy.set("idle");
-  buddy.say("Back to the starting code. Give it another try!");
+voiceBtn.addEventListener("click", () => {
+  const on = voice.toggle();
+  voiceBtn.textContent = on ? "🔊 Voice on" : "🔇 Voice off";
+  voiceBtn.setAttribute("aria-pressed", String(on));
+  if (on) voice.speak("Hi! I'm your coding buddy.");
 });
 
-// Keyboard shortcut: Ctrl+Enter (or Cmd+Enter on Mac) runs the code
-editor.setOption("extraKeys", {
-  "Ctrl-Enter": runCode,
-  "Cmd-Enter": runCode,
-});
+// Ctrl+Enter (or Cmd+Enter on Mac) runs the code
+editor.setOption("extraKeys", { "Ctrl-Enter": runCode, "Cmd-Enter": runCode });
 
-// Start loading Python right away so it's ready by the time they press Run.
-startWorker();
+// ---------- 9. Go ----------
 
-// ---------- Dev helper: add ?debug to the URL to get state buttons ----------
+renderLessonHeader();
+startWorker(); // the lesson opens once Python is ready (see "ready" above)
+window.addEventListener("resize", () => floatBuddyToLine(editor.getCursor().line));
+
+// Dev helper: add ?debug to the URL to get buddy state buttons + "show all 5"
 if (location.search.includes("debug")) {
   const bar = document.getElementById("buddy-debug");
   bar.hidden = false;
@@ -197,15 +286,11 @@ if (location.search.includes("debug")) {
     b.onclick = () => buddy.set(state);
     bar.appendChild(b);
   }
-
-  // "Show all 5": a strip with five copies of the buddy, one per state,
-  // all animating at the same time. One-shot states replay every 3s.
   const all = document.createElement("button");
   all.textContent = "show all 5";
   all.onclick = () => {
     let strip = document.getElementById("buddy-strip");
-    if (strip) { strip.remove(); return; }       // click again to close
-
+    if (strip) { strip.remove(); return; }
     strip = document.createElement("div");
     strip.id = "buddy-strip";
     strip.className = "buddy-strip";
@@ -213,19 +298,18 @@ if (location.search.includes("debug")) {
       const cell = document.createElement("div");
       cell.className = "buddy-strip-cell";
       const copy = document.createElement("div");
-      buddy.mount(copy, state);                   // its own copy, its own ids
+      buddy.mount(copy, state);
       cell.appendChild(copy);
       cell.insertAdjacentHTML("beforeend", `<span>${state}</span>`);
       strip.appendChild(cell);
     }
     document.body.appendChild(strip);
-
     const replay = setInterval(() => {
       if (!document.body.contains(strip)) return clearInterval(replay);
       for (const host of strip.querySelectorAll('.buddy[data-state="happy"], .buddy[data-state="celebrate"]')) {
         const state = host.getAttribute("data-state");
         host.removeAttribute("data-state");
-        void host.offsetWidth;                     // same replay trick as buddy.set
+        void host.offsetWidth;
         host.setAttribute("data-state", state);
       }
     }, 3000);

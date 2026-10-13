@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="7" />
+  <meta name="build" content="8" />
   <title>CodeBuddy – Learn to code with a friend</title>
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
@@ -18,8 +18,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=7" />
-  <link rel="stylesheet" href="buddy.css?v=7" />
+  <link rel="stylesheet" href="styles.css?v=8" />
+  <link rel="stylesheet" href="buddy.css?v=8" />
 </head>
 <body>
 
@@ -29,42 +29,53 @@
       <span class="brand-name">CodeBuddy</span>
     </div>
     <div class="topbar-right">
-      <span class="pill">Lesson 1 · Hello, world!</span>
+      <span class="pill" id="lesson-pill">Lesson 1</span>
+      <button id="voice-btn" class="btn btn-ghost btn-icon-only" type="button" title="Read the buddy's messages out loud" aria-pressed="false">🔇 Voice off</button>
     </div>
   </header>
 
   <main class="layout">
 
-    <!-- LEFT: lesson instructions (real lessons come in a later step) -->
+    <!-- LEFT: the lesson -->
     <section class="card lesson">
-      <h1 class="lesson-title">Say hello</h1>
-      <p class="lesson-text">
-        Computers can show messages on the screen. In Python, you use
-        <code>print()</code> to show something.
-      </p>
-      <p class="lesson-text">
-        Try it: make the program print <strong>Hello, world!</strong> and then press
-        <strong>Run</strong>.
-      </p>
+      <div class="progress">
+        <span id="progress-label">Lesson 1 of 3</span>
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+      </div>
+      <h1 class="lesson-title" id="lesson-title"></h1>
+      <p class="lesson-text" id="lesson-intro"></p>
+      <ol class="steps" id="steps"></ol>
+      <div class="lesson-nav">
+        <button id="prev-btn" class="btn btn-ghost" type="button">◀ Back</button>
+        <button id="next-btn" class="btn btn-primary" type="button" disabled>Next lesson ▶</button>
+      </div>
+      <div id="buddy-debug" class="buddy-debug" hidden></div>
     </section>
 
-    <!-- CENTER: editor + run + output -->
+    <!-- RIGHT: editor (with the buddy floating inside it) + output -->
     <section class="workspace">
       <div class="card editor-card">
         <div class="card-header">
           <span class="card-label">Your code</span>
           <div class="actions">
-            <button id="reset-btn" class="btn btn-ghost" type="button">Reset</button>
+            <button id="reset-btn" class="btn btn-ghost" type="button">Start over</button>
             <button id="run-btn" class="btn btn-primary" type="button" disabled>
               <span class="btn-icon">▶</span> Run
             </button>
           </div>
         </div>
 
-        <!-- CodeMirror replaces this textarea with a real editor -->
-        <textarea id="code" spellcheck="false"># Write your code below
-print("Hello, world!")
-</textarea>
+        <div class="editor-wrap">
+          <!-- CodeMirror replaces this textarea with a real editor. It starts
+               EMPTY: the learner types every line themselves. -->
+          <textarea id="code" spellcheck="false"></textarea>
+
+          <!-- The buddy floats here, level with the line being typed -->
+          <div id="buddy-float" class="buddy-float">
+            <div class="speech" id="speech">Give me a sec to wake up Python…</div>
+            <div id="buddy"></div>
+          </div>
+        </div>
       </div>
 
       <div class="card output-card">
@@ -76,16 +87,11 @@ print("Hello, world!")
       </div>
     </section>
 
-    <!-- RIGHT: the buddy. buddy.js draws the SVG into #buddy -->
-    <aside class="card buddy-card">
-      <div id="buddy"></div>
-      <div class="speech" id="speech">Hi! I'm your coding buddy. Give me a sec to wake up Python…</div>
-      <div id="buddy-debug" class="buddy-debug" hidden></div>
-    </aside>
-
   </main>
 
-  <script src="buddy.js?v=7"></script>
-  <script src="app.js?v=7"></script>
+  <script src="lessons.js?v=8"></script>
+  <script src="buddy.js?v=8"></script>
+  <script src="tutor.js?v=8"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>
