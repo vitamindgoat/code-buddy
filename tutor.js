@@ -388,7 +388,7 @@ const tutor = (() => {
       complete = true;
       ui.ghost(); ui.markWrong(); ui.stuckTag(false);
       const done = mode === "practice" ? "You solved it on your own!" : lesson.done;
-      say(`# Ran your code ✓\n# YES!\n${done}`, "celebrate");
+      say(`# Ran your code ✓\n# YES!\n${done}\n# What now?\nClick the *Next* button when you're ready to move on.`, "celebrate");
       ui.onComplete(mode);
     } else if (celebrated) {
       say("# Ran your code ✓\nNice experiment!\nChange something else and run it again,\nor move on.", "happy");

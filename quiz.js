@@ -149,7 +149,7 @@ const quiz = (() => {
       </div>`;
     buddy.mount(card.querySelector("#quiz-buddy"), pct >= 70 ? "celebrate" : "thinking");
     if (pct >= 70) { fx.confetti(); sfx.levelUp(); }
-    card.querySelector(".quiz-done").addEventListener("click", () => onDone && onDone({ score, total: questions.length }));
+    card.querySelector(".quiz-done").addEventListener("click", (e) => { e.currentTarget.disabled = true; onDone && onDone({ score, total: questions.length }); });
   }
 
   function escapeHtml(s) {

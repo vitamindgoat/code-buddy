@@ -564,25 +564,26 @@ body { background: var(--bg); }
 .quiz-pct { font-size: 18px; font-weight: 800; color: #7c3aed; }
 .quiz-result p { color: var(--ink-soft); font-weight: 700; }
 
-/* ---------- Banner ---------- */
-.banner { position: fixed; inset: 0; display: grid; place-items: center; z-index: 60; pointer-events: none; }
-.banner[hidden] { display: none; }
-.banner-inner {
-  background: #fff; border-radius: 22px; padding: 26px 44px; text-align: center;
-  box-shadow: 0 20px 60px rgba(6, 51, 126, 0.3); border: 3px solid var(--blue-mid);
-}
-.banner.show .banner-inner { animation: banner-in 2.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
-@keyframes banner-in {
-  0% { transform: scale(0.6) translateY(30px); opacity: 0; }
-  12% { transform: scale(1.05); opacity: 1; }
-  18% { transform: scale(1); }
-  85% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(0.9) translateY(-20px); opacity: 0; }
-}
-.banner-stars { color: #ffb703; font-size: 22px; letter-spacing: 8px; animation: twinkle-text 0.8s ease-in-out infinite; }
-@keyframes twinkle-text { 50% { opacity: 0.4; transform: scale(1.15); } }
-.banner-title { font-size: 32px; font-weight: 800; color: var(--blue-ink); }
-.banner-sub { font-weight: 700; color: var(--ink-soft); margin-top: 4px; }
+/* ---------- "Complete!" card ---------- */
+.complete { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgba(6, 51, 126, 0.32); animation: fade 0.25s ease; }
+.complete[hidden] { display: none; }
+.done-card { position: relative; width: 420px; max-width: 100%; padding: 28px 28px 24px; text-align: center; overflow: hidden; border: 2px solid var(--blue-line); }
+.complete.show .done-card { animation: done-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.25) both; }
+@keyframes done-in { from { transform: translateY(24px) scale(0.92); opacity: 0; } to { transform: none; opacity: 1; } }
+/* soft spinning light behind the buddy */
+.done-rays { position: absolute; left: 50%; top: 86px; width: 360px; height: 360px; margin-left: -180px; border-radius: 50%; pointer-events: none;
+  background: conic-gradient(from 0deg, rgba(116, 188, 254, 0) 0 20deg, rgba(116, 188, 254, 0.28) 20deg 40deg, rgba(116, 188, 254, 0) 40deg 60deg, rgba(116, 188, 254, 0.28) 60deg 80deg, rgba(116, 188, 254, 0) 80deg 100deg, rgba(116, 188, 254, 0.28) 100deg 120deg, rgba(116, 188, 254, 0) 120deg 140deg, rgba(116, 188, 254, 0.28) 140deg 160deg, rgba(116, 188, 254, 0) 160deg 180deg, rgba(116, 188, 254, 0.28) 180deg 200deg, rgba(116, 188, 254, 0) 200deg 220deg, rgba(116, 188, 254, 0.28) 220deg 240deg, rgba(116, 188, 254, 0) 240deg 260deg, rgba(116, 188, 254, 0.28) 260deg 280deg, rgba(116, 188, 254, 0) 280deg 300deg, rgba(116, 188, 254, 0.28) 300deg 320deg, rgba(116, 188, 254, 0) 320deg 340deg, rgba(116, 188, 254, 0.28) 340deg 360deg);
+  -webkit-mask: radial-gradient(circle, #000 0, #000 35%, transparent 70%); mask: radial-gradient(circle, #000 0, #000 35%, transparent 70%);
+  animation: rays 14s linear infinite; }
+@keyframes rays { to { transform: rotate(360deg); } }
+.done-buddy { position: relative; width: 150px; height: 118px; margin: 0 auto 6px; }
+.done-buddy .buddy, .done-buddy .buddy .pose { width: 150px; }
+.done-kicker { position: relative; display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue-dark); background: var(--blue-soft); border: 1px solid var(--blue-line); border-radius: 999px; padding: 4px 12px; }
+.done-title { position: relative; font-size: 30px; font-weight: 800; color: var(--blue-ink); margin: 10px 0 6px; letter-spacing: -0.01em; }
+.done-sub { position: relative; color: var(--ink-soft); font-weight: 700; margin: 0 0 18px; }
+.done-actions { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.btn-big { font-size: 17px; padding: 12px 28px; border-radius: 14px; box-shadow: 0 8px 20px rgba(30, 111, 217, 0.3); }
+.done-actions .btn-ghost { font-size: 13px; }
 
 /* ---------- Output lines slide in ---------- */
 .out-line { animation: rise 0.25s ease-out both; }
@@ -630,6 +631,7 @@ body { background: var(--bg); }
 /* ---------- Reading lessons ---------- */
 .stage-badge.stage-read { background: #e0f2fe; color: #0369a1; }
 .read-card { padding: 22px; min-height: 480px; position: relative; display: flex; flex-direction: column; }
+.read-card[hidden] { display: none; }
 .read-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .read-label { font-size: 12px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: #0369a1; }
 .read-dots { display: flex; gap: 6px; }

@@ -59,7 +59,7 @@ const read = (() => {
 
     buddy.mount(card.querySelector("#read-buddy-host"), "idle");
     card.querySelector(".read-prev").addEventListener("click", () => { if (index > 0) { index--; render(); } });
-    card.querySelector(".read-next").addEventListener("click", () => { index++; index < lesson.cards.length ? render() : finish(); });
+    card.querySelector(".read-next").addEventListener("click", (e) => { e.currentTarget.disabled = true; index++; index < lesson.cards.length ? render() : finish(); });
     if (c.check) {
       const items = card._items;
       card.querySelectorAll(".quiz-choice").forEach((b) => b.addEventListener("click", () => choose(+b.dataset.i, items, c.check)));

@@ -33,7 +33,7 @@ const voiceBtn = $("voice-btn"), voicePick = $("voice-pick"), soundBtn = $("soun
 const outputEl = $("output"), statusEl = $("status"), stepsEl = $("steps");
 const editorWrap = document.querySelector(".editor-wrap");
 const editorCard = document.querySelector(".editor-card"), outputCard = document.querySelector(".output-card");
-const quizCard = $("quiz-card"), readCard = $("read-card"), stuckTag = $("stuck-tag"), runTag = $("run-tag");
+const quizCard = $("quiz-card"), readCard = $("read-card"), stuckTag = $("stuck-tag"), runTag = $("run-tag"), doneEl = $("done");
 
 // ---------- 3. Where we are: lesson index + stage ----------
 
@@ -184,6 +184,7 @@ function open(target) {
   nextBtn.classList.remove("pulse");
   closeSidebar();
   if (tour.active) tour.end();      // a spotlight from before doesn't follow us
+  if (!doneEl.hidden) hideDone();
 
   const showQuiz = stage === "quiz";
   const showRead = !showQuiz && isReading();
@@ -216,32 +217,35 @@ function finishStage() {
   saveProgress();
   renderHeader();
   renderSidebar();
-  showBanner(stage === "lesson" ? (isReading() ? "Reading complete!" : "Lesson complete!") : stage === "practice" ? "Practice complete!" : "Quiz finished!",
-             stage === "quiz" ? "On to the next module" : nextTarget()?.label.replace(" ▶", "") || "");
-  if (stage !== "quiz") { fx.confetti(); sfx.levelUp(); if (!isReading()) replayClass(outputCard, "success-flash"); }
   runTag.hidden = true; runBtn.classList.remove("pulse");
-  if (nextBtn.disabled) return;
-  if (stage === "lesson" && progress.lessonsFinished === 1) {
-    // their very first finished lesson: a game-style spotlight on Next
-    const nt = nextTarget();
-    setTimeout(() => tour.run([{
-      target: "#next-btn", place: "top", waitForClick: true,
-      title: "Nice! 🎉", text: isReading() ? "Click <strong>Next</strong> to keep going." : "Now try the <strong>Practice</strong>: same idea, no hand-holding.",
-    }]), 2200);
-  } else {
-    nextBtn.classList.add("pulse");
-  }
+  if (stage === "quiz") { const t = nextTarget(); if (t) open(t); return; }   // the score screen was the celebration
+  fx.confetti(); sfx.levelUp(); if (!isReading()) replayClass(outputCard, "success-flash");
+  showDone();
+  if (!nextBtn.disabled) nextBtn.classList.add("pulse");
 }
 
-function showBanner(title, sub) {
-  const b = $("banner");
-  $("banner-title").textContent = title;
-  $("banner-sub").textContent = sub;
-  b.hidden = false;
-  replayClass(b, "show");
-  clearTimeout(showBanner.t);
-  showBanner.t = setTimeout(() => { b.hidden = true; }, 2600);
+// The "complete!" card. One big button takes you to the next step; "Stay
+// here" closes it (the Next button keeps pulsing so the way on is obvious).
+function showDone() {
+  const t = nextTarget();
+  const what = stage === "practice" ? "Practice" : isReading() ? "Reading" : "Lesson";
+  $("done-kicker").textContent = `${what} ${lesson().number} · ${lesson().title}`;
+  $("done-title").textContent = stage === "practice" ? "You solved it!" : isReading() ? "Reading complete!" : "Lesson complete!";
+  $("done-sub").textContent = !t ? "That was the last one. You finished everything!"
+    : t.stage === "practice" ? "Up next: a practice. Same idea, but you write it without my help."
+    : t.stage === "quiz" ? "Up next: the module quiz. Everything in it was covered in the lessons."
+    : `Up next: ${LESSONS[t.lessonIndex].number} · ${LESSONS[t.lessonIndex].title}`;
+  $("done-next").textContent = t ? t.label : "Back to the start";
+  $("done-next").onclick = () => { hideDone(); open(t || { lessonIndex: 0, stage: "lesson" }); };
+  buddy.mount($("done-buddy"), "celebrate");
+  doneEl.hidden = false;
+  replayClass(doneEl, "show");
+  setTimeout(() => $("done-next").focus(), 400);
 }
+function hideDone() { doneEl.hidden = true; }
+$("done-stay").addEventListener("click", hideDone);
+doneEl.addEventListener("click", (e) => { if (e.target === doneEl) hideDone(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !doneEl.hidden) hideDone(); });
 
 // Remove-and-re-add a class so its CSS animation plays again
 function replayClass(el, cls) {
