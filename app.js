@@ -150,8 +150,9 @@ function open(target) {
   saveProgress();
   clearOutput();
   clearErrorLine();
-  nextBtn.classList.remove("shake");
+  nextBtn.classList.remove("pulse");
   closeSidebar();
+  if (tour.active) tour.end();      // a spotlight from before doesn't follow us
 
   const showQuiz = stage === "quiz";
   editorCard.hidden = showQuiz; outputCard.hidden = showQuiz; quizCard.hidden = !showQuiz;
@@ -159,7 +160,7 @@ function open(target) {
   renderHeader();
   if (stage === "lesson") tutor.start(lesson());
   else if (stage === "practice") tutor.startPractice(lesson());
-  else quiz.start(module_(), () => finishStage());
+  else { renderSteps(0); quiz.start(module_(), () => finishStage(), sandbox); }
 
   replayClass(document.querySelector(".lesson"), "swap-in");
   replayClass(showQuiz ? quizCard : editorCard, "swap-in");
@@ -187,7 +188,7 @@ function finishStage() {
       title: "Lesson complete! 🎉", text: "Now try the <strong>Practice</strong>: same idea, no hand-holding.",
     }]), 2200);
   } else {
-    nextBtn.classList.add("shake");
+    nextBtn.classList.add("pulse");
   }
 }
 
@@ -339,7 +340,10 @@ buddy.onClick(() => { sfx.click(); tutor.hint(); editor.focus(); });
 
 // ---------- 9. Running code safely ----------
 
-let worker = null, pythonReady = false, timer = null, errorLineHandle = null, outputLines = [], running = false;
+// The sandbox: one worker running Python. sandbox.run(code, inputs, onLog)
+// returns a promise with { ok, output, error, line, timeout }. The editor's
+// Run button and the quiz's code questions both use it.
+let worker = null, pythonReady = false, active = null, errorLineHandle = null, outputLines = [], running = false;
 
 function startWorker() {
   pythonReady = false;
@@ -358,36 +362,44 @@ function startWorker() {
         open({ lessonIndex: progress.lessonIndex || 0, stage: progress.stage || "lesson" });
         if (!progress.toured) firstVisitTour();
       }
-    } else if (type === "log") {
-      appendOutput(text);
-    } else if (type === "error") {
-      appendOutput(text, true);
-    } else if (type === "exception") {
-      appendOutput(text, true);
-      markErrorLine(line);
-      setStatus("bad", "Error");
-      finishRun();
-      sfx.error();
-      replayClass(outputCard, "error-shake");
-      buddy.say(`# Python stopped${line ? ` on line ${line}` : ""}\n\`${text}\`\n# Tip\nRead the last line of an *error* first: it names the problem.`, "pointing");
-    } else if (type === "done") {
-      if (outputLines.length === 0) appendOutput("(your program ran, but it didn't print anything)");
-      setStatus("ok", "Ran successfully");
-      finishRun();
-      tutor.onRun({ ok: true, output: outputLines.join("\n") });
+      return;
     }
+    if (!active) return;
+    if (type === "log") { active.lines.push(text); active.onLog && active.onLog(text, false); }
+    else if (type === "error") { active.onLog && active.onLog(text, true); }
+    else if (type === "exception") { active.finish({ ok: false, error: text, line, output: active.lines.join("\n") }); }
+    else if (type === "done") { active.finish({ ok: true, output: active.lines.join("\n") }); }
   };
   worker.onerror = (event) => {
-    appendOutput(event.message || "Unknown error", true);
-    setStatus("bad", "Error");
-    if (pythonReady) finishRun();
+    if (active) active.finish({ ok: false, error: event.message || "Unknown error", output: active.lines.join("\n") });
   };
 }
 
-function runCode() {
-  if (!pythonReady || running || stage === "quiz") return;   // ignore a second click mid-run
+const sandbox = {
+  run(code, inputs = [], onLog = null) {
+    return new Promise((resolve) => {
+      if (!pythonReady || active) return resolve({ ok: false, error: "Python is busy", output: "" });
+      const job = { lines: [], onLog, finish: null, timer: null };
+      job.finish = (result) => { clearTimeout(job.timer); active = null; resolve(result); };
+      active = job;
+      worker.postMessage({ code, inputs });
+      // Safety net: if we hear nothing for 3 seconds, assume an infinite loop.
+      // The only way to stop a stuck worker is to kill it, so we do that and
+      // start a fresh one (which means reloading Python).
+      job.timer = setTimeout(() => {
+        const finish = job.finish;
+        worker.terminate();
+        startWorker();
+        finish({ ok: false, timeout: true, error: "Stopped: your code ran for too long. Is there a loop that never ends?", output: job.lines.join("\n") });
+      }, TIME_LIMIT_MS);
+    });
+  },
+  get ready() { return pythonReady && !active; },
+};
+
+async function runCode() {
+  if (!pythonReady || running || active || stage === "quiz") return;   // ignore a second click mid-run
   running = true;
-  if (timer) { clearTimeout(timer); timer = null; }
   buddy.finishTyping();
   const code = editor.getValue();
   const inputs = stage === "practice" ? (lesson().practice.inputs || []) : (lesson().inputs || []);
@@ -402,25 +414,30 @@ function runCode() {
   replayClass(runBtn, "pressed");
   sfx.run();
 
-  worker.postMessage({ code, inputs });
-
-  // Safety net: if we hear nothing for 3 seconds, assume an infinite loop.
-  timer = setTimeout(() => {
-    appendOutput("Stopped: your code ran for too long. Is there a loop that never ends?", true);
+  const r = await sandbox.run(code, inputs, (text, isError) => appendOutput(text, isError));
+  finishRun();
+  if (r.timeout) {
+    appendOutput(r.error, true);
     setStatus("bad", "Timed out");
     buddy.set("thinking");
     buddy.say("# Infinite loop!\nYour program never finished, so I stopped it.\nDoes something inside the loop change?\nReloading Python…");
-    worker.terminate();
-    timer = null; running = false;
-    outputCard.classList.remove("is-running");
-    startWorker();
-  }, TIME_LIMIT_MS);
+  } else if (!r.ok) {
+    appendOutput(r.error, true);
+    markErrorLine(r.line);
+    setStatus("bad", "Error");
+    sfx.error();
+    replayClass(outputCard, "error-shake");
+    buddy.say(`# Python stopped${r.line ? ` on line ${r.line}` : ""}\n\`${r.error}\`\n# Tip\nRead the last line of an *error* first: it names the problem.`, "pointing");
+  } else {
+    if (outputLines.length === 0) appendOutput("(your program ran, but it didn't print anything)");
+    setStatus("ok", "Ran successfully");
+    tutor.onRun({ ok: true, output: outputLines.join("\n") });
+  }
 }
 
 function finishRun() {
-  if (timer) { clearTimeout(timer); timer = null; }
   running = false;
-  runBtn.disabled = false;
+  runBtn.disabled = !pythonReady;
   outputCard.classList.remove("is-running");
 }
 

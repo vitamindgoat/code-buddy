@@ -419,15 +419,13 @@ code {
   padding: 6px 8px; max-width: 180px;
 }
 
-/* Next lesson: shake for the 2nd+ completed lesson */
-@keyframes shake-btn {
-  0%, 100% { transform: rotate(0); }
-  20% { transform: rotate(-4deg) scale(1.04); }
-  40% { transform: rotate(4deg) scale(1.04); }
-  60% { transform: rotate(-3deg); }
-  80% { transform: rotate(3deg); }
+/* Next: a soft sky-blue pulse once something is finished */
+@keyframes pulse-btn {
+  0%   { box-shadow: 0 0 0 0 rgba(116, 188, 254, 0.75), 0 6px 16px rgba(30, 111, 217, 0.25); transform: scale(1); }
+  60%  { box-shadow: 0 0 0 12px rgba(116, 188, 254, 0), 0 6px 16px rgba(30, 111, 217, 0.25); transform: scale(1.03); }
+  100% { box-shadow: 0 0 0 0 rgba(116, 188, 254, 0), 0 6px 16px rgba(30, 111, 217, 0.25); transform: scale(1); }
 }
-.btn.shake { animation: shake-btn 0.7s ease-in-out infinite; animation-delay: 0.5s; box-shadow: 0 6px 16px rgba(30, 111, 217, 0.35); }
+.btn.pulse { animation: pulse-btn 1.6s ease-out infinite; }
 
 /* ---------- Tour: spotlight + tip ---------- */
 
@@ -601,3 +599,14 @@ body { background: var(--bg); }
 .output-card.is-running ~ * {}
 #run-btn:disabled .btn-icon { animation: spin 0.8s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- Quiz: coding questions ---------- */
+.quiz-kind { font-size: 12px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: #9a5b00; margin-bottom: 6px; }
+.quiz-inputs { font-weight: 700; color: var(--ink-soft); margin: -6px 0 10px; }
+.quiz-inputs code { background: #fff4d6; color: #9a5b00; border: 1.5px solid #ffd77a; }
+.quiz-editor { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.quiz-editor .CodeMirror { height: 200px; font-family: var(--mono); font-size: 15px; line-height: 1.6; padding: 6px 0; }
+.quiz-run-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.quiz-output { margin: 10px 0 0; padding: 12px 14px; font-family: var(--mono); font-size: 14px; background: #f7fbff; border: 1px solid var(--line); border-radius: 10px; white-space: pre-wrap; }
+.quiz-output.err { color: var(--red); background: var(--red-soft); border-color: #f5c2c7; }
+.quiz-expected { margin: 6px 0 0; font-family: var(--mono); font-size: 13px; background: #fff; border-radius: 8px; padding: 8px 10px; white-space: pre-wrap; color: var(--ink); }

@@ -179,6 +179,8 @@ const MODULES = [
       { q: "Data that is random and unpredictable has...", choices: ["Low entropy, compresses well", "High entropy, compresses badly", "No bits", "Lossless quality"], answer: 1, explain: "Compression needs patterns. Random data (high entropy) has none." },
       { q: "True and False is...", choices: ["True", "False", "Error", "Maybe"], answer: 1, explain: "AND needs both to be True." },
       { q: "Lossy compression...", choices: ["Keeps every bit exactly", "Throws some detail away to save space", "Only works on text", "Makes files bigger"], answer: 1, explain: "Lossy (like JPEG) drops detail you won't notice. Lossless keeps everything." },
+      { type: "code", q: "Write code that prints 13 in binary.", expectedOutput: "0b1101", explain: "print(bin(13)) gives 0b1101: 8 + 4 + 0 + 1." },
+      { type: "code", q: "Print the pattern \"10\" repeated 4 times on one line (like run-length encoding would store it).", expectedOutput: "10101010", explain: "print(\"10\" * 4): the * repeats a string." },
     ],
   },
 
@@ -482,6 +484,9 @@ const MODULES = [
       { q: "input() always returns a...", choices: ["int", "float", "string", "bool"], answer: 2, explain: "Even if the user types 12, you get \"12\". Cast it with int()." },
       { q: "print(\"Age: \" + 15) causes a...", choices: ["Syntax error", "Runtime error (TypeError)", "Logic error", "Nothing, it prints Age: 15"], answer: 1, explain: "It runs, then crashes: you can't join a str and an int. Use str(15)." },
       { q: "Which prints  Hi Sam!  if name = \"Sam\"?", choices: ['print("Hi {name}!")', 'print(f"Hi {name}!")', 'print("Hi name!")', 'print(f"Hi name!")'], answer: 1, explain: "The f before the quote makes { } pull in the variable." },
+      { type: "code", q: "Print 29 % 6 on one line, then 29 // 6 on the next.", expectedOutput: "5\n4", explain: "29 ÷ 6 is 4 remainder 5. % gives 5, // gives 4." },
+      { type: "code", q: "Make a variable called name holding \"Ada\", then use an f-string to print exactly:  Hello, Ada!", expectedOutput: "Hello, Ada!", explain: 'name = "Ada" then print(f"Hello, {name}!")' },
+      { type: "code", q: "Ask \"Age? \" with input(), cast it to int, and print the age plus 10. The user types: 15", inputs: ["15"], expectedOutput: "Age? 15\n25", explain: "age = int(input(\"Age? \")) then print(age + 10). Without int() the + would fail." },
     ],
   },
 
@@ -753,6 +758,9 @@ const MODULES = [
       { q: "What does break do?", choices: ["Pauses the loop", "Skips one round", "Ends the loop immediately", "Restarts the loop"], answer: 2, explain: "break exits the loop right away. continue skips one round." },
       { q: "What prints?  n = 0\nwhile n < 3:\n    n = n + 1\nprint(n)", choices: ["0", "2", "3", "Loops forever"], answer: 2, explain: "n goes 1, 2, 3. At 3 the condition is False, and 3 prints." },
       { q: "len(\"hey\") is...", choices: ["2", "3", "\"hey\"", "Error"], answer: 1, explain: "len counts characters: h, e, y." },
+      { type: "code", q: "Use a for loop to print the numbers 0, 1 and 2, each on its own line.", expectedOutput: "0\n1\n2", explain: "for i in range(3): then an indented print(i)." },
+      { type: "code", q: "With temp = 95, print \"Hot\" if temp is above 80, otherwise print \"Fine\".", expectedOutput: "Hot", explain: "if temp > 80: print(\"Hot\") else: print(\"Fine\"). 95 > 80, so Hot." },
+      { type: "code", q: "Use a while loop to print 5, 4, 3, 2, 1 (count down), each on its own line.", expectedOutput: "5\n4\n3\n2\n1", explain: "n = 5, while n > 0: print(n) and n = n - 1 inside the loop." },
     ],
   },
 ];

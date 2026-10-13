@@ -101,6 +101,9 @@ const buddy = (() => {
         else el = document.createElement("span");
         // code chips get syntax colors: each token is its own span
         const groups = isCode ? tokenize(text) : [{ cls: "", text }];
+        // how each character of a chip is SPOKEN ("(" -> "open paren")
+        const spokenChip = isCode ? speakCode(text) : null;
+        let ci = 0;
         for (const g of groups) {
           const holder = g.cls ? document.createElement("span") : el;
           if (g.cls) { holder.className = "tok " + g.cls; el.appendChild(holder); }
@@ -114,15 +117,20 @@ const buddy = (() => {
               holder.appendChild(c);
               chars.push(c);
               spokenIndex.push(spoken.length);
-              spoken += ch;
+              spoken += isCode ? spokenChip[ci++] : ch;
             }
           }
         }
+        if (isCode && !isLabel) spoken += " ";
         line.appendChild(el);
       });
       if (!isLabel) spoken += " ";
       speechEl.appendChild(line);
     }
+    // ALL-CAPS words like OR, AND, NOT get spelled out letter by letter by
+    // the voice. Lowercase them for speech only (same length, so the
+    // typewriter mapping stays exact). Real acronyms stay.
+    spoken = spoken.replace(/\b([A-Z]{2,5})\b/g, (w) => (KEEP_CAPS.has(w) ? w : w.toLowerCase()));
 
     // pop + start revealing
     speechEl.classList.remove("pop");
@@ -151,6 +159,43 @@ const buddy = (() => {
     if (revealed >= chars.length) return;        // wait for the voice to end
     chars[revealed++].classList.add("on");
     typingTimer = setTimeout(paced, SPEECH_MS_PER_CHAR);
+  }
+
+  const KEEP_CAPS = new Set(["CSP", "RLE", "API", "JPEG", "PNG", "URL", "HTML", "CSS"]);
+
+  // How the voice reads code: one spoken piece per character, so the
+  // typewriter can stay in sync. Symbols get names; text inside quotes is
+  // read naturally; two-character operators are named once.
+  const SYMBOLS = {
+    "(": "open paren ", ")": "close paren ", "[": "open bracket ", "]": "close bracket ",
+    "{": "open brace ", "}": "close brace ", ":": "colon ", "=": "equals ", "+": "plus ",
+    "-": "minus ", "*": "star ", "/": "slash ", "%": "percent ", "#": "hash ", ",": "comma ",
+    ".": "dot ", "!": "exclamation ", "<": "less than ", ">": "greater than ", "_": "underscore ",
+    "\\": "backslash ", "⏎": "enter ", "·": " ",
+  };
+  const PAIRS = { "==": "double equals ", "!=": "not equals ", "//": "double slash ", ">=": "greater or equal ", "<=": "less or equal ", "**": "to the power of " };
+  function speakCode(code) {
+    const out = [];
+    let quote = null;
+    for (let i = 0; i < code.length; i++) {
+      const ch = code[i], two = code.slice(i, i + 2);
+      if (quote) {
+        if (ch === quote) { quote = null; out.push(" quote "); }
+        else if (ch === "\\" && i + 1 < code.length) { out.push(" backslash " + code[i + 1] + " "); i++; out.push(""); }
+        else out.push(ch);                       // words inside quotes read naturally
+      } else if (ch === '"' || ch === "'") {
+        quote = ch; out.push(" quote ");
+      } else if (PAIRS[two]) {
+        out.push(" " + PAIRS[two]); out.push(""); i++;
+      } else if (SYMBOLS[ch]) {
+        out.push(" " + SYMBOLS[ch]);
+      } else if (ch === " ") {
+        out.push(" ");
+      } else {
+        out.push(ch);
+      }
+    }
+    return out;
   }
 
   // Vocabulary words get a color by category
