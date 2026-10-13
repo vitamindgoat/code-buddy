@@ -2,7 +2,7 @@
 
 A learn-to-code platform for total beginners, with a friendly animated mentor buddy who goes through the lessons with you. Built for the 2026 Congressional App Challenge.
 
-**Live site:** (coming soon)
+**Live site:** https://code-buddy-iota-puce.vercel.app
 
 ## What it does
 
