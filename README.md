@@ -18,6 +18,7 @@ Plain HTML, CSS, and JavaScript. No framework, no build step.
 - **Pyodide** (CPython compiled to WebAssembly) so real Python runs in the browser
 - **Web Worker sandbox** (`runner.js`): the learner's code runs in a separate thread that can't touch the page. A 3-second timeout kills runaway loops.
 - **Rule-based buddy**: each lesson defines its expected output and common mistakes, so hints are instant, accurate, and never go off the rails.
+- **Buddy animation**: five SVG poses, swapped by a `data-state` attribute; all motion is CSS keyframes (`buddy.css`). JS decides what the buddy feels, CSS decides how it looks.
 
 ## Running locally
 
@@ -31,7 +32,8 @@ Then open the printed URL.
 
 ## AI disclosure
 
-Parts of this project were built with help from an AI assistant (Claude), used as a coding mentor. All code was reviewed and is understood by the author.
+- The code was written with help from an AI assistant (Claude), used as a coding mentor. All code was reviewed and is understood by the author.
+- The buddy character art (the five pose SVGs in `assets/buddy/`) was AI-generated from the author's design direction, then cleaned up and animated by hand. The animation system and state logic are the author's own.
 
 ## Author
 

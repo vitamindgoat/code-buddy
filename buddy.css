@@ -1,0 +1,166 @@
+/* ============================================================
+   buddy.css — which pose shows, and how it moves
+   buddy.js sets data-state on #buddy. Each pose is an <svg>
+   with data-pose; only the one matching the state is shown.
+   States: idle · thinking · happy · pointing · celebrate
+   ============================================================ */
+
+.buddy {
+  width: 200px;
+  height: 180px;
+  display: grid;
+  place-items: center;
+}
+
+.buddy .pose {
+  width: 200px;
+  height: 180px;
+  display: none;
+  overflow: visible;       /* sparkles poke outside the viewBox on purpose */
+  transform-origin: 50% 90%; /* bounces pivot from the bottom of the blob */
+}
+
+/* Show the pose that matches the current state */
+.buddy[data-state="idle"]      .pose[data-pose="idle"],
+.buddy[data-state="thinking"]  .pose[data-pose="thinking"],
+.buddy[data-state="happy"]     .pose[data-pose="happy"],
+.buddy[data-state="pointing"]  .pose[data-pose="pointing"],
+.buddy[data-state="celebrate"] .pose[data-pose="celebrate"] { display: block; }
+
+/* Parts inside the SVG rotate/scale around their own box, not the page */
+.buddy .arm-left, .buddy .arm-right, .buddy .hand,
+.buddy .eye-left, .buddy .eye-right,
+.buddy .question, .buddy .sparkles, .buddy .stars {
+  transform-box: fill-box;
+}
+.buddy .arm-left  { transform-origin: 90% 20%; }  /* left shoulder  */
+.buddy .arm-right { transform-origin: 10% 20%; }  /* right shoulder */
+.buddy .eye-left, .buddy .eye-right { transform-origin: 50% 50%; }
+.buddy .question, .buddy .sparkles, .buddy .stars { transform-origin: 50% 50%; }
+
+/* ---------- Animations ---------- */
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1, 1); }
+  50%      { transform: scale(1.02, 0.98); }
+}
+
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95%           { transform: scaleY(0.1); }
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50%      { transform: rotate(3deg); }
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+@keyframes bounce {
+  0%   { transform: translateY(0) scale(1, 1); }
+  30%  { transform: translateY(-18px) scale(0.96, 1.06); }
+  60%  { transform: translateY(0) scale(1.05, 0.94); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+
+@keyframes jump {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  20%      { transform: translateY(0) scale(1.08, 0.9); }
+  50%      { transform: translateY(-26px) scale(0.95, 1.08); }
+  80%      { transform: translateY(0) scale(1.05, 0.95); }
+}
+
+@keyframes pop-in {
+  0%   { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50%      { transform: scale(1.2) rotate(15deg); opacity: 0.7; }
+}
+
+@keyframes wave {
+  0%, 100% { transform: rotate(-8deg); }
+  50%      { transform: rotate(8deg); }
+}
+
+@keyframes point-mirrored {
+  0%, 100% { transform: scaleX(-1) translateY(0); }
+  50%      { transform: scaleX(-1) translateY(-4px); }
+}
+
+/* ---------- idle: breathing, blinking ---------- */
+
+.buddy[data-state="idle"] .pose { animation: breathe 3.2s ease-in-out infinite; }
+.buddy[data-state="idle"] .eye-left,
+.buddy[data-state="idle"] .eye-right { animation: blink 4.5s ease-in-out infinite; }
+
+/* ---------- thinking: slow sway, question mark bobs ---------- */
+
+.buddy[data-state="thinking"] .pose     { animation: sway 2.4s ease-in-out infinite; }
+.buddy[data-state="thinking"] .question { animation: bob 1.4s ease-in-out infinite; }
+
+/* ---------- happy: one bounce, sparkles pop in ---------- */
+
+.buddy[data-state="happy"] .pose     { animation: bounce 0.6s ease-out 1; }
+.buddy[data-state="happy"] .sparkles { animation: pop-in 0.5s ease-out 1; }
+
+/* ---------- pointing: mirrored so he points LEFT at the editor ---------- */
+
+.buddy[data-state="pointing"] .pose      { animation: point-mirrored 1s ease-in-out infinite; }
+.buddy[data-state="pointing"] .arm-right { animation: wave 1s ease-in-out infinite; }
+.buddy[data-state="pointing"] .sparkles  { animation: pop-in 0.5s ease-out 1; }
+
+/* ---------- celebrate: jumping, stars twinkle, arms wave ---------- */
+
+.buddy[data-state="celebrate"] .pose      { animation: jump 0.7s ease-in-out 3; }
+.buddy[data-state="celebrate"] .stars,
+.buddy[data-state="celebrate"] .sparkles  { animation: twinkle 0.7s ease-in-out infinite; }
+.buddy[data-state="celebrate"] .arm-left  { animation: wave 0.35s ease-in-out infinite; }
+.buddy[data-state="celebrate"] .arm-right { animation: wave 0.35s ease-in-out infinite reverse; }
+
+/* ---------- Speech bubble ---------- */
+
+.speech {
+  position: relative;
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+  font-weight: 700;
+  padding: 12px 14px;
+  border-radius: 14px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+/* little pointer up toward the buddy */
+.speech::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  background: var(--blue-soft);
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 3px;
+}
+
+@keyframes pop {
+  0%   { transform: scale(0.94); }
+  60%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.speech.pop { animation: pop 0.3s ease-out; }
+
+/* Respect users who turn off motion in their OS settings */
+@media (prefers-reduced-motion: reduce) {
+  .buddy *, .speech { animation: none !important; }
+  .buddy[data-state="pointing"] .pose { transform: scaleX(-1); }
+}

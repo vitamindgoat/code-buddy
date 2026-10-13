@@ -16,6 +16,7 @@
   <script src="vendor/codemirror/python.js"></script>
 
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="buddy.css" />
 </head>
 <body>
 
@@ -72,14 +73,16 @@ print("Hello, world!")
       </div>
     </section>
 
-    <!-- RIGHT: the buddy lives here (SVG + animations come in the next step) -->
+    <!-- RIGHT: the buddy. buddy.js draws the SVG into #buddy -->
     <aside class="card buddy-card">
-      <div id="buddy" class="buddy-placeholder" aria-hidden="true"></div>
-      <div class="speech" id="speech">Hi! I'm your coding buddy. Press Run when you're ready.</div>
+      <div id="buddy"></div>
+      <div class="speech" id="speech">Hi! I'm your coding buddy. Give me a sec to wake up Python…</div>
+      <div id="buddy-debug" class="buddy-debug" hidden></div>
     </aside>
 
   </main>
 
+  <script src="buddy.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

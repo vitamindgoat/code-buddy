@@ -28,7 +28,10 @@ const runBtn = document.getElementById("run-btn");
 const resetBtn = document.getElementById("reset-btn");
 const outputEl = document.getElementById("output");
 const statusEl = document.getElementById("status");
-const speechEl = document.getElementById("speech");
+
+// TEMPORARY: lesson 1's expected output, so "celebrate" can be tested.
+// This moves into a proper lessons file when the lesson engine is built.
+const LESSON_EXPECTED = "Hello, world!";
 
 // ---------- 3. The sandbox ----------
 
@@ -54,7 +57,8 @@ function startWorker() {
       pythonReady = true;
       runBtn.disabled = false;
       setStatus("", "");
-      say("Python is ready! Press Run when you are.");
+      buddy.set("idle");
+      buddy.say("Python is ready! Press Run when you are.");
     } else if (type === "log") {
       appendOutput(text);
     } else if (type === "error") {
@@ -65,7 +69,8 @@ function startWorker() {
       markErrorLine(line);
       setStatus("bad", "Error");
       finishRun();
-      say(line
+      buddy.set("pointing");
+      buddy.say(line
         ? `Hmm, something went wrong on line ${line}. Read the red text, it tells you what happened.`
         : "Hmm, something went wrong. Read the red text, it tells you what happened.");
     } else if (type === "done") {
@@ -75,7 +80,13 @@ function startWorker() {
       }
       setStatus("ok", "Ran successfully");
       finishRun();
-      say("Nice! Your code ran with no errors.");
+      if (outputEl.textContent.trim() === LESSON_EXPECTED) {
+        buddy.set("celebrate", 2600);
+        buddy.say("YES! You did it! That's exactly right.");
+      } else {
+        buddy.set("happy", 1500);
+        buddy.say("Nice! Your code ran with no errors.");
+      }
     }
   };
 
@@ -96,7 +107,8 @@ function runCode() {
   outputEl.textContent = "";
   clearErrorLine();
   setStatus("running", "Running…");
-  say("Running your code…");
+  buddy.set("thinking");
+  buddy.say("Running your code…");
   runBtn.disabled = true;
 
   // Send the code into the sandbox. This is the moment it starts running.
@@ -108,7 +120,8 @@ function runCode() {
   timer = setTimeout(() => {
     appendOutput("Stopped: your code ran for too long. Is there a loop that never ends?", true);
     setStatus("bad", "Timed out");
-    say("Your program never finished, so I stopped it. Check your loops! Reloading Python…");
+    buddy.set("thinking");
+    buddy.say("Your program never finished, so I stopped it. Check your loops! Reloading Python…");
     worker.terminate(); // instantly kills the sandbox, even mid-loop
     timer = null;
     startWorker();
@@ -138,10 +151,6 @@ function setStatus(kind, text) {
   statusEl.textContent = text;
 }
 
-function say(text) {
-  speechEl.textContent = text;
-}
-
 // Tint the line where the error happened so the learner can find it.
 function markErrorLine(line) {
   if (!line) return;
@@ -164,7 +173,8 @@ resetBtn.addEventListener("click", () => {
   clearErrorLine();
   outputEl.innerHTML = '<span class="output-hint">Press Run to see what your code does.</span>';
   setStatus("", "");
-  say("Back to the starting code. Give it another try!");
+  buddy.set("idle");
+  buddy.say("Back to the starting code. Give it another try!");
 });
 
 // Keyboard shortcut: Ctrl+Enter (or Cmd+Enter on Mac) runs the code
@@ -175,3 +185,15 @@ editor.setOption("extraKeys", {
 
 // Start loading Python right away so it's ready by the time they press Run.
 startWorker();
+
+// ---------- Dev helper: add ?debug to the URL to get state buttons ----------
+if (location.search.includes("debug")) {
+  const bar = document.getElementById("buddy-debug");
+  bar.hidden = false;
+  for (const state of ["idle", "thinking", "happy", "pointing", "celebrate"]) {
+    const b = document.createElement("button");
+    b.textContent = state;
+    b.onclick = () => buddy.set(state);
+    bar.appendChild(b);
+  }
+}

@@ -5,20 +5,24 @@
    ============================================================ */
 
 :root {
-  --blue: #2f6bff;
-  --blue-dark: #1f52d6;
-  --blue-soft: #e8efff;
+  /* Palette taken from the buddy's own colors: sky blues + a deep outline blue */
+  --blue: #1e6fd9;        /* buttons, links (dark enough for white text) */
+  --blue-dark: #135ab6;   /* the buddy's outline color; headings, hover  */
+  --blue-ink: #06337e;    /* the buddy's eyes; brand name                 */
+  --blue-mid: #74bcfe;    /* the buddy's accent sparkles                  */
+  --blue-soft: #e4f3ff;   /* pale fills: pills, speech bubble, code       */
+  --blue-line: #b6e3ff;   /* light borders                                */
   --ink: #1d2433;
   --ink-soft: #5b6475;
-  --line: #e6e9f0;
-  --bg: #f7f9fe;
+  --line: #dbe9f7;
+  --bg: #f3f9ff;
   --card: #ffffff;
   --green: #17a673;
   --green-soft: #e4f7ef;
   --red: #e5484d;
   --red-soft: #fdecec;
   --radius: 16px;
-  --shadow: 0 2px 10px rgba(29, 36, 51, 0.06);
+  --shadow: 0 2px 10px rgba(19, 90, 182, 0.06);
   --mono: "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
@@ -59,11 +63,12 @@ code {
 .brand-dot {
   width: 18px; height: 18px;
   border-radius: 50%;
-  background: var(--blue);
-  box-shadow: 0 0 0 5px var(--blue-soft);
+  background: var(--blue-mid);
+  border: 3px solid var(--blue-dark);
+  box-shadow: 0 0 0 4px var(--blue-soft);
 }
 
-.brand-name { font-weight: 800; font-size: 20px; letter-spacing: -0.2px; }
+.brand-name { font-weight: 800; font-size: 20px; letter-spacing: -0.2px; color: var(--blue-ink); }
 
 .pill {
   background: var(--blue-soft);
@@ -116,7 +121,7 @@ code {
 
 .lesson { padding: 22px; }
 
-.lesson-title { margin: 0 0 12px; font-size: 24px; font-weight: 800; }
+.lesson-title { margin: 0 0 12px; font-size: 24px; font-weight: 800; color: var(--blue-ink); }
 
 .lesson-text { margin: 0 0 12px; line-height: 1.55; color: var(--ink-soft); }
 
@@ -162,7 +167,7 @@ code {
   padding: 8px 0;
 }
 
-.CodeMirror-gutters { background: #fbfcff; border-right: 1px solid var(--line); }
+.CodeMirror-gutters { background: #f7fbff; border-right: 1px solid var(--line); }
 .CodeMirror-linenumber { color: #6f7889; }
 
 /* ---------- Output ---------- */
@@ -203,19 +208,10 @@ code {
   gap: 16px;
 }
 
-/* Temporary stand-in until the SVG buddy is built */
-.buddy-placeholder {
-  width: 140px; height: 140px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #6c93ff, var(--blue) 70%);
-}
-
-.speech {
-  background: var(--blue-soft);
-  color: var(--blue-dark);
-  font-weight: 700;
-  padding: 12px 14px;
-  border-radius: 14px;
-  line-height: 1.45;
-  text-align: center;
+/* Dev-only state buttons, shown with ?debug in the URL */
+.buddy-debug { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.buddy-debug button {
+  font: inherit; font-size: 12px; font-weight: 700;
+  border: 1px solid var(--line); background: #fff; color: var(--ink-soft);
+  border-radius: 8px; padding: 4px 8px; cursor: pointer;
 }
