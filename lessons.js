@@ -67,8 +67,8 @@ const MODULES = [
           {
             code: 'print("Wake up")',
             parts: [
-              { text: "print", say: "Every step here is a print.", explain: "`print` is a *function*: a command that does one job.\nIts job is showing text on the screen." },
-              { text: '("Wake up")', say: "Give it the first step of the morning.", explain: "The ( ) hold what you give the function.\nQuotes mean \"these are words, not code.\"" },
+              { text: "print", say: "Every step in this program is a print, so let's start by typing print.", explain: "`print` is a *function*: a command that does one job.\nIts job is showing text on the screen." },
+              { text: '("Wake up")', say: "Now give it the first step of the morning: the words, in quotes, inside the parentheses.", explain: "The ( ) hold what you give the function.\nQuotes mean \"these are words, not code.\"" },
             ],
             hints: [
               { match: /^\s*(prnt|pirnt|pritn|pint|prin)\b/i, say: "Check the spelling: p-r-i-n-t." },
@@ -78,13 +78,13 @@ const MODULES = [
           {
             code: 'print("Brush teeth")',
             parts: [
-              { text: 'print("Brush teeth")', say: "Press Enter. Step two goes on its own line.", explain: "Python runs lines top to bottom.\nThat's called *sequencing*." },
+              { text: 'print("Brush teeth")', say: "Press Enter, because step two goes on its own line.", explain: "Python runs lines top to bottom.\nThat's called *sequencing*." },
             ],
           },
           {
             code: 'print("Go to school")',
             parts: [
-              { text: 'print("Go to school")', say: "One more step.", explain: "Three lines, three steps, in order.\nSwap two lines and the morning goes wrong!" },
+              { text: 'print("Go to school")', say: "Press Enter and add one more step.", explain: "Three lines, three steps, in order.\nSwap two lines and the morning goes wrong!" },
             ],
           },
         ],
@@ -116,15 +116,15 @@ const MODULES = [
           {
             code: "number = 5",
             parts: [
-              { text: "number", say: "Make a variable to hold a number.", explain: "`number` is a *variable*: a name that remembers a value." },
-              { text: "= 5", say: "Store 5 in it.", explain: "One `=` means \"store this.\"" },
+              { text: "number", say: "First, make a variable called number to hold our value.", explain: "`number` is a *variable*: a name that remembers a value." },
+              { text: "= 5", say: "Now store the number 5 in it.", explain: "One `=` means \"store this.\"" },
             ],
           },
           {
             code: "print(bin(number))",
             parts: [
-              { text: "print(", say: "Press Enter. We'll print something.", explain: "print shows whatever is inside the parentheses." },
-              { text: "bin(number))", say: "bin() turns a number into binary.", explain: "`bin` is a function that converts to *binary*.\n5 becomes 0b101: the 0b just means \"this is binary.\"\n1·4 + 0·2 + 1·1 = 5." },
+              { text: "print(", say: "Press Enter. Next we'll print something.", explain: "print shows whatever is inside the parentheses." },
+              { text: "bin(number))", say: "Now type bin, with number inside it. bin turns a number into binary.", explain: "`bin` is a function that converts to *binary*.\n5 becomes 0b101: the 0b just means \"this is binary.\"\n1·4 + 0·2 + 1·1 = 5." },
             ],
           },
         ],
@@ -156,14 +156,14 @@ const MODULES = [
           {
             code: 'print("0" * 8)',
             parts: [
-              { text: 'print("0"', say: "Print a single character...", explain: "A *string* is text in quotes. Even one character counts." },
-              { text: " * 8)", say: "...and repeat it with *", explain: "`*` on a string means *repeat*.\n\"0\" * 8 is 0 eight times: the computer only stores the pattern." },
+              { text: 'print("0"', say: "Start by printing a single character: the string zero.", explain: "A *string* is text in quotes. Even one character counts." },
+              { text: " * 8)", say: "Now multiply it by 8. On a string, the star means repeat.", explain: "`*` on a string means *repeat*.\n\"0\" * 8 is 0 eight times: the computer only stores the pattern." },
             ],
           },
           {
             code: 'print("01" * 4)',
             parts: [
-              { text: 'print("01" * 4)', say: "Press Enter. Patterns can be longer than one character.", explain: "\"01\" repeated 4 times gives 8 characters.\nLow *entropy* (lots of repetition) compresses well." },
+              { text: 'print("01" * 4)', say: "Press Enter. Patterns can be longer than one character, so let's repeat zero-one four times.", explain: "\"01\" repeated 4 times gives 8 characters.\nLow *entropy* (lots of repetition) compresses well." },
             ],
           },
         ],
@@ -195,21 +195,21 @@ const MODULES = [
           {
             code: "print(True and False)",
             parts: [
-              { text: "print(True", say: "True and False are *booleans*: yes or no values.", explain: "`True` is a *boolean*. Capital T! Python is picky." },
-              { text: " and False)", say: "AND gate: both must be True.", explain: "`and` is an AND gate.\nTrue and False is False, because they're not BOTH true." },
+              { text: "print(True", say: "Let's print True. True and False are *booleans*: yes or no values.", explain: "`True` is a *boolean*. Capital T! Python is picky." },
+              { text: " and False)", say: "Now add and False. This works like an AND gate: both sides must be True.", explain: "`and` is an AND gate.\nTrue and False is False, because they're not BOTH true." },
             ],
             hints: [{ match: /\btrue\b|\bfalse\b/, say: "Capital letters: `True` and `False`." }],
           },
           {
             code: "print(True or False)",
             parts: [
-              { text: "print(True or False)", say: "Press Enter. OR gate: either one.", explain: "`or` is an OR gate.\nOne True is enough, so this is True." },
+              { text: "print(True or False)", say: "Press Enter. Next, or works like an OR gate: one True side is enough.", explain: "`or` is an OR gate.\nOne True is enough, so this is True." },
             ],
           },
           {
             code: "print(not True)",
             parts: [
-              { text: "print(not True)", say: "Press Enter. NOT flips the value.", explain: "`not` is a NOT gate.\nnot True is False." },
+              { text: "print(not True)", say: "Press Enter. Last one: not flips the value.", explain: "`not` is a NOT gate.\nnot True is False." },
             ],
           },
         ],
@@ -260,21 +260,21 @@ const MODULES = [
           {
             code: "# My first program",
             parts: [
-              { text: "#", say: "A comment starts with a hash.", explain: "`#` starts a *comment*.\nPython ignores everything after it on that line." },
-              { text: " My first program", say: "Write any note you like.", explain: "Comments explain your code to people.\nThe computer never sees them." },
+              { text: "#", say: "Let's start with a comment. A comment starts with a hash symbol.", explain: "`#` starts a *comment*.\nPython ignores everything after it on that line." },
+              { text: " My first program", say: "Now write any note you like after the hash.", explain: "Comments explain your code to people.\nThe computer never sees them." },
             ],
           },
           {
             code: 'print("Hello, world!")',
             parts: [
-              { text: 'print("Hello, world!")', say: "Press Enter. Now real code.", explain: "`print` sends text to the console.\nThis exact line is the first program most people ever write." },
+              { text: 'print("Hello, world!")', say: "Press Enter. Now some real code: print Hello, world!", explain: "`print` sends text to the console.\nThis exact line is the first program most people ever write." },
             ],
             hints: [{ match: /^\s*print\s*\(\s*[^"'\s)]/, say: "The words need quotes around them." }],
           },
           {
             code: 'print("CSP is fun.")',
             parts: [
-              { text: 'print("CSP is fun.")', say: "Press Enter. One more.", explain: "Each print makes its own line." },
+              { text: 'print("CSP is fun.")', say: "Press Enter and print one more line.", explain: "Each print makes its own line." },
             ],
           },
         ],
@@ -295,14 +295,14 @@ const MODULES = [
           {
             code: 'print("Line one\\nLine two")',
             parts: [
-              { text: 'print("Line one', say: "Start a normal string.", explain: "So far it's ordinary text." },
-              { text: '\\nLine two")', say: "\\n means \"new line\" right inside the string.", explain: "`\\n` is an *escape sequence*.\nOne print, two lines of output." },
+              { text: 'print("Line one', say: "Start a print with the text Line one, but don't close the quote yet.", explain: "So far it's ordinary text." },
+              { text: '\\nLine two")', say: "Now type backslash n, then Line two. Backslash n means new line, right inside the string.", explain: "`\\n` is an *escape sequence*.\nOne print, two lines of output." },
             ],
           },
           {
             code: 'print("She said \\"hi\\"")',
             parts: [
-              { text: 'print("She said \\"hi\\"")', say: "Press Enter. To print a quote mark, escape it with a backslash.", explain: "`\\\"` prints a real quote mark\ninstead of ending the string." },
+              { text: 'print("She said \\"hi\\"")', say: "Press Enter. To print an actual quote mark, put a backslash right in front of it.", explain: "`\\\"` prints a real quote mark\ninstead of ending the string." },
             ],
           },
         ],
@@ -334,27 +334,27 @@ const MODULES = [
           {
             code: 'name = "Gary"',
             parts: [
-              { text: "name", say: "Variable names are lowercase and describe what they hold.", explain: "`name` is a *variable*.\nGood names say what's inside: name, age, score." },
-              { text: ' = "Gary"', say: "Store some text in it.", explain: "Text in quotes is a *string* (type str)." },
+              { text: "name", say: "Let's make a variable called name. Variable names are lowercase and describe what they hold.", explain: "`name` is a *variable*.\nGood names say what's inside: name, age, score." },
+              { text: ' = "Gary"', say: "Now store some text in it, like the name Gary.", explain: "Text in quotes is a *string* (type str)." },
             ],
           },
           {
             code: "age = 15",
             parts: [
-              { text: "age = 15", say: "Press Enter. Now a whole number.", explain: "15 with no quotes is an *integer* (type int)." },
+              { text: "age = 15", say: "Press Enter. Now make a variable called age that holds a whole number.", explain: "15 with no quotes is an *integer* (type int)." },
             ],
             hints: [{ match: /^\s*age\s*=\s*["']/, say: "No quotes: 15 should be a number, not text." }],
           },
           {
             code: "print(type(name))",
             parts: [
-              { text: "print(type(name))", say: "Press Enter. Ask Python what type name is.", explain: "`type` is a function that reports a value's *type*.\n<class 'str'> means string." },
+              { text: "print(type(name))", say: "Press Enter. Let's ask Python what type name is, using the type function.", explain: "`type` is a function that reports a value's *type*.\n<class 'str'> means string." },
             ],
           },
           {
             code: "print(type(age))",
             parts: [
-              { text: "print(type(age))", say: "Press Enter. And age?", explain: "<class 'int'> means integer." },
+              { text: "print(type(age))", say: "Press Enter. Now do the same for age.", explain: "<class 'int'> means integer." },
             ],
           },
         ],
@@ -375,26 +375,26 @@ const MODULES = [
           {
             code: "print(7 + 3)",
             parts: [
-              { text: "print(7 + 3)", say: "Plain addition.", explain: "No quotes, so Python *calculates* instead of printing the words." },
+              { text: "print(7 + 3)", say: "Let's start with plain addition: print 7 plus 3.", explain: "No quotes, so Python *calculates* instead of printing the words." },
             ],
             hints: [{ match: /^\s*print\s*\(\s*["']/, say: "No quotes: we want Python to do the math." }],
           },
           {
             code: "print(7 % 3)",
             parts: [
-              { text: "print(7 % 3)", say: "Press Enter. % is modulus: the remainder.", explain: "`%` is *modulus*.\n7 ÷ 3 is 2 remainder 1, so 7 % 3 is 1." },
+              { text: "print(7 % 3)", say: "Press Enter. The percent sign is modulus: it gives you the remainder.", explain: "`%` is *modulus*.\n7 ÷ 3 is 2 remainder 1, so 7 % 3 is 1." },
             ],
           },
           {
             code: "print(7 // 3)",
             parts: [
-              { text: "print(7 // 3)", say: "Press Enter. // is floor division.", explain: "`//` is *floor division*.\n7 ÷ 3 is 2.33, floor division keeps just the 2." },
+              { text: "print(7 // 3)", say: "Press Enter. Two slashes is floor division: it throws away the decimal part.", explain: "`//` is *floor division*.\n7 ÷ 3 is 2.33, floor division keeps just the 2." },
             ],
           },
           {
             code: "print(7 / 2)",
             parts: [
-              { text: "print(7 / 2)", say: "Press Enter. Regular division keeps decimals.", explain: "A single `/` always gives a *float*, even 4 / 2 = 2.0." },
+              { text: "print(7 / 2)", say: "Press Enter. A single slash is regular division, which keeps the decimals.", explain: "A single `/` always gives a *float*, even 4 / 2 = 2.0." },
             ],
           },
         ],
@@ -422,16 +422,16 @@ const MODULES = [
         title: "Tracing code",
         intro: "*Tracing* means following a program line by line and tracking what each variable holds. Here x changes four times.",
         steps: [
-          { code: "x = 5", parts: [{ text: "x = 5", say: "Start x at 5.", explain: "Trace table: after line 1, x is 5." }] },
+          { code: "x = 5", parts: [{ text: "x = 5", say: "Let's start a variable x at 5.", explain: "In a trace table: after line 1, x is 5." }] },
           {
             code: "x = x + 3",
             parts: [
-              { text: "x = x + 3", say: "Press Enter. Use x to make a new x.", explain: "Python computes the right side first (5 + 3 = 8),\nthen stores it. x is 8." },
+              { text: "x = x + 3", say: "Press Enter. Now use the old x to make a new x: x equals x plus 3.", explain: "Python computes the right side first (5 + 3 = 8),\nthen stores it. x is 8." },
             ],
           },
-          { code: "x = x * 2", parts: [{ text: "x = x * 2", say: "Press Enter. Double it.", explain: "8 * 2 = 16. x is 16." }] },
-          { code: "x = x - 4", parts: [{ text: "x = x - 4", say: "Press Enter. Take away 4.", explain: "16 - 4 = 12. x is 12." }] },
-          { code: "print(x)", parts: [{ text: "print(x)", say: "Press Enter. Show the final value.", explain: "Only the last value prints. Did your trace say 12?" }] },
+          { code: "x = x * 2", parts: [{ text: "x = x * 2", say: "Press Enter. Now double it.", explain: "8 * 2 = 16. x is 16." }] },
+          { code: "x = x - 4", parts: [{ text: "x = x - 4", say: "Press Enter. Now take away 4.", explain: "16 - 4 = 12. x is 12." }] },
+          { code: "print(x)", parts: [{ text: "print(x)", say: "Press Enter. Finally, print x to show the final value.", explain: "Only the last value prints. Did your trace say 12?" }] },
         ],
         expectedOutput: "12",
         done: "Tracing is how you find bugs: pretend to be the computer and track every variable.",
@@ -447,20 +447,20 @@ const MODULES = [
         title: "Fancy output (f-strings)",
         intro: "An *f-string* lets you drop variables straight into text with { }. Put an f before the opening quote.",
         steps: [
-          { code: 'name = "GARY THE SNAIL"', parts: [{ text: 'name = "GARY THE SNAIL"', say: "A string variable.", explain: "name holds the text." }] },
+          { code: 'name = "GARY THE SNAIL"', parts: [{ text: 'name = "GARY THE SNAIL"', say: "First, a string variable called name.", explain: "name holds the text." }] },
           {
             code: 'print(f"Hi {name}!")',
             parts: [
-              { text: 'print(f"', say: "Press Enter. The f before the quote is the magic.", explain: "`f\"` starts an *f-string*: a string that can hold variables." },
-              { text: 'Hi {name}!")', say: "Curly braces pull in the variable.", explain: "`{name}` is replaced by what name holds.\nNo + signs, no str()." },
+              { text: 'print(f"', say: "Press Enter. Now type print, then an f right before the quote. That f is the magic.", explain: "`f\"` starts an *f-string*: a string that can hold variables." },
+              { text: 'Hi {name}!")', say: "Now write Hi, then name inside curly braces. The braces pull in the variable.", explain: "`{name}` is replaced by what name holds.\nNo + signs, no str()." },
             ],
             hints: [{ match: /^\s*print\s*\(\s*"/, say: "Put an f right before the opening quote: print(f\"...\")" }],
           },
-          { code: "num = 50", parts: [{ text: "num = 50", say: "Press Enter. A number this time.", explain: "num holds 50." }] },
+          { code: "num = 50", parts: [{ text: "num = 50", say: "Press Enter. Let's make a number variable this time.", explain: "num holds 50." }] },
           {
             code: 'print(f"{num} * 2 = {num * 2}")',
             parts: [
-              { text: 'print(f"{num} * 2 = {num * 2}")', say: "Press Enter. Braces can hold math, too.", explain: "`{num * 2}` does the math inside the string.\nOutput: 50 * 2 = 100." },
+              { text: 'print(f"{num} * 2 = {num * 2}")', say: "Press Enter. The braces can hold math too, like num times 2.", explain: "`{num * 2}` does the math inside the string.\nOutput: 50 * 2 = 100." },
             ],
           },
         ],
@@ -476,27 +476,27 @@ const MODULES = [
       {
         id: "m2-input",
         title: "Input",
-        intro: "input() shows a prompt, pauses, and waits for the user to type. For this lesson, the user types: Gary",
+        intro: "input() shows a prompt, pauses, and waits for the user to type.",
         inputs: ["Gary"],
         steps: [
           {
             code: 'name = input("What is your name? ")',
             parts: [
-              { text: "name = ", say: "We'll store what the user types.", explain: "The answer goes into the variable name." },
-              { text: 'input("What is your name? ")', say: "input() shows the prompt and waits.", explain: "`input` is a function that *pauses* the program.\nWhatever the user types comes back as a *string*." },
+              { text: "name = ", say: "Let's make a variable called name to store what the user types.", explain: "The answer goes into the variable name." },
+              { text: 'input("What is your name? ")', say: "Now type input with a question inside. input shows the question and waits for an answer.", explain: "`input` is a function that *pauses* the program.\nWhatever the user types comes back as a *string*." },
             ],
           },
           {
             code: 'print("Hi " + name + "!")',
             parts: [
-              { text: 'print("Hi " + name + "!")', say: "Press Enter. Greet them. + joins strings.", explain: "`+` on strings *joins* them.\n\"Hi \" + \"Gary\" + \"!\" becomes Hi Gary!" },
+              { text: 'print("Hi " + name + "!")', say: "Press Enter. Now greet them. The plus sign joins strings together.", explain: "`+` on strings *joins* them.\n\"Hi \" + \"Gary\" + \"!\" becomes Hi Gary!" },
             ],
           },
         ],
         expectedOutput: "What is your name? Gary\nHi Gary!",
         done: "input() ALWAYS returns a string, even if the user types a number. That matters next lesson.",
         practice: {
-          task: "Ask \"Favorite food? \" with input(), then print \"Yum, \" followed by the answer and \"!\". The user types: pizza",
+          task: "Ask \"Favorite food? \" with input(), then print \"Yum, \" followed by the answer and \"!\".",
           inputs: ["pizza"],
           solution: ['food = input("Favorite food? ")', 'print("Yum, " + food + "!")'],
           expectedOutput: "Favorite food? pizza\nYum, pizza!",
@@ -506,28 +506,28 @@ const MODULES = [
       {
         id: "m2-casting",
         title: "Casting input",
-        intro: "input() gives a string, so \"12\" + 1 breaks. *Casting* converts it: int(\"12\") is the number 12. The user types: 12",
+        intro: "input() gives a string, so \"12\" + 1 breaks. *Casting* converts it: int(\"12\") is the number 12.",
         inputs: ["12"],
         steps: [
           {
             code: 'age = int(input("How old are you? "))',
             parts: [
-              { text: "age = int(", say: "Wrap the input in int( ) to cast it.", explain: "`int` is a function that *casts* text to a whole number." },
-              { text: 'input("How old are you? "))', say: "The input goes inside. Two closing parentheses!", explain: "Inside-out: input() runs first, then int() converts the answer." },
+              { text: "age = int(", say: "This time we wrap the input in int, to turn the typed text into a number.", explain: "`int` is a function that *casts* text to a whole number." },
+              { text: 'input("How old are you? "))', say: "The input goes inside the int. You'll need two closing parentheses!", explain: "Inside-out: input() runs first, then int() converts the answer." },
             ],
             hints: [{ match: /^\s*age\s*=\s*input/, say: "Wrap it: age = int(input(...)). Without int() the math will fail." }],
           },
           {
             code: "print(age + 1)",
             parts: [
-              { text: "print(age + 1)", say: "Press Enter. Now math works.", explain: "age is a real number now, so 12 + 1 = 13." },
+              { text: "print(age + 1)", say: "Press Enter. Now that age is a number, math works: print age plus 1.", explain: "age is a real number now, so 12 + 1 = 13." },
             ],
           },
         ],
         expectedOutput: "How old are you? 12\n13",
         done: "Casting lets math happen. But if the user types \"twelve\", int() crashes: that's a runtime error.",
         practice: {
-          task: "Ask \"Number? \", cast the answer to int, and print it times 3. The user types: 4",
+          task: "Ask \"Number? \", cast the answer to int, and print it times 3.",
           inputs: ["4"],
           solution: ['n = int(input("Number? "))', "print(n * 3)"],
           expectedOutput: "Number? 4\n12",
@@ -550,12 +550,12 @@ const MODULES = [
         title: "Errors and str()",
         intro: "Three kinds of *errors*: syntax (Python can't read it), runtime (it crashes while running), logic (it runs but is wrong). Here's a classic runtime one.",
         steps: [
-          { code: "total = 2 + 2", parts: [{ text: "total = 2 + 2", say: "Do some math.", explain: "total holds the int 4." }] },
+          { code: "total = 2 + 2", parts: [{ text: "total = 2 + 2", say: "First, do some math and store it in total.", explain: "total holds the int 4." }] },
           {
             code: 'print("total is " + str(total))',
             parts: [
-              { text: 'print("total is " + ', say: "Press Enter. Start joining text...", explain: "+ joins two *strings*. But total is an int!" },
-              { text: "str(total))", say: "Cast the number to text with str( ).", explain: "`str` converts a value to a *string*.\nWithout it you'd get a TypeError: can't join str and int." },
+              { text: 'print("total is " + ', say: "Press Enter. Now start printing some text, and join it with a plus.", explain: "+ joins two *strings*. But total is an int!" },
+              { text: "str(total))", say: "Now wrap total in str to turn the number into text.", explain: "`str` converts a value to a *string*.\nWithout it you'd get a TypeError: can't join str and int." },
             ],
             hints: [{ match: /\+\s*total\s*\)/, say: "total is a number. Wrap it: str(total), or Python raises a TypeError." }],
           },
@@ -606,13 +606,13 @@ const MODULES = [
         title: "Comparisons",
         intro: "*Relational operators* compare two values and give a *boolean*: >  <  >=  <=  ==  !=",
         steps: [
-          { code: "print(5 > 3)", parts: [{ text: "print(5 > 3)", say: "Is 5 greater than 3?", explain: "`>` compares. The answer is a *boolean*: True." }] },
+          { code: "print(5 > 3)", parts: [{ text: "print(5 > 3)", say: "Let's ask Python a question: is 5 greater than 3?", explain: "`>` compares. The answer is a *boolean*: True." }] },
           {
             code: "print(5 == 3)",
-            parts: [{ text: "print(5 == 3)", say: "Press Enter. Two equals signs ask \"are these equal?\"", explain: "`==` means *is equal to*.\nOne = stores, two == compares!" }],
+            parts: [{ text: "print(5 == 3)", say: "Press Enter. Two equals signs ask: are these equal?", explain: "`==` means *is equal to*.\nOne = stores, two == compares!" }],
             hints: [{ match: /print\s*\(\s*5\s*=\s*3/, say: "Use two equals signs to compare: ==" }],
           },
-          { code: "print(5 != 3)", parts: [{ text: "print(5 != 3)", say: "Press Enter. != means not equal.", explain: "`!=` means *not equal to*. 5 is not 3, so True." }] },
+          { code: "print(5 != 3)", parts: [{ text: "print(5 != 3)", say: "Press Enter. Exclamation equals means not equal.", explain: "`!=` means *not equal to*. 5 is not 3, so True." }] },
         ],
         expectedOutput: "True\nFalse\nTrue",
         done: "Comparisons are questions with yes/no answers. Conditionals are built on them.",
@@ -628,17 +628,17 @@ const MODULES = [
         title: "and, or, not",
         intro: "*Logical operators* combine comparisons. and: both true. or: at least one. not: flip it.",
         steps: [
-          { code: "age = 16", parts: [{ text: "age = 16", say: "A number to test.", explain: "age holds 16." }] },
+          { code: "age = 16", parts: [{ text: "age = 16", say: "First, a number to test: age equals 16.", explain: "age holds 16." }] },
           {
             code: "print(age >= 13 and age <= 19)",
             parts: [
-              { text: "print(age >= 13", say: "Press Enter. First comparison: 13 or older?", explain: "16 >= 13 is True." },
-              { text: " and age <= 19)", say: "and: the second must also be true.", explain: "`and` needs BOTH. 16 <= 19 is True too, so True.\nA teenager check!" },
+              { text: "print(age >= 13", say: "Press Enter. Now the first comparison: is age 13 or older?", explain: "16 >= 13 is True." },
+              { text: " and age <= 19)", say: "Now add and age less than or equal to 19. With and, the second part must also be true.", explain: "`and` needs BOTH. 16 <= 19 is True too, so True.\nA teenager check!" },
             ],
           },
           {
             code: "print(age < 13 or age > 19)",
-            parts: [{ text: "print(age < 13 or age > 19)", say: "Press Enter. or: either one.", explain: "`or` needs just one. Both are False here, so False." }],
+            parts: [{ text: "print(age < 13 or age > 19)", say: "Press Enter. Now try or: only one side needs to be true.", explain: "`or` needs just one. Both are False here, so False." }],
           },
         ],
         expectedOutput: "True\nFalse",
@@ -653,30 +653,30 @@ const MODULES = [
       {
         id: "m3-if",
         title: "if and else",
-        intro: "A *conditional* runs code only when something is true. if checks, else catches everything else. The user types: 20",
+        intro: "A *conditional* runs code only when something is true. if checks, else catches everything else.",
         inputs: ["20"],
         steps: [
-          { code: 'age = int(input("Age? "))', parts: [{ text: 'age = int(input("Age? "))', say: "Get a number from the user.", explain: "Cast with int() so we can compare numbers." }] },
+          { code: 'age = int(input("Age? "))', parts: [{ text: 'age = int(input("Age? "))', say: "First, get a number from the user and store it in age.", explain: "Cast with int() so we can compare numbers." }] },
           {
             code: "if age >= 18:",
             parts: [
-              { text: "if", say: "Press Enter. The keyword that makes a decision.", explain: "`if` is a *keyword*: \"only do this when...\"" },
-              { text: " age >= 18:", say: "The condition, then a colon.", explain: "The `:` means \"the code for this case is below, indented.\"" },
+              { text: "if", say: "Press Enter. Now type if: the keyword that makes a decision.", explain: "`if` is a *keyword*: \"only do this when...\"" },
+              { text: " age >= 18:", say: "Now the condition, age greater or equal to 18, then a colon.", explain: "The `:` means \"the code for this case is below, indented.\"" },
             ],
             hints: [{ match: /^\s*if\s+age\s*>=\s*18\s*$/, say: "Add a colon : at the end." }],
           },
-          { code: '    print("Adult")', parts: [{ text: 'print("Adult")', say: "Press Enter. Indented: this only runs if the condition was True.", explain: "Indented lines belong to the if." }] },
+          { code: '    print("Adult")', parts: [{ text: 'print("Adult")', say: "Press Enter. This line is indented, so it only runs if the condition was True.", explain: "Indented lines belong to the if." }] },
           {
             code: "else:",
-            parts: [{ text: "else:", say: "Press Enter, then Backspace to un-indent. else handles the other case.", explain: "`else` has no condition: it's \"otherwise.\"\nIt lines up with the if." }],
+            parts: [{ text: "else:", say: "Press Enter, then Backspace to un-indent. Now type else: it handles the other case.", explain: "`else` has no condition: it's \"otherwise.\"\nIt lines up with the if." }],
             hints: [{ match: /^\s+else/, say: "else: must line up with if. Remove the indentation." }],
           },
-          { code: '    print("Minor")', parts: [{ text: 'print("Minor")', say: "Press Enter. Indented again.", explain: "Exactly one of the two prints runs. Never both." }] },
+          { code: '    print("Minor")', parts: [{ text: 'print("Minor")', say: "Press Enter. This one is indented again, under the else.", explain: "Exactly one of the two prints runs. Never both." }] },
         ],
         expectedOutput: "Age? 20\nAdult",
         done: "if/else is a fork in the road. The user typed 20, so we took the Adult path.",
         practice: {
-          task: "Ask \"Number? \" (cast to int). If it's greater than 10 print \"Big\", else print \"Small\". The user types: 5",
+          task: "Ask \"Number? \" (cast to int). If it's greater than 10 print \"Big\", else print \"Small\".",
           inputs: ["5"],
           solution: ['n = int(input("Number? "))', "if n > 10:", '    print("Big")', "else:", '    print("Small")'],
           expectedOutput: "Number? 5\nSmall",
@@ -688,17 +688,17 @@ const MODULES = [
         title: "elif",
         intro: "More than two cases? *elif* (else-if) checks another condition. Python stops at the first one that's true.",
         steps: [
-          { code: "score = 85", parts: [{ text: "score = 85", say: "A test score.", explain: "score holds 85." }] },
-          { code: "if score >= 90:", parts: [{ text: "if score >= 90:", say: "Press Enter. First check.", explain: "85 >= 90 is False, so Python skips this block." }] },
-          { code: '    print("A")', parts: [{ text: 'print("A")', say: "Press Enter. Indented.", explain: "Skipped this time." }] },
+          { code: "score = 85", parts: [{ text: "score = 85", say: "Let's start with a test score of 85.", explain: "score holds 85." }] },
+          { code: "if score >= 90:", parts: [{ text: "if score >= 90:", say: "Press Enter. Here's the first check: is the score 90 or more?", explain: "85 >= 90 is False, so Python skips this block." }] },
+          { code: '    print("A")', parts: [{ text: 'print("A")', say: "Press Enter. Indent, then print A.", explain: "This line gets skipped this time." }] },
           {
             code: "elif score >= 80:",
-            parts: [{ text: "elif score >= 80:", say: "Press Enter, Backspace to un-indent. elif = another check.", explain: "`elif` only runs if the if was False.\n85 >= 80 is True!" }],
+            parts: [{ text: "elif score >= 80:", say: "Press Enter, then Backspace to un-indent. elif means else-if: another check.", explain: "`elif` only runs if the if was False.\n85 >= 80 is True!" }],
             hints: [{ match: /^\s*else\s+if/, say: "Python spells it elif, one word." }],
           },
-          { code: '    print("B")', parts: [{ text: 'print("B")', say: "Press Enter. Indented.", explain: "This one runs, and Python stops checking." }] },
-          { code: "else:", parts: [{ text: "else:", say: "Press Enter, un-indent. The catch-all.", explain: "`else` catches everything that didn't match." }] },
-          { code: '    print("C")', parts: [{ text: 'print("C")', say: "Press Enter. Indented.", explain: "Never reached this time." }] },
+          { code: '    print("B")', parts: [{ text: 'print("B")', say: "Press Enter. Indent, then print B.", explain: "This one runs, and Python stops checking." }] },
+          { code: "else:", parts: [{ text: "else:", say: "Press Enter, then Backspace to un-indent. else is the catch-all.", explain: "`else` catches everything that didn't match." }] },
+          { code: '    print("C")', parts: [{ text: 'print("C")', say: "Press Enter. Indent, then print C.", explain: "This line is never reached this time." }] },
         ],
         expectedOutput: "B",
         done: "Order matters: put the strictest check first. Checking >= 80 before >= 90 would give the wrong grade.",
@@ -714,10 +714,10 @@ const MODULES = [
         title: "Common functions",
         intro: "Python ships with handy *functions*: len() counts characters, round() rounds, abs() drops the minus sign.",
         steps: [
-          { code: 'word = "banana"', parts: [{ text: 'word = "banana"', say: "A string to measure.", explain: "word holds 6 characters." }] },
-          { code: "print(len(word))", parts: [{ text: "print(len(word))", say: "Press Enter. len() counts.", explain: "`len` returns the *length*: 6." }] },
-          { code: "print(round(3.7))", parts: [{ text: "print(round(3.7))", say: "Press Enter. round() to the nearest whole number.", explain: "`round` gives 4." }] },
-          { code: "print(abs(-5))", parts: [{ text: "print(abs(-5))", say: "Press Enter. abs() = absolute value.", explain: "`abs` removes the sign: 5." }] },
+          { code: 'word = "banana"', parts: [{ text: 'word = "banana"', say: "First, a string to measure: word equals banana.", explain: "word holds 6 characters." }] },
+          { code: "print(len(word))", parts: [{ text: "print(len(word))", say: "Press Enter. len counts the characters in word.", explain: "`len` returns the *length*: 6." }] },
+          { code: "print(round(3.7))", parts: [{ text: "print(round(3.7))", say: "Press Enter. round rounds to the nearest whole number.", explain: "`round` gives 4." }] },
+          { code: "print(abs(-5))", parts: [{ text: "print(abs(-5))", say: "Press Enter. abs gives the absolute value: it drops the minus sign.", explain: "`abs` removes the sign: 5." }] },
         ],
         expectedOutput: "6\n4\n5",
         done: "Also useful: min(), max(), str(), int(), float(). A function takes something in and gives something back.",
@@ -747,12 +747,12 @@ const MODULES = [
           {
             code: "for i in range(5):",
             parts: [
-              { text: "for i in", say: "The loop keyword and a loop variable.", explain: "`for` is a *keyword*. `i` takes each value in turn." },
-              { text: " range(5):", say: "range(5) gives five numbers. Colon!", explain: "`range(5)` is 0 through 4. Starts at 0, stops BEFORE 5." },
+              { text: "for i in", say: "Type for, then i, then in. for is the loop keyword and i is the loop variable.", explain: "`for` is a *keyword*. `i` takes each value in turn." },
+              { text: " range(5):", say: "Now range of 5, which gives five numbers, then a colon.", explain: "`range(5)` is 0 through 4. Starts at 0, stops BEFORE 5." },
             ],
             hints: [{ match: /range\s*\(\s*5\s*\)\s*$/, say: "Add a colon : at the end." }],
           },
-          { code: "    print(i)", parts: [{ text: "print(i)", say: "Press Enter. Indented: the body runs 5 times.", explain: "Each time through, i is the next number." }] },
+          { code: "    print(i)", parts: [{ text: "print(i)", say: "Press Enter. Indent and print i. This body runs 5 times.", explain: "Each time through, i is the next number." }] },
         ],
         expectedOutput: "0\n1\n2\n3\n4",
         done: "range(5) has 5 numbers but starts at 0, so the last is 4. That trips everyone up once.",
@@ -768,12 +768,12 @@ const MODULES = [
         title: "Adding up with a loop",
         intro: "A loop can build a result step by step. This one adds every number from 0 to 100.",
         steps: [
-          { code: "total = 0", parts: [{ text: "total = 0", say: "Start the running total at zero.", explain: "An *accumulator*: a variable that collects results." }] },
-          { code: "for n in range(101):", parts: [{ text: "for n in range(101):", say: "Press Enter. 0 to 100 means range(101).", explain: "range(101) stops before 101, so 100 is included." }] },
-          { code: "    total = total + n", parts: [{ text: "total = total + n", say: "Press Enter. Indented: add n each time.", explain: "Each loop adds the next number to total." }] },
+          { code: "total = 0", parts: [{ text: "total = 0", say: "First, start a running total at zero.", explain: "An *accumulator*: a variable that collects results." }] },
+          { code: "for n in range(101):", parts: [{ text: "for n in range(101):", say: "Press Enter. To count from 0 to 100 we need range of 101.", explain: "range(101) stops before 101, so 100 is included." }] },
+          { code: "    total = total + n", parts: [{ text: "total = total + n", say: "Press Enter. Indent, then add n to the total each time.", explain: "Each loop adds the next number to total." }] },
           {
             code: "print(total)",
-            parts: [{ text: "print(total)", say: "Press Enter, then Backspace to un-indent. Print AFTER the loop.", explain: "Un-indented, so it runs once, at the end: 5050." }],
+            parts: [{ text: "print(total)", say: "Press Enter, then Backspace to un-indent. Print the total after the loop.", explain: "Un-indented, so it runs once, at the end: 5050." }],
             hints: [{ match: /^\s+print\s*\(\s*total/, say: "Un-indent this print so it runs after the loop, not inside it." }],
           },
         ],
@@ -791,17 +791,17 @@ const MODULES = [
         title: "while loops",
         intro: "A *while loop* repeats as long as a condition stays true. You must change something inside, or it loops forever.",
         steps: [
-          { code: "count = 3", parts: [{ text: "count = 3", say: "A countdown starts here.", explain: "count holds 3." }] },
+          { code: "count = 3", parts: [{ text: "count = 3", say: "Let's set up a countdown: count equals 3.", explain: "count holds 3." }] },
           {
             code: "while count > 0:",
-            parts: [{ text: "while count > 0:", say: "Press Enter. Keep going while count is positive.", explain: "`while` is a *keyword*: \"repeat as long as this is True.\"" }],
+            parts: [{ text: "while count > 0:", say: "Press Enter. Now a while loop: keep going while count is greater than zero.", explain: "`while` is a *keyword*: \"repeat as long as this is True.\"" }],
           },
-          { code: "    print(count)", parts: [{ text: "print(count)", say: "Press Enter. Indented.", explain: "Shows 3, then 2, then 1." }] },
+          { code: "    print(count)", parts: [{ text: "print(count)", say: "Press Enter. Indent, then print count.", explain: "Shows 3, then 2, then 1." }] },
           {
             code: "    count = count - 1",
-            parts: [{ text: "count = count - 1", say: "Press Enter. Still indented. THIS line prevents an infinite loop.", explain: "Without it, count stays 3 forever.\nCodeBuddy would stop you after 3 seconds!" }],
+            parts: [{ text: "count = count - 1", say: "Press Enter. Still indented: subtract one from count. This line is what prevents an infinite loop.", explain: "Without it, count stays 3 forever.\nCodeBuddy would stop you after 3 seconds!" }],
           },
-          { code: 'print("Liftoff!")', parts: [{ text: 'print("Liftoff!")', say: "Press Enter, Backspace to un-indent. After the loop.", explain: "Runs once when count hits 0." }] },
+          { code: 'print("Liftoff!")', parts: [{ text: 'print("Liftoff!")', say: "Press Enter, then Backspace to un-indent. This runs after the loop.", explain: "Runs once when count hits 0." }] },
         ],
         expectedOutput: "3\n2\n1\nLiftoff!",
         done: "Use for when you know how many times. Use while when you're waiting for something to become true.",
@@ -817,15 +817,15 @@ const MODULES = [
         title: "break and continue",
         intro: "Two loop *keywords*: break leaves the loop immediately, continue skips to the next round.",
         steps: [
-          { code: "for n in range(10):", parts: [{ text: "for n in range(10):", say: "A loop that would run 10 times...", explain: "...but we'll cut it short." }] },
-          { code: "    if n == 3:", parts: [{ text: "if n == 3:", say: "Press Enter. Indented: a check inside the loop.", explain: "A conditional inside a loop. Very common." }] },
+          { code: "for n in range(10):", parts: [{ text: "for n in range(10):", say: "Start a loop that would run 10 times.", explain: "But we'll cut it short with break." }] },
+          { code: "    if n == 3:", parts: [{ text: "if n == 3:", say: "Press Enter. Indent, then add a check inside the loop: if n equals 3.", explain: "A conditional inside a loop. Very common." }] },
           {
             code: "        break",
-            parts: [{ text: "break", say: "Press Enter. Indented TWICE: inside the if, inside the loop.", explain: "`break` ends the whole loop right now." }],
+            parts: [{ text: "break", say: "Press Enter. Indent twice, because we're inside the if, inside the loop. Then type break.", explain: "`break` ends the whole loop right now." }],
           },
           {
             code: "    print(n)",
-            parts: [{ text: "print(n)", say: "Press Enter, Backspace once: back to loop level.", explain: "Prints 0, 1, 2. When n hits 3, break fires first." }],
+            parts: [{ text: "print(n)", say: "Press Enter, then Backspace once to get back to loop level, and print n.", explain: "Prints 0, 1, 2. When n hits 3, break fires first." }],
           },
         ],
         expectedOutput: "0\n1\n2",
@@ -842,18 +842,18 @@ const MODULES = [
         title: "Nested loops",
         intro: "A loop inside a loop. The inner one runs completely for every single round of the outer one. Great for grids.",
         steps: [
-          { code: "for row in range(3):", parts: [{ text: "for row in range(3):", say: "The outer loop: 3 rows.", explain: "Runs 3 times." }] },
+          { code: "for row in range(3):", parts: [{ text: "for row in range(3):", say: "Start with the outer loop: 3 rows.", explain: "The outer loop runs 3 times." }] },
           {
             code: "    for col in range(3):",
-            parts: [{ text: "for col in range(3):", say: "Press Enter. Indented: the inner loop, 3 columns.", explain: "A *nested loop*. For each row, this runs 3 times: 9 total." }],
+            parts: [{ text: "for col in range(3):", say: "Press Enter. Indent, then the inner loop: 3 columns.", explain: "A *nested loop*. For each row, this runs 3 times: 9 total." }],
           },
           {
             code: '        print("*", end="")',
-            parts: [{ text: 'print("*", end="")', say: "Press Enter. Indented twice. end=\"\" keeps printing on the same line.", explain: "Normally print ends with a new line.\n`end=\"\"` makes it end with nothing." }],
+            parts: [{ text: 'print("*", end="")', say: "Press Enter. Indent twice, then print a star with end equals empty quotes, which keeps printing on the same line.", explain: "Normally print ends with a new line.\n`end=\"\"` makes it end with nothing." }],
           },
           {
             code: "    print()",
-            parts: [{ text: "print()", say: "Press Enter, Backspace once. An empty print = new line.", explain: "After each row of stars, move to the next line." }],
+            parts: [{ text: "print()", say: "Press Enter, then Backspace once. An empty print just moves to a new line.", explain: "After each row of stars, move to the next line." }],
           },
         ],
         expectedOutput: "***\n***\n***",

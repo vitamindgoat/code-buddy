@@ -176,7 +176,7 @@ const tutor = (() => {
 
   // "Type" section: the piece the learner should type right now
   function typeSection(label = "Type") {
-    if (complete) return "# Next\nPress Run!";
+    if (complete) return "# Next\nEverything is typed, so press Run!";
     const p = part();
     return `# ${label}\n${p.say}\n\`${p.text}\``;
   }
@@ -214,7 +214,7 @@ const tutor = (() => {
       if (stepIndex === lesson.steps.length) {
         complete = true;
         ui.ghost(); ui.markLine(null); ui.stuckTag(false);
-        say(`# ✓ \`${lastPart.text}\`\n${explainText(lastPart)}\n# Whole program typed!\nPress Run to see what it really prints.`, "happy");
+        say(`# ✓ \`${lastPart.text}\`\n${explainText(lastPart)}\n# Whole program typed!\nThat's the whole program! Press Run to see what it really prints.`, "happy");
         ui.onReadyToRun();
         return;
       }
@@ -320,7 +320,7 @@ const tutor = (() => {
     if (mode === "practice") return practiceHint();
     ghostAsked = true;
     showGhost(codeLines(), stepIndex);
-    if (complete) return say("# All typed!\nPress Run to see it work.", "pointing");
+    if (complete) return say("# All typed!\nEverything is typed. Press Run to see it work.", "pointing");
 
     const lines = codeLines();
     const line = lines[stepIndex];
@@ -328,14 +328,14 @@ const tutor = (() => {
     const cmp = compare(typed, step().code);
     lastSaid = "";
 
-    if (cmp.indent === "more") return say(`# Hint\nThis line needs to be indented more.\nPress Tab at the start.\n${typeSection()}`, "pointing");
-    if (cmp.indent === "less") return say(`# Hint\nThis line is indented too much.\nPress Backspace at the start.\n${typeSection()}`, "pointing");
+    if (cmp.indent === "more") return say(`# Hint\nThis line needs to be indented more. Press Tab at the start of it.\n${typeSection()}`, "pointing");
+    if (cmp.indent === "less") return say(`# Hint\nThis line is indented too much. Press Backspace at the start of it.\n${typeSection()}`, "pointing");
     if (!cmp.onTrack) {
       const s = step();
       const h = (s.hints || []).find((h) => h.match.test(typed));
       const g = norm(s.code), i = cmp.matched;
       const generic = `The red part isn't right.\nAfter \`${g.slice(Math.max(0, i - 8), i) || "the start"}\` it should be ${describe(g[i])}.`;
-      return say(`# Hint\n${h ? h.say : generic}\nDelete the red part and follow the gray letters.\n${typeSection()}`, "pointing");
+      return say(`# Hint\n${h ? h.say : generic}\nDelete the red part, then follow the gray letters.\n${typeSection()}`, "pointing");
     }
     say(`# Hint\nYou're on track! The gray letters show what's left.\n${typeSection()}`, "pointing");
   }
@@ -349,12 +349,12 @@ const tutor = (() => {
 
   function practiceHint() {
     const p = lesson.practice;
-    if (hintsUsed >= 3) return say(`# No hints left\nThe gray letters show the answer.\n*Hint 3/3*`, "thinking");
+    if (hintsUsed >= 3) return say(`# No hints left\nI'm out of hints, but the gray letters show the answer now. Just follow them.`, "thinking");
     hintsUsed++;
     lastSaid = "";
     const left = 3 - hintsUsed;
-    const extra = hintsUsed === 3 ? "\nGray letters are on now. Follow them." : `\n${left} hint${left === 1 ? "" : "s"} left.`;
-    say(`# Hint ${hintsUsed} of 3\n${p.hints[hintsUsed - 1]}${extra}`, "pointing");
+    const extra = hintsUsed === 3 ? "\nThat was my last hint, so the gray letters are on now. Follow them." : `\nYou have ${left} hint${left === 1 ? "" : "s"} left.`;
+    say(`# Hint ${hintsUsed} of 3\nHere's hint ${hintsUsed}: ${p.hints[hintsUsed - 1]}${extra}`, "pointing");
     if (hintsUsed === 3) checkPractice();
   }
 
@@ -369,11 +369,11 @@ const tutor = (() => {
     lastSaid = "";
     if (i < stepIndex) {
       const recap = s.parts.map((p) => `\`${p.text.trim()}\` ${p.explain.split("\n")[0]}`).join("\n");
-      say(`# Line ${i + 1}\n${recap}`, "pointing");
+      say(`# Line ${i + 1}\nHere's line ${i + 1} again.\n${recap}`, "pointing");
     } else if (i === stepIndex) {
       say(complete ? "# All typed!\nPress Run to see it work." : typeSection(), "pointing");
     } else {
-      say(`# Not yet\nFirst finish line ${stepIndex + 1}.\n${typeSection()}`, "pointing");
+      say(`# Not yet\nNot yet! Finish line ${stepIndex + 1} first.\n${typeSection()}`, "pointing");
     }
   }
 
@@ -388,16 +388,16 @@ const tutor = (() => {
       complete = true;
       ui.ghost(); ui.markWrong(); ui.stuckTag(false);
       const done = mode === "practice" ? "You solved it on your own!" : lesson.done;
-      say(`# Ran your code ✓\n# YES!\n${done}\n# What now?\nClick the *Next* button when you're ready to move on.`, "celebrate");
+      say(`# Ran your code ✓\nYes! It worked. ${done}\n# What now?\nClick the *Next* button when you're ready to move on.`, "celebrate");
       ui.onComplete(mode);
     } else if (celebrated) {
-      say("# Ran your code ✓\nNice experiment!\nChange something else and run it again,\nor move on.", "happy");
+      say("# Ran your code ✓\nNice experiment! Change something else and run it again, or move on when you're ready.", "happy");
     } else if (mode === "practice") {
-      say(`# Ran your code ✓\nBut that's not the output we want yet.\n# Goal\n${lesson.practice.task}\nClick me for a hint.`, "thinking");
+      say(`# Ran your code ✓\nIt ran, but that's not the output we want yet.\n# Goal\nRemember, the goal is: ${lesson.practice.task}\nClick me if you want a hint.`, "thinking");
     } else if (!complete) {
-      say(`# Ran your code ✓\nIt works so far! But we're not finished.\n${typeSection()}`, "happy");
+      say(`# Ran your code ✓\nIt works so far, but we're not finished yet.\n${typeSection()}`, "happy");
     } else {
-      say("# Ran your code ✓\nBut the output isn't what I expected.\nCompare it with the steps on the left.", "thinking");
+      say("# Ran your code ✓\nHmm, it ran, but the output isn't what I expected. Compare your lines with the steps on the left.", "thinking");
     }
   }
 
@@ -420,8 +420,8 @@ const tutor = (() => {
     if (saved && saved.code) return resume(saved);
     ui.renderSteps(0);
     ui.markLine(0);
-    const who = l.inputs ? `\n# The user will type\n\`${l.inputs.join("`, `")}\`` : "";
-    say(`# Lesson ${l.number} · ${l.title}\n${l.intro}${who}\n${typeSection()}`, "idle");
+    const who = l.inputs ? `\n# Input\nWhen the program asks, the user will type \`${l.inputs.join("`, then `")}\`.` : "";
+    say(`# Lesson ${l.number} · ${l.title}\n${l.intro} Let's build it together, one piece at a time.${who}\n${typeSection()}`, "idle");
     showGhost([], 0);
     armStuck(STUCK_AFTER_IDLE_MS);
   }
@@ -432,8 +432,8 @@ const tutor = (() => {
     if (saved && saved.code) return resume(saved);
     ui.renderSteps(0);
     ui.markLine(0);
-    const who = l.practice.inputs ? `\n# The user will type\n\`${l.practice.inputs.join("`, `")}\`` : "";
-    say(`# Practice · ${l.title}\nYour turn, no help from me.\n# Goal\n${l.practice.task}${who}\n# Stuck?\nClick me. You get 3 hints.`, "idle");
+    const who = l.practice.inputs ? `\n# Input\nWhen the program asks, the user will type \`${l.practice.inputs.join("`, then `")}\`.` : "";
+    say(`# Practice · ${l.title}\nYour turn! This time you write the code without my help.\n# Goal\nHere's your goal for this practice: ${l.practice.task}${who}\n# Stuck?\nIf you get stuck, click me. You get 3 hints.`, "idle");
     armStuck(STUCK_AFTER_IDLE_MS);
   }
 
@@ -452,11 +452,11 @@ const tutor = (() => {
     if (saved.finished) {
       ui.ghost(); ui.markWrong();
       say(mode === "practice"
-        ? `# Welcome back!\nYou already solved this practice.\nRun it again, change something, or move on.`
-        : `# Welcome back!\nYou already finished this lesson.\nYour code is still here. Try the practice next, or run it again.`, "happy");
+        ? `# Welcome back!\nYou already solved this practice. You can run it again, change something, or move on.`
+        : `# Welcome back!\nYou already finished this lesson, and your code is still here. Try the practice next, or run it again.`, "happy");
       return;
     }
-    say(`# Welcome back!\nYour code is right where you left it.\n${mode === "practice" ? `# Goal\n${lesson.practice.task}` : complete ? "All typed. Press Run to see it work." : typeSection()}`, "happy");
+    say(`# Welcome back!\nYour code is right where you left it.\n${mode === "practice" ? `# Goal\nThe goal is still: ${lesson.practice.task}` : complete ? "Everything is typed. Press Run to see it work." : typeSection()}`, "happy");
     if (mode === "practice") checkPractice(); else { const cur = lines[stepIndex], step = lesson.steps[stepIndex]; partIndex = cur && step ? countParts(cur.text, step) : 0; showGhost(lines, stepIndex); }
     clearTimeout(diagnoseTimer);   // setCode fired onChange; don't let it talk over the welcome
     armStuck(STUCK_AFTER_IDLE_MS);

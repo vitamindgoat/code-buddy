@@ -467,14 +467,14 @@ async function runCode() {
     appendOutput(r.error, true);
     setStatus("bad", "Timed out");
     buddy.set("thinking");
-    buddy.say("# Infinite loop!\nYour program never finished, so I stopped it.\nDoes something inside the loop change?\nReloading Python…");
+    buddy.say("# Infinite loop!\nYour program never finished, so I stopped it. Check that something inside the loop changes each time. Give me a second to reload Python.");
   } else if (!r.ok) {
     appendOutput(r.error, true);
     markErrorLine(r.line);
     setStatus("bad", "Error");
     sfx.error();
     replayClass(outputCard, "error-shake");
-    buddy.say(`# Python stopped${r.line ? ` on line ${r.line}` : ""}\n\`${r.error}\`\n# Tip\nRead the last line of an *error* first: it names the problem.`, "pointing");
+    buddy.say(`# Python stopped${r.line ? ` on line ${r.line}` : ""}\nPython stopped${r.line ? ` on line ${r.line}` : ""} and said:\n\`${r.error}\`\n# Tip\nRead the last line of an *error* first: it names the problem.`, "pointing");
   } else {
     if (outputLines.length === 0) appendOutput("(your program ran, but it didn't print anything)");
     setStatus("ok", "Ran successfully");
@@ -625,7 +625,7 @@ $("set-reset").addEventListener("click", () => { closeSettings(); $("reset-btn-a
 $("set-test").addEventListener("click", () => {
   // testing the voice means you want to hear it: switch it on if it's off
   if (!voice.on) setVoice(true, { greet: false });
-  buddy.say("# Testing\nThis is how fast I talk.\nYou can change it any time.", "happy");
+  buddy.say("# Testing\nThis is how fast I talk. You can change it any time in the settings.", "happy");
 });
 
 // ---------- 13. The tutorial ----------
