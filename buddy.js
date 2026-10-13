@@ -103,8 +103,9 @@ const buddy = (() => {
         else el = document.createElement("span");
         // code chips get syntax colors: each token is its own span
         const groups = isCode ? tokenize(text) : [{ cls: "", text }];
-        // how each character of a chip is SPOKEN ("(" -> "open paren")
-        const spokenChip = isCode ? speakCode(text) : null;
+        // how each character is SPOKEN: chips say their symbols ("(" ->
+        // "open paren"); plain text says empty pairs like ( ) as a word
+        const spokenChip = isCode ? speakCode(text) : speakProse(text);
         let ci = 0;
         for (const g of groups) {
           const holder = g.cls ? document.createElement("span") : el;
@@ -119,7 +120,7 @@ const buddy = (() => {
               holder.appendChild(c);
               chars.push(c);
               spokenIndex.push(spoken.length);
-              spoken += isCode ? spokenChip[ci++] : ch;
+              spoken += spokenChip[ci++];
             }
           }
         }
@@ -170,6 +171,29 @@ const buddy = (() => {
   // How the voice reads code: one spoken piece per character, so the
   // typewriter can stay in sync. Symbols get names; text inside quotes is
   // read naturally; two-character operators are named once.
+  // Plain sentences: an empty pair like "( )" or "()" is read as a word
+  // ("print( )" -> "print parentheses"). Everything else is read as is.
+  const EMPTY_PAIRS = [["(", ")", "parentheses"], ["[", "]", "square brackets"], ["{", "}", "curly braces"], ['"', '"', "quotes"], ["'", "'", "quotes"]];
+  function speakProse(text) {
+    const out = [];
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      const pair = EMPTY_PAIRS.find(([o]) => o === ch);
+      if (pair) {
+        const close = text[i + 1] === pair[1] ? 1 : text[i + 1] === " " && text[i + 2] === pair[1] ? 2 : 0;
+        if (close) {
+          const before = text[i - 1] || " ";
+          out.push((/\s/.test(before) ? "" : " ") + pair[2] + " ");
+          for (let k = 0; k < close; k++) out.push("");
+          i += close;
+          continue;
+        }
+      }
+      out.push(ch);
+    }
+    return out;
+  }
+
   const SYMBOLS = {
     "(": "open paren ", ")": "close paren ", "[": "open bracket ", "]": "close bracket ",
     "{": "open brace ", "}": "close brace ", ":": "colon ", "=": "equals ", "+": "plus ",
