@@ -29,13 +29,17 @@
 
 /* Parts we animate are plain <g> wrappers with no transform of their own
    (the cleanup script guarantees that), so CSS transforms can't clobber
-   anything in the artwork. fill-box = rotate/scale around the part itself.
-   Arms are never animated: they're drawn tucked under the body, so moving
-   them breaks the outline where arm meets body. */
-.buddy .eye-left, .buddy .eye-right,
+   anything in the artwork. fill-box = rotate/scale around the part itself. */
+.buddy .eye-left, .buddy .eye-right, .buddy .hand,
 .buddy .question, .buddy .sparkles, .buddy .stars {
   transform-box: fill-box;
 }
+
+/* Arms rotate around a real shoulder joint. The cleanup script wraps each
+   arm so that .joint's origin (0,0) IS the shoulder point, 35 units inside
+   the body edge. Small swings keep the hidden end of the arm tucked under
+   the body outline, so the join never breaks. */
+.buddy .joint { transform-box: view-box; transform-origin: 0 0; }
 .buddy .eye-left, .buddy .eye-right { transform-origin: 50% 50%; }
 .buddy .question, .buddy .sparkles, .buddy .stars { transform-origin: 50% 50%; }
 
@@ -100,22 +104,28 @@
 
 .buddy[data-state="thinking"] .pose     { animation: sway 2.4s ease-in-out infinite; }
 .buddy[data-state="thinking"] .question { animation: bob 1.4s ease-in-out infinite; }
+.buddy[data-state="thinking"] .hand     { animation: tap 0.9s ease-in-out infinite; }
 
-/* ---------- happy: one bounce, sparkles pop in ---------- */
+/* ---------- happy: one bounce, little wave, sparkles pop in ---------- */
 
 .buddy[data-state="happy"] .pose     { animation: bounce 0.6s ease-out 1; }
 .buddy[data-state="happy"] .sparkles { animation: pop-in 0.5s ease-out 1; }
+.buddy[data-state="happy"] .arm-left  .joint { animation: wave-left  0.5s ease-in-out 3; }
+.buddy[data-state="happy"] .arm-right .joint { animation: wave-right 0.5s ease-in-out 3; }
 
-/* ---------- pointing: mirrored so he points LEFT at the editor ---------- */
+/* ---------- pointing: mirrored so he points LEFT at the editor, arm waves ---------- */
 
 .buddy[data-state="pointing"] .pose      { animation: point-mirrored 1s ease-in-out infinite; }
 .buddy[data-state="pointing"] .sparkles  { animation: pop-in 0.5s ease-out 1; }
+.buddy[data-state="pointing"] .arm-right .joint { animation: wave-right 1s ease-in-out infinite; }
 
-/* ---------- celebrate: jumping, stars twinkle ---------- */
+/* ---------- celebrate: jumping, arms flapping, stars twinkle ---------- */
 
 .buddy[data-state="celebrate"] .pose      { animation: jump 0.7s ease-in-out 3; }
 .buddy[data-state="celebrate"] .stars,
 .buddy[data-state="celebrate"] .sparkles  { animation: twinkle 0.7s ease-in-out infinite; }
+.buddy[data-state="celebrate"] .arm-left  .joint { animation: flap-left  0.35s ease-in-out infinite; }
+.buddy[data-state="celebrate"] .arm-right .joint { animation: flap-right 0.35s ease-in-out infinite; }
 
 /* ---------- Speech bubble ---------- */
 
