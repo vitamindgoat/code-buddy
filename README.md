@@ -6,7 +6,7 @@ A learn-to-code platform for total beginners, with a friendly animated mentor bu
 
 ## What it does
 
-- Short, guided JavaScript lessons that run right in the browser
+- Short, guided Python lessons that run right in the browser, no install
 - A real code editor with a Run button that actually executes your code
 - A mentor buddy that reacts to what you do: hints when you're stuck, explains errors in plain language, celebrates when it works
 
@@ -15,6 +15,7 @@ A learn-to-code platform for total beginners, with a friendly animated mentor bu
 Plain HTML, CSS, and JavaScript. No framework, no build step.
 
 - **CodeMirror 5** for the code editor (line numbers + syntax highlighting)
+- **Pyodide** (CPython compiled to WebAssembly) so real Python runs in the browser
 - **Web Worker sandbox** (`runner.js`): the learner's code runs in a separate thread that can't touch the page. A 3-second timeout kills runaway loops.
 - **Rule-based buddy**: each lesson defines its expected output and common mistakes, so hints are instant, accurate, and never go off the rails.
 

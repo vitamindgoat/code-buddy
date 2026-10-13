@@ -147,6 +147,11 @@ code {
 
 .btn-icon { font-size: 12px; margin-right: 4px; }
 
+.btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+
+/* Line in the editor where an error happened */
+.error-line { background: var(--red-soft); }
+
 /* CodeMirror sizing: the library injects .CodeMirror, we style it */
 .editor-card .CodeMirror {
   height: 320px;

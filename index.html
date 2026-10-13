@@ -9,11 +9,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
 
-  <!-- CodeMirror 5: the code editor library (styles + core + JavaScript mode).
+  <!-- CodeMirror 5: the code editor library (styles + core + Python mode).
        Shipped in vendor/ so the app has no outside dependency at runtime. -->
   <link rel="stylesheet" href="vendor/codemirror/codemirror.css" />
   <script src="vendor/codemirror/codemirror.js"></script>
-  <script src="vendor/codemirror/javascript.js"></script>
+  <script src="vendor/codemirror/python.js"></script>
 
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -35,8 +35,8 @@
     <section class="card lesson">
       <h1 class="lesson-title">Say hello</h1>
       <p class="lesson-text">
-        Computers can show messages on the screen. In JavaScript, you use
-        <code>console.log()</code> to print something.
+        Computers can show messages on the screen. In Python, you use
+        <code>print()</code> to show something.
       </p>
       <p class="lesson-text">
         Try it: make the program print <strong>Hello, world!</strong> and then press
@@ -51,15 +51,15 @@
           <span class="card-label">Your code</span>
           <div class="actions">
             <button id="reset-btn" class="btn btn-ghost" type="button">Reset</button>
-            <button id="run-btn" class="btn btn-primary" type="button">
+            <button id="run-btn" class="btn btn-primary" type="button" disabled>
               <span class="btn-icon">▶</span> Run
             </button>
           </div>
         </div>
 
         <!-- CodeMirror replaces this textarea with a real editor -->
-        <textarea id="code" spellcheck="false">// Write your code below
-console.log("Hello, world!");
+        <textarea id="code" spellcheck="false"># Write your code below
+print("Hello, world!")
 </textarea>
       </div>
 
