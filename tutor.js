@@ -252,19 +252,33 @@ const tutor = (() => {
   // Ghost letters for the line being worked on (lesson mode, or practice
   // after the 3rd hint)
   function showGhost(lines, idx) {
-    if (mode === "practice" && hintsUsed < 3) return ui.ghost();
+    const g = ghostFor(lines, idx);
+    g ? ui.ghost(g.lineNumber, g.text) : ui.ghost();
+  }
+
+  // What the ghost should show right now: { lineNumber, text } or null.
+  // Pure (no side effects), so app.js can call it on every keystroke.
+  function ghostFor(lines, idx) {
+    if (!lesson || complete) return null;
+    if (mode === "practice" && hintsUsed < 3) return null;
     const target = targets()[idx];
-    if (!target) return ui.ghost();
+    if (!target) return null;
     const line = lines[idx];
     const cursorLine = ui.getCursorLine();
     if (!line) {
       // the next line doesn't exist yet: if the cursor still sits on a
       // finished line, the only thing to do is press Enter
       const cursorText = ui.getCode().split("\n")[cursorLine] || "";
-      if (cursorText.trim() !== "") return ui.ghost(cursorLine, "  ⏎");
-      return ui.ghost(cursorLine, remainder(cursorText, target));
+      if (cursorText.trim() !== "") return { lineNumber: cursorLine, text: "  ⏎" };
+      return { lineNumber: cursorLine, text: remainder(cursorText, target) };
     }
-    ui.ghost(line.number, remainder(line.text, target));
+    return { lineNumber: line.number, text: remainder(line.text, target) };
+  }
+
+  function ghostNow() {
+    if (!lesson) return null;
+    const lines = codeLines();
+    return ghostFor(lines, countCorrect(lines));
   }
 
   function checkPractice() {
@@ -404,7 +418,7 @@ const tutor = (() => {
   }
 
   return {
-    start, startPractice, onChange, onRun, hint, review, ui,
+    start, startPractice, onChange, onRun, hint, review, ghostNow, ui,
     get current() { return { mode, lesson, stepIndex, partIndex, complete, celebrated, hintsUsed }; },
   };
 })();

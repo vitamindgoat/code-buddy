@@ -397,8 +397,13 @@ code {
    ============================================================ */
 
 /* What's left to type, shown in gray inside the editor */
-/* Plain, no gap, no italics: "prin" + ghost "t(" must read as one word */
-.ghost { color: #a3adc2; pointer-events: none; }
+/* Ghost overlay: same font and metrics as the editor so it lines up exactly */
+.ghost {
+  position: absolute; z-index: 3; pointer-events: none;
+  font-family: var(--mono); font-size: 15px; line-height: 1.6;
+  color: #a3adc2; white-space: pre;
+}
+.ghost[hidden] { display: none; }
 
 /* The character where the line went wrong */
 .wrong-char {

@@ -278,17 +278,33 @@ tutor.ui.onStepDone = (lineNumber) => {
   fx.burst(end.right + 10, (end.top + end.bottom) / 2 - window.scrollY);
 };
 
-// Ghost letters: gray text after the cursor showing what's left to type.
-// CodeMirror "bookmarks" let us pin a widget at a position in the text.
-let ghostMark = null;
+// Ghost letters: gray text showing what's left to type. It's an OVERLAY
+// drawn on top of the editor at the spot where the next character goes,
+// never part of the document, so it can't move the cursor, count as
+// characters, or wrap the line. Typing just runs over it.
+const ghostEl = document.createElement("div");
+ghostEl.className = "ghost";
+editor.getWrapperElement().appendChild(ghostEl);
+let ghostState = null;   // { lineNumber, text }
+
 tutor.ui.ghost = (lineNumber, text) => {
-  if (ghostMark) { ghostMark.clear(); ghostMark = null; }
-  if (lineNumber === undefined || !text || lineNumber >= editor.lineCount()) return;
-  const span = document.createElement("span");
-  span.className = "ghost";
-  span.textContent = text;
-  ghostMark = editor.setBookmark({ line: lineNumber, ch: editor.getLine(lineNumber).length }, { widget: span, insertLeft: true });
+  ghostState = (lineNumber === undefined || !text) ? null : { lineNumber, text };
+  renderGhost();
 };
+function renderGhost() {
+  if (!ghostState || ghostState.lineNumber >= editor.lineCount()) { ghostEl.hidden = true; return; }
+  const { lineNumber, text } = ghostState;
+  const pos = editor.charCoords({ line: lineNumber, ch: editor.getLine(lineNumber).length }, "page");
+  const box = editor.getWrapperElement().getBoundingClientRect();
+  ghostEl.textContent = text;
+  ghostEl.style.left = `${pos.left - box.left}px`;
+  ghostEl.style.top = `${pos.top - box.top}px`;
+  ghostEl.hidden = false;
+}
+// Keep it glued to the text: recompute on every keystroke and scroll
+editor.on("change", () => { const g = tutor.ghostNow(); ghostState = g && g.text ? g : null; renderGhost(); });
+editor.on("scroll", renderGhost);
+editor.on("cursorActivity", renderGhost);
 
 // Red underline on the wrong part of a line
 let wrongMark = null;
