@@ -546,7 +546,7 @@ function applySettings() {
 }
 function syncSettingsUI() {
   $("set-speed").value = settings.speed;
-  $("set-speed-val").textContent = `${settings.speed}×`;
+  paintSpeed();
   $("set-explain").value = settings.explain;
   $("set-ghost").value = settings.ghost;
   $("set-size").value = settings.textSize;
@@ -578,7 +578,15 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !setting
 $("settings-btn").addEventListener("click", openSettings);
 $("settings-close").addEventListener("click", closeSettings);
 settingsBackdrop.addEventListener("click", closeSettings);
-$("set-speed").addEventListener("input", (e) => { settings.speed = +e.target.value; $("set-speed-val").textContent = `${settings.speed}×`; applySettings(); });
+// Slider: the label and track fill update on every pixel of the drag (cheap);
+// the heavier applySettings (editor refresh, storage) runs when you let go.
+function paintSpeed() {
+  const el = $("set-speed"), v = +el.value, min = +el.min, max = +el.max;
+  $("set-speed-val").textContent = `${v.toFixed(2)}×`;
+  el.style.setProperty("--fill", `${((v - min) / (max - min)) * 100}%`);
+}
+$("set-speed").addEventListener("input", (e) => { settings.speed = +e.target.value; paintSpeed(); });
+$("set-speed").addEventListener("change", applySettings);
 $("set-explain").addEventListener("change", (e) => { settings.explain = e.target.value; applySettings(); });
 $("set-ghost").addEventListener("change", (e) => { settings.ghost = e.target.value; applySettings(); tutor.onChange(); });
 $("set-size").addEventListener("change", (e) => { settings.textSize = e.target.value; applySettings(); });
