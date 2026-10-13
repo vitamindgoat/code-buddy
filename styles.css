@@ -208,6 +208,20 @@ code {
   gap: 16px;
 }
 
+/* Dev-only: strip showing all five buddy states at once (?debug) */
+.buddy-strip {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px;
+  margin: 0 24px 24px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.buddy-strip-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.buddy-strip-cell span { font-size: 13px; font-weight: 800; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.6px; }
+
 /* Dev-only state buttons, shown with ?debug in the URL */
 .buddy-debug { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
 .buddy-debug button {

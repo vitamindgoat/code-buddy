@@ -196,4 +196,37 @@ if (location.search.includes("debug")) {
     b.onclick = () => buddy.set(state);
     bar.appendChild(b);
   }
+
+  // "Show all 5": a strip with five copies of the buddy, one per state,
+  // all animating at the same time. One-shot states replay every 3s.
+  const all = document.createElement("button");
+  all.textContent = "show all 5";
+  all.onclick = () => {
+    let strip = document.getElementById("buddy-strip");
+    if (strip) { strip.remove(); return; }       // click again to close
+
+    strip = document.createElement("div");
+    strip.id = "buddy-strip";
+    strip.className = "buddy-strip";
+    const poses = document.getElementById("buddy").innerHTML; // the 5 loaded SVGs
+
+    for (const state of ["idle", "thinking", "happy", "pointing", "celebrate"]) {
+      const cell = document.createElement("div");
+      cell.className = "buddy-strip-cell";
+      cell.innerHTML = `<div class="buddy" data-state="${state}">${poses}</div><span>${state}</span>`;
+      strip.appendChild(cell);
+    }
+    document.body.appendChild(strip);
+
+    const replay = setInterval(() => {
+      if (!document.body.contains(strip)) return clearInterval(replay);
+      for (const host of strip.querySelectorAll('.buddy[data-state="happy"], .buddy[data-state="celebrate"]')) {
+        const state = host.getAttribute("data-state");
+        host.removeAttribute("data-state");
+        void host.offsetWidth;                     // same replay trick as buddy.set
+        host.setAttribute("data-state", state);
+      }
+    }, 3000);
+  };
+  bar.appendChild(all);
 }
