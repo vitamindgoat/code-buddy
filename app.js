@@ -33,7 +33,7 @@ const voiceBtn = $("voice-btn"), voicePick = $("voice-pick"), soundBtn = $("soun
 const outputEl = $("output"), statusEl = $("status"), stepsEl = $("steps");
 const editorWrap = document.querySelector(".editor-wrap");
 const editorCard = document.querySelector(".editor-card"), outputCard = document.querySelector(".output-card");
-const quizCard = $("quiz-card"), stuckTag = $("stuck-tag");
+const quizCard = $("quiz-card"), readCard = $("read-card"), stuckTag = $("stuck-tag"), runTag = $("run-tag");
 
 // ---------- 3. Where we are: lesson index + stage ----------
 
@@ -54,22 +54,28 @@ const module_ = () => MODULES[lesson().moduleIndex];
 const isLastInModule = () => lesson().lessonIndex === module_().lessons.length - 1;
 const doneId = () => (stage === "lesson" ? lesson().id : stage === "practice" ? lesson().id + "-practice" : module_().id + "-quiz");
 const isDone = (id) => !!progress.done[id];
+const isReading = (l = lesson()) => l.type === "read";
 
-// What the Next button leads to from the current stage
+// What the Next button leads to from the current stage.
+// Coding lesson -> its practice -> next lesson (or the module quiz).
+// Reading lesson -> next lesson (or the quiz). Quiz -> next module.
 function nextTarget() {
-  if (stage === "lesson") return { lessonIndex, stage: "practice", label: "Practice ▶" };
-  if (stage === "practice") {
+  const afterLesson = () => {
     if (isLastInModule()) return { lessonIndex, stage: "quiz", label: "Module quiz ▶" };
-    return { lessonIndex: lessonIndex + 1, stage: "lesson", label: "Next lesson ▶" };
-  }
+    const n = LESSONS[lessonIndex + 1];
+    return { lessonIndex: lessonIndex + 1, stage: "lesson", label: isReading(n) ? "Next: reading ▶" : "Next lesson ▶" };
+  };
+  if (stage === "lesson") return isReading() ? afterLesson() : { lessonIndex, stage: "practice", label: "Practice ▶" };
+  if (stage === "practice") return afterLesson();
   if (lessonIndex + 1 < LESSONS.length) return { lessonIndex: lessonIndex + 1, stage: "lesson", label: "Next module ▶" };
   return null;
 }
 function prevTarget() {
   if (stage === "practice") return { lessonIndex, stage: "lesson" };
-  if (stage === "quiz") return { lessonIndex, stage: "practice" };
+  const lastStageOf = (i) => (isReading(LESSONS[i]) ? "lesson" : "practice");
+  if (stage === "quiz") return { lessonIndex, stage: lastStageOf(lessonIndex) };
   if (lessonIndex === 0) return null;
-  return { lessonIndex: lessonIndex - 1, stage: "practice" };
+  return { lessonIndex: lessonIndex - 1, stage: lastStageOf(lessonIndex - 1) };
 }
 
 // ---------- 4. Lesson panel ----------
@@ -80,12 +86,13 @@ function renderHeader() {
   const doneCount = Object.keys(progress.done).length;
   $("progress-label").textContent = `Module ${l.moduleIndex + 1} · ${m.title}`;
   $("progress-fill").style.width = `${Math.min(100, (doneCount / totalItems) * 100)}%`;
-  $("stage-badge").textContent = stage === "lesson" ? "Lesson" : stage === "practice" ? "Practice" : "Quiz";
-  $("stage-badge").className = "stage-badge stage-" + stage;
+  const kind = stage === "lesson" ? (isReading() ? "Reading" : "Lesson") : stage === "practice" ? "Practice" : "Quiz";
+  $("stage-badge").textContent = kind;
+  $("stage-badge").className = "stage-badge stage-" + (isReading() && stage === "lesson" ? "read" : stage);
   $("lesson-number").textContent = stage === "quiz" ? `Module ${l.moduleIndex + 1}` : l.number;
   $("lesson-title").textContent = stage === "quiz" ? `${m.title} quiz` : l.title;
   $("lesson-intro").innerHTML = stage === "practice" ? richText(l.practice.task) : stage === "quiz" ? `${m.quiz.length} questions. No help from the buddy on this one!` : richText(l.intro);
-  $("lesson-pill").textContent = stage === "quiz" ? `Quiz · Module ${l.moduleIndex + 1}` : `${stage === "practice" ? "Practice" : "Lesson"} ${l.number} · ${l.title}`;
+  $("lesson-pill").textContent = stage === "quiz" ? `Quiz · Module ${l.moduleIndex + 1}` : `${kind} ${l.number} · ${l.title}`;
 
   const pb = $("practice-box");
   pb.hidden = stage !== "practice";
@@ -110,6 +117,15 @@ function richText(s) {
 function renderSteps(stepIndex) {
   stepsEl.innerHTML = "";
   if (stage === "quiz") return;
+  if (isReading()) {
+    lesson().cards.forEach((c, i) => {
+      const li = document.createElement("li");
+      li.className = i < stepIndex ? "done" : i === stepIndex ? "current" : "";
+      li.innerHTML = `<span class="step-mark"></span><span>${escapeHtml(c.title)}</span>`;
+      stepsEl.appendChild(li);
+    });
+    return;
+  }
   if (stage === "practice") {
     const n = lesson().practice.solution.length;
     const li = document.createElement("li");
@@ -155,15 +171,19 @@ function open(target) {
   if (tour.active) tour.end();      // a spotlight from before doesn't follow us
 
   const showQuiz = stage === "quiz";
-  editorCard.hidden = showQuiz; outputCard.hidden = showQuiz; quizCard.hidden = !showQuiz;
+  const showRead = !showQuiz && isReading();
+  editorCard.hidden = showQuiz || showRead; outputCard.hidden = showQuiz || showRead;
+  quizCard.hidden = !showQuiz; readCard.hidden = !showRead;
+  runTag.hidden = true; runBtn.classList.remove("pulse");
 
   renderHeader();
-  if (stage === "lesson") tutor.start(lesson());
+  if (showRead) { renderSteps(0); read.start(lesson(), () => finishStage(), (i) => renderSteps(i)); }
+  else if (stage === "lesson") tutor.start(lesson());
   else if (stage === "practice") tutor.startPractice(lesson());
   else { renderSteps(0); quiz.start(module_(), () => finishStage(), sandbox); }
 
   replayClass(document.querySelector(".lesson"), "swap-in");
-  replayClass(showQuiz ? quizCard : editorCard, "swap-in");
+  replayClass(showQuiz ? quizCard : showRead ? readCard : editorCard, "swap-in");
   renderSidebar();
   if (!showQuiz) editor.focus();
   sfx.pop();
@@ -177,15 +197,17 @@ function finishStage() {
   saveProgress();
   renderHeader();
   renderSidebar();
-  showBanner(stage === "lesson" ? "Lesson complete!" : stage === "practice" ? "Practice complete!" : "Quiz finished!",
+  showBanner(stage === "lesson" ? (isReading() ? "Reading complete!" : "Lesson complete!") : stage === "practice" ? "Practice complete!" : "Quiz finished!",
              stage === "quiz" ? "On to the next module" : nextTarget()?.label.replace(" ▶", "") || "");
-  if (stage !== "quiz") { fx.confetti(); sfx.levelUp(); replayClass(outputCard, "success-flash"); }
+  if (stage !== "quiz") { fx.confetti(); sfx.levelUp(); if (!isReading()) replayClass(outputCard, "success-flash"); }
+  runTag.hidden = true; runBtn.classList.remove("pulse");
   if (nextBtn.disabled) return;
   if (stage === "lesson" && progress.lessonsFinished === 1) {
     // their very first finished lesson: a game-style spotlight on Next
+    const nt = nextTarget();
     setTimeout(() => tour.run([{
       target: "#next-btn", place: "top", waitForClick: true,
-      title: "Lesson complete! 🎉", text: "Now try the <strong>Practice</strong>: same idea, no hand-holding.",
+      title: "Nice! 🎉", text: isReading() ? "Click <strong>Next</strong> to keep going." : "Now try the <strong>Practice</strong>: same idea, no hand-holding.",
     }]), 2200);
   } else {
     nextBtn.classList.add("pulse");
@@ -216,16 +238,17 @@ function renderSidebar() {
   const list = $("sidebar-list");
   list.innerHTML = MODULES.map((m, mi) => `
     <div class="sb-module">
-      <div class="sb-module-title"><span class="sb-num">${mi + 1}</span>${m.title}<span class="sb-blurb">${m.blurb}</span></div>
+      <div class="sb-module-title"><span class="sb-num">${mi + 1}</span><span class="sb-mtitle">${m.title}</span><span class="sb-blurb">${m.blurb}</span></div>
       ${m.lessons.map((l, li) => {
         const idx = LESSONS.findIndex((x) => x.id === l.id);
         const cur = idx === lessonIndex && stage !== "quiz";
-        return `<button class="sb-lesson ${cur ? "current" : ""}" data-idx="${idx}" type="button">
+        const reading = l.type === "read";
+        return `<button class="sb-lesson ${cur ? "current" : ""} ${reading ? "sb-read" : ""}" data-idx="${idx}" type="button">
           <span class="sb-lnum">${mi + 1}.${li + 1}</span>
-          <span class="sb-ltitle">${l.title}</span>
+          <span class="sb-ltitle">${reading ? "📖 " : ""}${l.title}</span>
           <span class="sb-marks">
-            <span class="sb-mark ${isDone(l.id) ? "on" : ""}" title="Lesson">L</span>
-            <span class="sb-mark ${isDone(l.id + "-practice") ? "on" : ""}" title="Practice">P</span>
+            <span class="sb-mark ${isDone(l.id) ? "on" : ""}" title="${reading ? "Reading" : "Lesson"}">${reading ? "R" : "L"}</span>
+            ${reading ? "" : `<span class="sb-mark ${isDone(l.id + "-practice") ? "on" : ""}" title="Practice">P</span>`}
           </span></button>`;
       }).join("")}
       <button class="sb-lesson sb-quiz ${lessonIndex === LESSONS.findIndex((x) => x.id === m.lessons[m.lessons.length - 1].id) && stage === "quiz" ? "current" : ""}" data-quiz="${mi}" type="button">
@@ -262,6 +285,10 @@ tutor.ui.stuckTag = (show) => { stuckTag.hidden = !show; if (show) sfx.pop(); };
 tutor.ui.onPartDone = () => sfx.tick();
 tutor.ui.onMistake = () => sfx.error();
 tutor.ui.onComplete = () => finishStage();
+// Whole program typed: point them at Run
+tutor.ui.onReadyToRun = () => { runTag.hidden = false; runBtn.classList.add("pulse"); sfx.pop(); };
+tutor.ui.explainLength = () => settings.explain;
+tutor.ui.ghostMode = () => settings.ghost;
 tutor.ui.markLine = (lineNumber) => {
   if (activeLineHandle) editor.removeLineClass(activeLineHandle, "background", "active-line");
   activeLineHandle = null;
@@ -406,6 +433,7 @@ async function runCode() {
 
   clearOutput();
   clearErrorLine();
+  runTag.hidden = true; runBtn.classList.remove("pulse");
   outputCard.classList.add("is-running");
   setStatus("running", "Running…");
   buddy.set("thinking");
@@ -505,7 +533,51 @@ document.addEventListener("click", (e) => {
 editor.setOption("extraKeys", { "Ctrl-Enter": runCode, "Cmd-Enter": runCode });
 window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSidebar(); });
 
-// ---------- 12. The tutorial ----------
+// ---------- 12. Settings ----------
+
+const SETTINGS_KEY = "codebuddy.settings";
+let settings = { speed: 1, explain: "normal", ghost: "always", textSize: "m", motion: "on" };
+try { settings = { ...settings, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") }; } catch {}
+
+function applySettings() {
+  buddy.setSpeed(settings.speed);
+  voice.setRate(settings.speed);
+  document.documentElement.dataset.textSize = settings.textSize;
+  document.body.classList.toggle("reduce-motion", settings.motion === "off");
+  editor.refresh();
+  renderGhost();
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {}
+}
+function syncSettingsUI() {
+  $("set-speed").value = settings.speed;
+  $("set-speed-val").textContent = `${settings.speed}×`;
+  $("set-explain").value = settings.explain;
+  $("set-ghost").value = settings.ghost;
+  $("set-size").value = settings.textSize;
+  $("set-motion").checked = settings.motion !== "off";
+  $("set-sound").checked = sfx.on;
+  $("set-voice").checked = voice.on;
+  fillVoices(); $("set-voicepick").innerHTML = voicePick.innerHTML;
+}
+const settingsEl = $("settings"), settingsBackdrop = $("settings-backdrop");
+function openSettings() { syncSettingsUI(); settingsEl.hidden = false; settingsBackdrop.hidden = false; sfx.pop(); }
+function closeSettings() { settingsEl.hidden = true; settingsBackdrop.hidden = true; }
+$("settings-btn").addEventListener("click", openSettings);
+$("settings-close").addEventListener("click", closeSettings);
+settingsBackdrop.addEventListener("click", closeSettings);
+$("set-speed").addEventListener("input", (e) => { settings.speed = +e.target.value; $("set-speed-val").textContent = `${settings.speed}×`; applySettings(); });
+$("set-explain").addEventListener("change", (e) => { settings.explain = e.target.value; applySettings(); });
+$("set-ghost").addEventListener("change", (e) => { settings.ghost = e.target.value; applySettings(); tutor.onChange(); });
+$("set-size").addEventListener("change", (e) => { settings.textSize = e.target.value; applySettings(); });
+$("set-motion").addEventListener("change", (e) => { settings.motion = e.target.checked ? "on" : "off"; applySettings(); });
+$("set-sound").addEventListener("change", () => { sfx.toggle(); renderSoundBtn(); });
+$("set-voice").addEventListener("change", () => { voiceBtn.click(); });
+$("set-voicepick").addEventListener("change", (e) => { voice.choose(e.target.value); voicePick.value = e.target.value; voice.speak("How's this voice?"); });
+$("set-tour").addEventListener("click", () => { closeSettings(); firstVisitTour(); });
+$("set-reset").addEventListener("click", () => { closeSettings(); $("reset-btn-all").click(); });
+$("set-test").addEventListener("click", () => buddy.say("# Testing\nThis is how fast I talk.\nYou can change it any time.", "happy"));
+
+// ---------- 13. The tutorial ----------
 
 function firstVisitTour() {
   closeSidebar();
@@ -516,14 +588,16 @@ function firstVisitTour() {
     { target: ".editor-wrap", title: "Type here", text: "<span class='ghost-demo'>Gray letters</span> show exactly what to type next. Type over them and they turn real. A red underline means a typo.", place: "left" },
     { target: "#buddy", title: "Meet your buddy", text: "He explains each piece as you type it. <strong>Click him</strong> whenever you're stuck. In practice you get 3 hints.", place: "left" },
     { target: "#run-btn", title: "Run your code", text: "Press Run (or Ctrl+Enter) to see what your program does.", place: "bottom" },
-    { target: "#next-btn", title: "Lesson → Practice → Quiz", text: "Finish a lesson, then prove it in a Practice. Each module ends with a short quiz.", place: "top" },
+    { target: "#next-btn", title: "Reading → Coding → Practice → Quiz", text: "📖 Reading lessons teach the ideas (click through the cards). Coding lessons use them. Practice proves it. Each module ends with a quiz.", place: "top" },
     { target: "#sound-btn", title: "Sound and voice", text: "Mute the sound effects here, or turn on Voice and he'll read everything out loud.", place: "bottom" },
+    { target: "#settings-btn", title: "Settings", text: "How fast he talks, how long his explanations are, ghost letters, text size, and more.", place: "bottom" },
     { target: "#tour-btn", title: "See this again", text: "Click Tutorial any time to replay this walkthrough.", place: "bottom" },
   ], () => { progress.toured = true; saveProgress(); editor.focus(); });
 }
 
-// ---------- 13. Go ----------
+// ---------- 14. Go ----------
 
+applySettings();
 renderHeader();
 renderSidebar();
 editorCard.classList.add("loading");

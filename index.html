@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="15" />
+  <meta name="build" content="16" />
   <title>CodeBuddy – Learn to code with a friend</title>
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
@@ -18,8 +18,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=15" />
-  <link rel="stylesheet" href="buddy.css?v=15" />
+  <link rel="stylesheet" href="styles.css?v=16" />
+  <link rel="stylesheet" href="buddy.css?v=16" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -36,6 +36,7 @@
       <button id="sound-btn" class="btn btn-ghost btn-icon-only" type="button" title="Sound effects" aria-pressed="true">🔔 Sound</button>
       <button id="voice-btn" class="btn btn-ghost btn-icon-only" type="button" title="Read the buddy's messages out loud" aria-pressed="false">🔇 Voice off</button>
       <select id="voice-pick" class="voice-pick" title="Pick a voice" hidden></select>
+      <button id="settings-btn" class="btn btn-ghost btn-icon-only" type="button" title="Settings">⚙ Settings</button>
       <button id="tour-btn" class="btn btn-ghost btn-icon-only" type="button" title="Redo the tutorial">❔ Tutorial</button>
     </div>
   </header>
@@ -87,6 +88,7 @@
           <span class="card-label">Your code</span>
           <div class="actions">
             <button id="reset-btn" class="btn btn-ghost" type="button">Start over</button>
+            <span id="run-tag" class="run-tag" hidden>Now run it 👉</span>
             <button id="run-btn" class="btn btn-primary" type="button" disabled>
               <span class="btn-icon">▶</span> Run
             </button>
@@ -119,9 +121,32 @@
 
       <!-- Quiz replaces the editor at the end of a module -->
       <div id="quiz-card" class="card quiz-card" hidden></div>
+      <!-- Reading lessons replace the editor too -->
+      <div id="read-card" class="card read-card" hidden></div>
     </section>
 
   </main>
+
+  <!-- Settings -->
+  <div id="settings-backdrop" class="sidebar-backdrop" hidden></div>
+  <div id="settings" class="settings card" hidden role="dialog" aria-label="Settings">
+    <div class="settings-head"><span class="brand-name">Settings</span><button id="settings-close" class="btn btn-ghost btn-icon-only" type="button" aria-label="Close">✕</button></div>
+    <div class="settings-body">
+      <label class="set-row"><span>Buddy talking speed</span><span class="set-ctl"><input id="set-speed" type="range" min="0.5" max="2" step="0.25" /><b id="set-speed-val">1×</b></span></label>
+      <label class="set-row"><span>Explanation length</span><select id="set-explain"><option value="short">Short (one line)</option><option value="normal">Normal</option><option value="long">Detailed</option></select></label>
+      <label class="set-row"><span>Ghost letters</span><select id="set-ghost"><option value="always">Always show what to type</option><option value="stuck">Only after I click the buddy</option></select></label>
+      <label class="set-row"><span>Code text size</span><select id="set-size"><option value="s">Small</option><option value="m">Medium</option><option value="l">Large</option></select></label>
+      <label class="set-row"><span>Voice</span><input id="set-voice" type="checkbox" /></label>
+      <label class="set-row"><span>Voice choice</span><select id="set-voicepick"></select></label>
+      <label class="set-row"><span>Sound effects</span><input id="set-sound" type="checkbox" /></label>
+      <label class="set-row"><span>Animations</span><input id="set-motion" type="checkbox" /></label>
+      <div class="set-actions">
+        <button id="set-test" class="btn btn-ghost" type="button">🗣 Test speed</button>
+        <button id="set-tour" class="btn btn-ghost" type="button">❔ Redo tutorial</button>
+        <button id="set-reset" class="btn btn-ghost" type="button">↺ Reset progress</button>
+      </div>
+    </div>
+  </div>
 
   <!-- "Lesson complete!" banner -->
   <div id="banner" class="banner" hidden>
@@ -132,13 +157,14 @@
     </div>
   </div>
 
-  <script src="sfx.js?v=15"></script>
-  <script src="fx.js?v=15"></script>
-  <script src="lessons.js?v=15"></script>
-  <script src="buddy.js?v=15"></script>
-  <script src="tutor.js?v=15"></script>
-  <script src="quiz.js?v=15"></script>
-  <script src="tour.js?v=15"></script>
-  <script src="app.js?v=15"></script>
+  <script src="sfx.js?v=16"></script>
+  <script src="fx.js?v=16"></script>
+  <script src="lessons.js?v=16"></script>
+  <script src="buddy.js?v=16"></script>
+  <script src="tutor.js?v=16"></script>
+  <script src="quiz.js?v=16"></script>
+  <script src="read.js?v=16"></script>
+  <script src="tour.js?v=16"></script>
+  <script src="app.js?v=16"></script>
 </body>
 </html>

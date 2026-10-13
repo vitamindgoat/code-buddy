@@ -54,7 +54,19 @@ const tutor = (() => {
     onStepDone: () => {},     // (lineNumber)
     onMistake: () => {},
     onComplete: () => {},     // lesson or practice finished (output matched)
+    onReadyToRun: () => {},   // whole program typed: point at Run
+    explainLength: () => "normal",   // "short" | "normal" | "long" (settings)
+    ghostMode: () => "always",       // "always" | "stuck" (settings)
   };
+
+  // Trim or expand an explanation to the learner's chosen length
+  function explainText(part) {
+    const len = ui.explainLength();
+    const lines = part.explain.split("\n");
+    if (len === "short") return lines[0];
+    if (len === "long" && part.say) return `${part.explain}\n(${part.say})`;
+    return part.explain;
+  }
 
   // ---------- normalizing: what counts as "the same code" ----------
 
@@ -202,12 +214,13 @@ const tutor = (() => {
       if (stepIndex === lesson.steps.length) {
         complete = true;
         ui.ghost(); ui.markLine(null); ui.stuckTag(false);
-        say(`# ✓ \`${lastPart.text}\`\n${lastPart.explain}\n# Whole program typed!\nPress Run to see it work.`, "happy");
+        say(`# ✓ \`${lastPart.text}\`\n${explainText(lastPart)}\n# Whole program typed!\nPress Run to see what it really prints.`, "happy");
+        ui.onReadyToRun();
         return;
       }
       showGhost(lines, n);
       ui.markLine(lines[n] ? lines[n].number : null);
-      say(`# ✓ \`${lastPart.text}\`\n${lastPart.explain}\n${typeSection("Next line")}`, "happy");
+      say(`# ✓ \`${lastPart.text}\`\n${explainText(lastPart)}\n${typeSection("Next line")}`, "happy");
       return;
     }
 
@@ -243,7 +256,7 @@ const tutor = (() => {
       const done = step().parts[p - 1];
       partIndex = p;
       ui.onPartDone();
-      say(`# ✓ \`${done.text}\`\n${done.explain}\n${typeSection("Now type")}`, "happy");
+      say(`# ✓ \`${done.text}\`\n${explainText(done)}\n${typeSection("Now type")}`, "happy");
     } else if (p < partIndex) {
       partIndex = p;
     }
@@ -258,9 +271,11 @@ const tutor = (() => {
 
   // What the ghost should show right now: { lineNumber, text } or null.
   // Pure (no side effects), so app.js can call it on every keystroke.
+  let ghostAsked = false;   // in "stuck" ghost mode: shown after a hint click
   function ghostFor(lines, idx) {
     if (!lesson || complete) return null;
     if (mode === "practice" && hintsUsed < 3) return null;
+    if (mode === "lesson" && ui.ghostMode() === "stuck" && !ghostAsked) return null;
     const target = targets()[idx];
     if (!target) return null;
     const line = lines[idx];
@@ -303,6 +318,8 @@ const tutor = (() => {
     if (!lesson) return;
     ui.stuckTag(false);
     if (mode === "practice") return practiceHint();
+    ghostAsked = true;
+    showGhost(codeLines(), stepIndex);
     if (complete) return say("# All typed!\nPress Run to see it work.", "pointing");
 
     const lines = codeLines();
@@ -388,7 +405,7 @@ const tutor = (() => {
 
   function reset(l) {
     lesson = l;
-    stepIndex = 0; partIndex = 0; hintsUsed = 0;
+    stepIndex = 0; partIndex = 0; hintsUsed = 0; ghostAsked = false;
     complete = false; celebrated = false; mistake = false;
     lastSaid = "";
     clearTimeout(stuckTimer); clearTimeout(diagnoseTimer);

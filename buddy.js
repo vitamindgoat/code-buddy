@@ -71,7 +71,9 @@ const buddy = (() => {
   // with all the text in place but hidden, then reveal it character by
   // character: on a timer, or in sync with the voice when it's on.
   // Clicking the bubble reveals it all (and stops the voice).
-  const CHAR_MS = 16;
+  let CHAR_MS = 16;
+  let speed = 1;               // settings: 0.5 (slow) .. 2 (fast)
+  function setSpeed(f) { speed = f; CHAR_MS = Math.round(16 / f); }
   let typingTimer = null;
   let chars = [];        // every revealable character span, in order
   let revealed = 0;      // how many are shown so far
@@ -158,7 +160,7 @@ const buddy = (() => {
   function paced() {
     if (revealed >= chars.length) return;        // wait for the voice to end
     chars[revealed++].classList.add("on");
-    typingTimer = setTimeout(paced, SPEECH_MS_PER_CHAR);
+    typingTimer = setTimeout(paced, Math.round(SPEECH_MS_PER_CHAR / speed));
   }
 
   const KEEP_CAPS = new Set(["CSP", "RLE", "API", "JPEG", "PNG", "URL", "HTML", "CSS"]);
@@ -249,7 +251,7 @@ const buddy = (() => {
     const c = chars[revealed++];
     c.classList.add("on");
     // punctuation gets a tiny pause, like real speech
-    const pause = /[.!?]/.test(c.textContent) ? 140 : CHAR_MS;
+    const pause = /[.!?]/.test(c.textContent) ? Math.round(140 / speed) : CHAR_MS;
     typingTimer = setTimeout(tick, pause);
   }
 
@@ -282,7 +284,7 @@ const buddy = (() => {
   mount(host, "idle");
 
   return {
-    set, say, mount, floatTo, finishTyping, onClick, tokenize,
+    set, say, mount, floatTo, finishTyping, onClick, tokenize, setSpeed,
     get state() { return host.getAttribute("data-state"); },
     get talking() { return speechEl.classList.contains("typing"); },
   };
@@ -298,6 +300,8 @@ const buddy = (() => {
 const voice = (() => {
   let on = false;
   let chosen = null;      // SpeechSynthesisVoice
+  let rate = 1;
+  function setRate(r) { rate = r; }
   const PREFERRED = [
     /Google UK English Male/i,
     /Google US English/i,
@@ -355,7 +359,7 @@ const voice = (() => {
     chunks.forEach((c, i) => {
       const u = new SpeechSynthesisUtterance(c.text);
       if (chosen) u.voice = chosen;
-      u.rate = 1.0;
+      u.rate = rate;
       u.pitch = 1.05;
       u.onboundary = (e) => { if (gen === generation && e.name === "word" && onWord) onWord(c.offset + e.charIndex); };
       if (i === chunks.length - 1) {
@@ -383,5 +387,5 @@ const voice = (() => {
     try { localStorage.setItem("codebuddy.voice", name); } catch {}
   }
 
-  return { speak, stop, toggle, choose, voices, chunk, get on() { return on; }, get chosen() { return chosen; } };
+  return { speak, stop, toggle, choose, voices, chunk, setRate, get on() { return on; }, get chosen() { return chosen; } };
 })();
