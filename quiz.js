@@ -14,14 +14,17 @@
 
 const quiz = (() => {
   const card = document.getElementById("quiz-card");
-  let questions = [], index = 0, score = 0, onDone = null, answered = false, sandbox = null, codeEditor = null;
+  let questions = [], index = 0, score = 0, onDone = null, answered = false, sandbox = null, codeEditor = null, onSave = null;
 
-  function start(module, done, sb) {
+  // saved = { index, score } from a previous visit: pick up at that question
+  function start(module, done, sb, saved, save) {
     questions = module.quiz;
-    index = 0; score = 0; onDone = done; sandbox = sb;
+    index = 0; score = 0; onDone = done; sandbox = sb; onSave = save;
+    if (saved && saved.index > 0) { index = Math.min(saved.index, questions.length); score = saved.score || 0; }
     card.dataset.title = module.title;
-    render();
+    index < questions.length ? render() : finish();
   }
+  function saveState() { onSave && onSave({ index, score }); }
 
   // Fisher-Yates shuffle, with the correct answer's new position tracked
   function shuffled(q) {
@@ -109,7 +112,7 @@ const quiz = (() => {
   }
 
   function wireNext() {
-    card.querySelector(".quiz-next").addEventListener("click", () => { index++; index < questions.length ? render() : finish(); });
+    card.querySelector(".quiz-next").addEventListener("click", () => { index++; saveState(); index < questions.length ? render() : finish(); });
     card.classList.remove("swap-in"); void card.offsetWidth; card.classList.add("swap-in");
   }
 

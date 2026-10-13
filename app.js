@@ -41,12 +41,27 @@ const quizCard = $("quiz-card"), readCard = $("read-card"), stuckTag = $("stuck-
 // lesson of a module, "quiz" -> next module
 let lessonIndex = 0;
 let stage = "lesson";
-let progress = { done: {}, lessonIndex: 0, stage: "lesson", toured: false, lessonsFinished: 0 };
+// done: which stages are finished. work: everything in progress, keyed by
+// stage (your code in each lesson/practice, which quiz question you're on,
+// which reading card). scores: quiz results.
+let progress = { done: {}, work: {}, scores: {}, lessonIndex: 0, stage: "lesson", toured: false, lessonsFinished: 0 };
 try { progress = { ...progress, ...JSON.parse(localStorage.getItem(SAVE_KEY) || "{}") }; } catch {}
+progress.work = progress.work || {}; progress.scores = progress.scores || {};
 
 function saveProgress() {
   progress.lessonIndex = lessonIndex; progress.stage = stage;
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(progress)); } catch {}
+}
+// The key for what's on screen right now (lesson id + stage, or module + quiz)
+const workKey = () => (stage === "quiz" ? `${module_().id}:quiz` : `${lesson().id}:${stage}`);
+function saveWork(patch) {
+  progress.work[workKey()] = { ...(progress.work[workKey()] || {}), ...patch };
+  saveProgress();
+}
+let codeSaveTimer = null;
+function saveCodeSoon() {
+  clearTimeout(codeSaveTimer);
+  codeSaveTimer = setTimeout(() => { if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed }); }, 300);
 }
 
 const lesson = () => LESSONS[lessonIndex];
@@ -177,10 +192,12 @@ function open(target) {
   runTag.hidden = true; runBtn.classList.remove("pulse");
 
   renderHeader();
-  if (showRead) { renderSteps(0); read.start(lesson(), () => finishStage(), (i) => renderSteps(i)); }
-  else if (stage === "lesson") tutor.start(lesson());
-  else if (stage === "practice") tutor.startPractice(lesson());
-  else { renderSteps(0); quiz.start(module_(), () => finishStage(), sandbox); }
+  const saved = target.fresh ? null : progress.work[workKey()];
+  if (target.fresh) { delete progress.work[workKey()]; saveProgress(); }
+  if (showRead) { renderSteps(0); read.start(lesson(), () => finishStage(), (i) => { renderSteps(i); saveWork({ index: i }); }, saved); }
+  else if (stage === "lesson") tutor.start(lesson(), saved);
+  else if (stage === "practice") tutor.startPractice(lesson(), saved);
+  else { renderSteps(0); quiz.start(module_(), (r) => { progress.scores[module_().id] = r; finishStage(); }, sandbox, saved, (st) => saveWork(st)); }
 
   replayClass(document.querySelector(".lesson"), "swap-in");
   replayClass(showQuiz ? quizCard : showRead ? readCard : editorCard, "swap-in");
@@ -193,6 +210,8 @@ function open(target) {
 function finishStage() {
   const first = !progress.done[doneId()];
   progress.done[doneId()] = true;
+  if (stage === "lesson" || stage === "practice") { clearTimeout(codeSaveTimer); saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, finished: true }); }
+  else delete progress.work[workKey()];
   if (stage === "lesson" && first) progress.lessonsFinished = (progress.lessonsFinished || 0) + 1;
   saveProgress();
   renderHeader();
@@ -267,7 +286,7 @@ $("menu-btn").addEventListener("click", () => (sidebar.classList.contains("open"
 $("sidebar-close").addEventListener("click", closeSidebar);
 backdrop.addEventListener("click", closeSidebar);
 $("reset-btn-all").addEventListener("click", () => {
-  progress = { done: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0 };
+  progress = { done: {}, work: {}, scores: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0 };
   saveProgress(); open({ lessonIndex: 0, stage: "lesson" });
 });
 $("redo-tour-btn").addEventListener("click", () => { closeSidebar(); firstVisitTour(); });
@@ -362,8 +381,8 @@ function floatBuddyToLine(lineNumber) {
 }
 editor.on("cursorActivity", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("scroll", () => floatBuddyToLine(editor.getCursor().line));
-editor.on("change", () => { clearErrorLine(); tutor.onChange(); });
-buddy.onClick(() => { sfx.click(); tutor.hint(); editor.focus(); });
+editor.on("change", () => { clearErrorLine(); tutor.onChange(); saveCodeSoon(); });
+buddy.onClick(() => { sfx.click(); tutor.hint(); editor.focus(); saveCodeSoon(); });
 
 // ---------- 9. Running code safely ----------
 
@@ -494,7 +513,7 @@ function clearErrorLine() {
 // ---------- 11. Buttons ----------
 
 runBtn.addEventListener("click", runCode);
-resetBtn.addEventListener("click", () => open({ lessonIndex, stage }));
+resetBtn.addEventListener("click", () => open({ lessonIndex, stage, fresh: true }));   // Start over: forget the saved code too
 prevBtn.addEventListener("click", () => { const t = prevTarget(); if (t) open(t); });
 nextBtn.addEventListener("click", () => { const t = nextTarget(); if (t) open(t); });
 

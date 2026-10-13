@@ -20,8 +20,10 @@ const read = (() => {
   const card = document.getElementById("read-card");
   let lesson = null, index = 0, onDone = null, onCard = null, answered = false;
 
-  function start(l, done, cardChange) {
+  // saved = { index } from a previous visit: reopen on that card
+  function start(l, done, cardChange, saved) {
     lesson = l; index = 0; onDone = done; onCard = cardChange;
+    if (saved && saved.index > 0) index = Math.min(saved.index, l.cards.length - 1);
     render();
   }
 

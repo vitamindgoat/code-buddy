@@ -413,9 +413,11 @@ const tutor = (() => {
     ui.setCode("");
   }
 
-  function start(l) {
+  // saved = { code, hintsUsed, finished } from a previous visit (or null)
+  function start(l, saved) {
     mode = "lesson";
     reset(l);
+    if (saved && saved.code) return resume(saved);
     ui.renderSteps(0);
     ui.markLine(0);
     const who = l.inputs ? `\n# The user will type\n\`${l.inputs.join("`, `")}\`` : "";
@@ -424,13 +426,39 @@ const tutor = (() => {
     armStuck(STUCK_AFTER_IDLE_MS);
   }
 
-  function startPractice(l) {
+  function startPractice(l, saved) {
     mode = "practice";
     reset(l);
+    if (saved && saved.code) return resume(saved);
     ui.renderSteps(0);
     ui.markLine(0);
     const who = l.practice.inputs ? `\n# The user will type\n\`${l.practice.inputs.join("`, `")}\`` : "";
     say(`# Practice · ${l.title}\nYour turn, no help from me.\n# Goal\n${l.practice.task}${who}\n# Stuck?\nClick me. You get 3 hints.`, "idle");
+    armStuck(STUCK_AFTER_IDLE_MS);
+  }
+
+  // Put the saved code back and work out where they were, without the
+  // usual "you finished a line!" chatter for every line already typed.
+  function resume(saved) {
+    ui.setCode(saved.code);
+    hintsUsed = saved.hintsUsed || 0;
+    const lines = codeLines();
+    const n = countCorrect(lines);
+    stepIndex = Math.min(n, targets().length); partIndex = 0;
+    if (saved.finished) { complete = true; celebrated = true; }
+    else if (mode === "lesson" && stepIndex === lesson.steps.length) complete = true;
+    ui.renderSteps(stepIndex);
+    ui.markLine(lines.length ? lines[Math.min(stepIndex, lines.length - 1)].number : 0);
+    if (saved.finished) {
+      ui.ghost(); ui.markWrong();
+      say(mode === "practice"
+        ? `# Welcome back!\nYou already solved this practice.\nRun it again, change something, or move on.`
+        : `# Welcome back!\nYou already finished this lesson.\nYour code is still here. Try the practice next, or run it again.`, "happy");
+      return;
+    }
+    say(`# Welcome back!\nYour code is right where you left it.\n${mode === "practice" ? `# Goal\n${lesson.practice.task}` : complete ? "All typed. Press Run to see it work." : typeSection()}`, "happy");
+    if (mode === "practice") checkPractice(); else { const cur = lines[stepIndex], step = lesson.steps[stepIndex]; partIndex = cur && step ? countParts(cur.text, step) : 0; showGhost(lines, stepIndex); }
+    clearTimeout(diagnoseTimer);   // setCode fired onChange; don't let it talk over the welcome
     armStuck(STUCK_AFTER_IDLE_MS);
   }
 
