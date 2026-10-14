@@ -500,6 +500,7 @@ function finishRun() {
   running = false;
   runBtn.disabled = !pythonReady;
   outputCard.classList.remove("is-running");
+  if (stage !== "quiz") editor.focus();   // back to typing without an extra click
 }
 
 // ---------- 10. Small helpers for the UI ----------

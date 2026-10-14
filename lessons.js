@@ -89,6 +89,7 @@ const MODULES = [
             ],
           },
         ],
+        checkpoints: [{"after": 0, "output": "Wake up", "say": "See? Wake up printed on its own line. One print, one line of output."}, {"after": 1, "output": "Wake up\nBrush teeth", "say": "Two prints, two lines, in the order you wrote them."}, {"after": 2, "output": "Wake up\nBrush teeth\nGo to school"}],
         expectedOutput: "Wake up\nBrush teeth\nGo to school",
         done: "That's an algorithm: steps, in order, that the computer follows exactly.",
         practice: {
@@ -130,6 +131,7 @@ const MODULES = [
             ],
           },
         ],
+        checkpoints: [{"after": 1, "output": "0b101"}],
         expectedOutput: "0b101",
         done: "101 is 4 + 0 + 1. Every number, letter and picture in a computer is bits like these.",
         practice: {
@@ -170,6 +172,7 @@ const MODULES = [
             ],
           },
         ],
+        checkpoints: [{"after": 0, "output": "00000000", "say": "Eight zeros, but you only typed one. The star repeated it."}, {"after": 1, "output": "00000000\n01010101"}],
         expectedOutput: "00000000\n01010101",
         done: "Repetition is the secret of compression. Random data has no pattern, so it can't shrink.",
         practice: {
@@ -217,6 +220,7 @@ const MODULES = [
             ],
           },
         ],
+        checkpoints: [{"after": 0, "output": "False", "say": "False: both sides weren't True, so the AND gate says no."}, {"after": 1, "output": "False\nTrue", "say": "True this time: with or, one True side is enough."}, {"after": 2, "output": "False\nTrue\nFalse"}],
         expectedOutput: "False\nTrue\nFalse",
         done: "You just wrote a truth table. Every decision a computer makes is built from gates like these.",
         practice: {
@@ -283,6 +287,7 @@ const MODULES = [
             ],
           },
         ],
+        checkpoints: [{"after": 1, "output": "Hello, world!", "say": "Hello, world! printed, and the comment line printed nothing at all."}, {"after": 2, "output": "Hello, world!\nCSP is fun."}],
         expectedOutput: "Hello, world!\nCSP is fun.",
         done: "Notice the comment didn't print. Comments are for you, output is for the user.",
         practice: {
@@ -312,6 +317,7 @@ const MODULES = [
             ],
           },
         ],
+        checkpoints: [{"after": 0, "output": "Line one\nLine two", "say": "One print, two lines. The backslash n split it."}, {"after": 1, "output": "Line one\nLine two\nShe said \"hi\""}],
         expectedOutput: 'Line one\nLine two\nShe said "hi"',
         done: "Backslash means \"the next character is special.\" \\n, \\t and \\\" are the ones you'll use most.",
         practice: {
@@ -365,6 +371,7 @@ const MODULES = [
             ],
           },
         ],
+        checkpoints: [{"after": 2, "output": "<class 'str'>", "say": "<class 'str'> means name holds a string."}, {"after": 3, "output": "<class 'str'>\n<class 'int'>"}],
         expectedOutput: "<class 'str'>\n<class 'int'>",
         done: "str, int, float, bool. Knowing the type tells you what you can do with a value.",
         practice: {
@@ -406,6 +413,7 @@ const MODULES = [
             ],
           },
         ],
+        checkpoints: [{"after": 0, "output": "10", "say": "10, plain addition."}, {"after": 1, "output": "10\n1", "say": "1: that's the remainder of 7 divided by 3."}, {"after": 2, "output": "10\n1\n2", "say": "2: floor division threw away the .33."}, {"after": 3, "output": "10\n1\n2\n3.5"}],
         expectedOutput: "10\n1\n2\n3.5",
         done: "Trick: num % 10 gives the ones digit. (num // 10) % 10 gives the tens digit. Isolate any digit!",
         practice: {
@@ -442,6 +450,7 @@ const MODULES = [
           { code: "x = x - 4", parts: [{ text: "x = x - 4", say: "Press Enter. Now take away 4.", explain: "16 - 4 = 12. x is 12." }] },
           { code: "print(x)", parts: [{ text: "print(x)", say: "Press Enter. Finally, print x to show the final value.", explain: "Only the last value prints. Did your trace say 12?" }] },
         ],
+        checkpoints: [{"after": 4, "output": "12"}],
         expectedOutput: "12",
         done: "Tracing is how you find bugs: pretend to be the computer and track every variable.",
         practice: {
@@ -474,6 +483,7 @@ const MODULES = [
             ],
           },
         ],
+        checkpoints: [{"after": 1, "output": "Hi GARY THE SNAIL!", "say": "The curly braces got swapped for the name. No plus signs needed."}, {"after": 3, "output": "Hi GARY THE SNAIL!\n50 * 2 = 100"}],
         expectedOutput: "Hi GARY THE SNAIL!\n50 * 2 = 100",
         done: "f-strings are the cleanest way to print text and values together. You'll use them constantly.",
         practice: {
@@ -504,6 +514,7 @@ const MODULES = [
             ],
           },
         ],
+        checkpoints: [{"after": 1, "output": "What is your name? Gary\nHi Gary!"}],
         expectedOutput: "What is your name? Gary\nHi Gary!",
         done: "input() ALWAYS returns a string, even if the user types a number. That matters next lesson.",
         practice: {
@@ -536,6 +547,7 @@ const MODULES = [
             ],
           },
         ],
+        checkpoints: [{"after": 1, "output": "How old are you? 12\n13"}],
         expectedOutput: "How old are you? 12\n13",
         done: "Casting lets math happen. But if the user types \"twelve\", int() crashes: that's a runtime error.",
         practice: {
@@ -573,6 +585,7 @@ const MODULES = [
             hints: [{ match: /\+\s*total\s*\)/, say: "total is a number. Wrap it: str(total), or Python raises a TypeError." }],
           },
         ],
+        checkpoints: [{"after": 1, "output": "total is 4"}],
         expectedOutput: "total is 4",
         done: "When you see a traceback, read the LAST line first: it names the error. Then the line number.",
         practice: {
@@ -628,6 +641,7 @@ const MODULES = [
           },
           { code: "print(5 != 3)", parts: [{ text: "print(5 != 3)", say: "Press Enter. Exclamation equals means not equal.", explain: "`!=` means *not equal to*. 5 is not 3, so True." }] },
         ],
+        checkpoints: [{"after": 0, "output": "True", "say": "True: 5 really is greater than 3. A comparison gives a boolean."}, {"after": 1, "output": "True\nFalse", "say": "False: 5 and 3 aren't equal."}, {"after": 2, "output": "True\nFalse\nTrue"}],
         expectedOutput: "True\nFalse\nTrue",
         done: "Comparisons are questions with yes/no answers. Conditionals are built on them.",
         practice: {
@@ -656,6 +670,7 @@ const MODULES = [
             parts: [{ text: "print(age < 13 or age > 19)", say: "Press Enter. Now try or: only one side needs to be true.", explain: "`or` needs just one. Both are False here, so False." }],
           },
         ],
+        checkpoints: [{"after": 1, "output": "True", "say": "True: 16 is at least 13 AND at most 19."}, {"after": 2, "output": "True\nFalse"}],
         expectedOutput: "True\nFalse",
         done: "Precedence tip: not runs first, then and, then or. Use parentheses when in doubt.",
         practice: {
@@ -689,6 +704,7 @@ const MODULES = [
           },
           { code: '    print("Minor")', parts: [{ text: 'print("Minor")', say: "Press Enter. This one is indented again, under the else.", explain: "Exactly one of the two prints runs. Never both." }] },
         ],
+        checkpoints: [{"after": 4, "output": "Age? 20\nAdult"}],
         expectedOutput: "Age? 20\nAdult",
         done: "if/else is a fork in the road. The user typed 20, so we took the Adult path.",
         practice: {
@@ -717,6 +733,7 @@ const MODULES = [
           { code: "else:", parts: [{ text: "else:", say: "Press Enter, then Backspace to un-indent. else is the catch-all.", explain: "`else` catches everything that didn't match." }] },
           { code: '    print("C")', parts: [{ text: 'print("C")', say: "Press Enter. Indent, then print C.", explain: "This line is never reached this time." }] },
         ],
+        checkpoints: [{"after": 6, "output": "B"}],
         expectedOutput: "B",
         done: "Order matters: put the strictest check first. Checking >= 80 before >= 90 would give the wrong grade.",
         practice: {
@@ -737,6 +754,7 @@ const MODULES = [
           { code: "print(round(3.7))", parts: [{ text: "print(round(3.7))", say: "Press Enter. round rounds to the nearest whole number.", explain: "`round` gives 4." }] },
           { code: "print(abs(-5))", parts: [{ text: "print(abs(-5))", say: "Press Enter. abs gives the absolute value: it drops the minus sign.", explain: "`abs` removes the sign: 5." }] },
         ],
+        checkpoints: [{"after": 1, "output": "6", "say": "6: banana has six letters."}, {"after": 2, "output": "6\n4", "say": "4: 3.7 rounds up."}, {"after": 3, "output": "6\n4\n5"}],
         expectedOutput: "6\n4\n5",
         done: "Also useful: min(), max(), str(), int(), float(). A function takes something in and gives something back.",
         practice: {
@@ -773,6 +791,7 @@ const MODULES = [
           },
           { code: "    print(i)", parts: [{ text: "print(i)", say: "Press Enter. Indent and print i. This body runs 5 times.", explain: "Each time through, i is the next number." }] },
         ],
+        checkpoints: [{"after": 1, "output": "0\n1\n2\n3\n4"}],
         expectedOutput: "0\n1\n2\n3\n4",
         done: "range(5) has 5 numbers but starts at 0, so the last is 4. That trips everyone up once.",
         practice: {
@@ -797,6 +816,7 @@ const MODULES = [
             hints: [{ match: /^\s+print\s*\(\s*total/, say: "Un-indent this print so it runs after the loop, not inside it." }],
           },
         ],
+        checkpoints: [{"after": 3, "output": "5050"}],
         expectedOutput: "5050",
         done: "Gauss did this in his head as a kid. You did it in four lines.",
         practice: {
@@ -824,6 +844,7 @@ const MODULES = [
           },
           { code: 'print("Liftoff!")', parts: [{ text: 'print("Liftoff!")', say: "Press Enter, then Backspace to un-indent. This runs after the loop.", explain: "Runs once when count hits 0." }] },
         ],
+        checkpoints: [{"after": 4, "output": "3\n2\n1\nLiftoff!"}],
         expectedOutput: "3\n2\n1\nLiftoff!",
         done: "Use for when you know how many times. Use while when you're waiting for something to become true.",
         practice: {
@@ -850,6 +871,7 @@ const MODULES = [
             parts: [{ text: "print(n)", say: "Press Enter, then Backspace once to get back to loop level, and print n.", explain: "Prints 0, 1, 2. When n hits 3, break fires first." }],
           },
         ],
+        checkpoints: [{"after": 3, "output": "0\n1\n2"}],
         expectedOutput: "0\n1\n2",
         done: "break = stop the loop. continue = skip this round. Both only work inside loops.",
         practice: {
@@ -879,6 +901,7 @@ const MODULES = [
             parts: [{ text: "print()", say: "Press Enter, then Backspace once. An empty print just moves to a new line.", explain: "After each row of stars, move to the next line." }],
           },
         ],
+        checkpoints: [{"after": 3, "output": "***\n***\n***"}],
         expectedOutput: "***\n***\n***",
         done: "That's a shape builder. Change the ranges and you get rectangles; use the row number and you get triangles.",
         practice: {

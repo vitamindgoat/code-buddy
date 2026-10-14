@@ -393,6 +393,7 @@ const buddy = (() => {
     }
     speechEl.classList.remove("typing");
     if (skipped) voice.stop();
+    doneHandlers.forEach((f) => f());
     // done talking: a one-shot pose can relax now
     if (ONE_SHOT.includes(host.getAttribute("data-state"))) {
       clearTimeout(revertTimer);
@@ -414,8 +415,12 @@ const buddy = (() => {
 
   mount(host, "idle");
 
+  // called whenever a message finishes (voice ended, or the bubble was clicked)
+  const doneHandlers = [];
+  function onDone(f) { doneHandlers.push(f); }
+
   return {
-    set, say, mount, floatTo, finishTyping, onClick, tokenize, setSpeed,
+    set, say, mount, floatTo, finishTyping, onClick, onDone, tokenize, setSpeed,
     get state() { return host.getAttribute("data-state"); },
     get talking() { return speechEl.classList.contains("typing"); },
   };

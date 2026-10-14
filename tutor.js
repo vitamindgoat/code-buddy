@@ -35,6 +35,11 @@ const tutor = (() => {
   let complete = false;   // all lines typed correctly, waiting for Run
   let celebrated = false; // output matched at least once
   let hintsUsed = 0;      // practice mode
+  // Checkpoints: lessons with several lines stop after certain lines so the
+  // learner runs the program and sees the output before typing more.
+  let cpIndex = 0;        // which checkpoint we're working toward
+  let awaitingRun = false;// the checkpoint line is typed; waiting for Run
+  let talking = false;    // ghost letters wait until the buddy finishes
   let lastSaid = "";
   let mistake = false;    // currently off course?
   let stuckTimer = null;
@@ -136,6 +141,10 @@ const tutor = (() => {
   }
 
   const targets = () => (mode === "practice" ? lesson.practice.solution : lesson.steps.map((s) => s.code));
+  const checkpoints = () => (lesson.checkpoints && lesson.checkpoints.length ? lesson.checkpoints : [{ after: lesson.steps.length - 1, output: lesson.expectedOutput }]);
+  const checkpoint = () => checkpoints()[Math.min(cpIndex, checkpoints().length - 1)];
+  // lines past the current checkpoint are off-limits until it's been run
+  const lineLimit = () => (mode === "practice" ? Infinity : checkpoint().after + 1);
 
   // How many leading lines already match?
   function countCorrect(lines) {
@@ -181,8 +190,17 @@ const tutor = (() => {
     text = trimForLength(text);
     if (text === lastSaid) return;
     lastSaid = text;
+    talking = true;
+    ui.ghost();                 // nothing to copy while he's explaining
     buddy.say(text, state);
   }
+  // the buddy finished a message: now the gray letters may appear
+  buddy.onDone(() => {
+    talking = false;
+    if (!lesson) return;
+    const lines = codeLines();
+    showGhost(lines, mode === "practice" ? countCorrect(lines) : Math.min(stepIndex, lines.length));
+  });
 
   const step = () => lesson.steps[stepIndex];
   const part = () => step().parts[partIndex];
@@ -216,6 +234,12 @@ const tutor = (() => {
     const lines = codeLines();
     const n = countCorrect(lines);
 
+    if (awaitingRun) {
+      // the checkpoint line is done: nothing more to type until they Run
+      ui.ghost();
+      return;
+    }
+
     if (n > stepIndex) {
       // they finished one or more whole lines
       const finished = lesson.steps[n - 1];
@@ -224,14 +248,15 @@ const tutor = (() => {
       ui.renderSteps(stepIndex);
       ui.markWrong();
       ui.onStepDone(lines[n - 1].number);
-      if (stepIndex === lesson.steps.length) {
-        complete = true;
+      if (stepIndex >= lineLimit()) {
+        // reached a checkpoint: run it before going on
+        awaitingRun = true;
         ui.ghost(); ui.markLine(null); ui.stuckTag(false);
-        say(`# ✓ \`${lastPart.text}\`\n${explainText(lastPart)}\n# Whole program typed!\nPress Run to see what it really prints.`, "happy");
+        const last = cpIndex === checkpoints().length - 1;
+        say(`# ✓ \`${lastPart.text}\`\n${explainText(lastPart)}\n# Now run it\n${last ? "That's the whole program! Press Run to see what it prints." : "Before we add more, press Run and see what this prints so far."}`, "happy");
         ui.onReadyToRun();
         return;
       }
-      showGhost(lines, n);
       ui.markLine(lines[n] ? lines[n].number : null);
       say(`# ✓ \`${lastPart.text}\`\n${explainText(lastPart)}\n${typeSection("Next line")}`, "happy");
       return;
@@ -281,6 +306,17 @@ const tutor = (() => {
     const g = ghostFor(lines, idx);
     g ? ui.ghost(g.lineNumber, g.text) : ui.ghost();
   }
+  // Only the piece the buddy just asked for, not the whole rest of the line
+  function pieceRemainder(typed, target) {
+    const rest = remainder(typed, target);
+    if (mode !== "lesson" || !rest) return rest;
+    const parts = step().parts;
+    const upto = parts.slice(0, partIndex + 1).map((p) => p.text).join("");
+    // how much of the target does the current piece reach?
+    const reach = target.indexOf(upto.trim()) >= 0 ? target.indexOf(upto.trim()) + upto.trim().length : target.length;
+    const typedLen = target.length - rest.length;
+    return target.slice(typedLen, Math.max(typedLen, reach));
+  }
 
   // What the ghost should show right now: { lineNumber, text } or null.
   // Pure (no side effects), so app.js can call it on every keystroke.
@@ -289,6 +325,8 @@ const tutor = (() => {
     if (!lesson || complete) return null;
     if (mode === "practice" && !ghostAsked) return null;
     if (mode === "lesson" && ui.ghostMode() === "stuck" && !ghostAsked) return null;
+    if (mode === "lesson" && (talking || awaitingRun)) return null;   // listen first; run first
+    if (mode === "lesson" && idx >= lineLimit()) return null;
     const target = targets()[idx];
     if (!target) return null;
     const line = lines[idx];
@@ -298,9 +336,9 @@ const tutor = (() => {
       // finished line, the only thing to do is press Enter
       const cursorText = ui.getCode().split("\n")[cursorLine] || "";
       if (cursorText.trim() !== "") return { lineNumber: cursorLine, text: "  ⏎" };
-      return { lineNumber: cursorLine, text: remainder(cursorText, target) };
+      return { lineNumber: cursorLine, text: pieceRemainder(cursorText, target) };
     }
-    return { lineNumber: line.number, text: remainder(line.text, target) };
+    return { lineNumber: line.number, text: pieceRemainder(line.text, target) };
   }
 
   function ghostNow() {
@@ -334,6 +372,7 @@ const tutor = (() => {
     ghostAsked = true;
     showGhost(codeLines(), stepIndex);
     if (complete) return say("# All typed!\nPress Run to see it work.", "pointing");
+    if (awaitingRun) return say("# Run it\nNothing more to type right now. Press Run and look at the output.", "pointing");
 
     const lines = codeLines();
     const line = lines[stepIndex];
@@ -404,6 +443,20 @@ const tutor = (() => {
     if (!lesson || !ok) return; // errors are handled by app.js (it has the line number)
     const expected = mode === "practice" ? lesson.practice.expectedOutput : lesson.expectedOutput;
     lastSaid = "";
+    // a mid-lesson checkpoint: explain what printed, then open the next line
+    if (mode === "lesson" && awaitingRun && cpIndex < checkpoints().length - 1) {
+      const cp = checkpoint();
+      if (output.trim() === cp.output.trim()) {
+        awaitingRun = false; cpIndex++;
+        const lines = codeLines();
+        ui.markLine(ui.getCursorLine());
+        say(`# Ran your code ✓\n${cp.say || "That's exactly what we expected."}\n${typeSection("Next line")}`, "happy");
+        armStuck(STUCK_AFTER_IDLE_MS);
+      } else {
+        say(`# Ran your code ✓\nHmm, I expected it to print \`${cp.output.trim().split("\n").pop()}\`. Check the line against the steps on the left, then run it again.`, "thinking");
+      }
+      return;
+    }
     if (output.trim() === expected && !celebrated) {
       celebrated = true;
       complete = true;
@@ -427,6 +480,7 @@ const tutor = (() => {
   function reset(l) {
     lesson = l;
     stepIndex = 0; partIndex = 0; hintsUsed = 0; ghostAsked = false;
+    cpIndex = 0; awaitingRun = false; talking = false;
     complete = false; celebrated = false; mistake = false;
     lastSaid = "";
     clearTimeout(stuckTimer); clearTimeout(diagnoseTimer);
@@ -467,6 +521,13 @@ const tutor = (() => {
     const lines = codeLines();
     const n = countCorrect(lines);
     stepIndex = Math.min(n, targets().length); partIndex = 0;
+    if (mode === "lesson") {
+      // which checkpoint are they on? a typed-but-not-run checkpoint line
+      // means they still owe a Run
+      cpIndex = 0;
+      while (cpIndex < checkpoints().length - 1 && stepIndex > checkpoints()[cpIndex].after + 1) cpIndex++;
+      awaitingRun = !saved.finished && stepIndex >= checkpoints()[cpIndex].after + 1;
+    }
     if (saved.finished) { complete = true; celebrated = true; }
     else if (mode === "lesson" && stepIndex === lesson.steps.length) complete = true;
     ui.renderSteps(stepIndex);
@@ -478,7 +539,8 @@ const tutor = (() => {
         : `# Welcome back!\nYou already finished this lesson, and your code is still here. Try the practice next, or run it again.`, "happy");
       return;
     }
-    say(`# Welcome back!\nYour code is right where you left it.\n${mode === "practice" ? `# Goal\n${lesson.practice.task}` : complete ? "Everything is typed. Press Run to see it work." : typeSection()}`, "happy");
+    say(`# Welcome back!\nYour code is right where you left it.\n${mode === "practice" ? `# Goal\n${lesson.practice.task}` : complete ? "Everything is typed. Press Run to see it work." : awaitingRun ? "# Now run it\nPress Run to see what it prints, then we'll add the next line." : typeSection()}`, "happy");
+    if (awaitingRun) ui.onReadyToRun();
     if (mode === "practice") checkPractice(); else { const cur = lines[stepIndex], step = lesson.steps[stepIndex]; partIndex = cur && step ? countParts(cur.text, step) : 0; showGhost(lines, stepIndex); }
     clearTimeout(diagnoseTimer);   // setCode fired onChange; don't let it talk over the welcome
     armStuck(STUCK_AFTER_IDLE_MS);
@@ -486,6 +548,6 @@ const tutor = (() => {
 
   return {
     start, startPractice, onChange, onRun, hint, review, ghostNow, ui,
-    get current() { return { mode, lesson, stepIndex, partIndex, complete, celebrated, hintsUsed, ghostAsked }; },
+    get current() { return { mode, lesson, stepIndex, partIndex, complete, celebrated, hintsUsed, ghostAsked, cpIndex, awaitingRun }; },
   };
 })();
