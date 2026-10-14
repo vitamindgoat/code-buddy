@@ -41,6 +41,7 @@ const quizCard = $("quiz-card"), readCard = $("read-card"), stuckTag = $("stuck-
 // lesson of a module, "quiz" -> next module
 let lessonIndex = 0;
 let stage = "lesson";
+let lastRunOutput = null;   // practice: what the last Run printed (null = not run yet)
 // done: which stages are finished. work: everything in progress, keyed by
 // stage (your code in each lesson/practice, which quiz question you're on,
 // which reading card). scores: quiz results.
@@ -109,9 +110,11 @@ function renderHeader() {
   $("lesson-intro").innerHTML = stage === "practice" ? richText(l.practice.task) : stage === "quiz" ? `${m.quiz.length} questions. No help from the buddy on this one!` : richText(l.intro);
   $("lesson-pill").textContent = stage === "quiz" ? `Quiz · Module ${l.moduleIndex + 1}` : `${kind} ${l.number} · ${l.title}`;
 
+  // the expected output lives in the checklist now; this box only notes
+  // what the user will type when the program asks
   const pb = $("practice-box");
-  pb.hidden = stage !== "practice";
-  if (stage === "practice") $("practice-expected").textContent = (l.practice.inputs ? `(user types: ${l.practice.inputs.join(", ")})\n` : "") + l.practice.expectedOutput;
+  pb.hidden = !(stage === "practice" && l.practice.inputs);
+  if (!pb.hidden) $("practice-expected").textContent = `When asked, the user types: ${l.practice.inputs.join(", ")}`;
 
   prevBtn.disabled = !prevTarget();
   const nt = nextTarget();
@@ -142,11 +145,28 @@ function renderSteps(stepIndex) {
     return;
   }
   if (stage === "practice") {
-    const n = lesson().practice.solution.length;
-    const li = document.createElement("li");
-    li.className = "current practice-count";
-    li.innerHTML = `<span class="step-mark"></span><span>${stepIndex} of ${n} lines look right</span>`;
-    stepsEl.appendChild(li);
+    // Practice is graded on OUTPUT, not on matching one exact solution:
+    // one row per expected output line, ticked after a Run prints it.
+    const want = lesson().practice.expectedOutput.split("\n");
+    const got = lastRunOutput === null ? null : lastRunOutput.split("\n");
+    want.forEach((line, i) => {
+      const li = document.createElement("li");
+      const ok = got !== null && got[i] === line;
+      const bad = got !== null && !ok;
+      li.className = "out-row " + (ok ? "done" : bad ? "wrong" : "");
+      li.innerHTML = `<span class="step-mark"></span><code>${escapeHtml(line)}</code>${bad ? `<span class="out-got">${got[i] === undefined ? "(missing)" : escapeHtml(got[i])}</span>` : ""}`;
+      stepsEl.appendChild(li);
+    });
+    if (got !== null && got.length > want.length) {
+      const li = document.createElement("li");
+      li.className = "out-row wrong";
+      li.innerHTML = `<span class="step-mark"></span><code>(nothing else)</code><span class="out-got">${escapeHtml(got.slice(want.length).join(" / "))}</span>`;
+      stepsEl.appendChild(li);
+    }
+    const hint = document.createElement("div");
+    hint.className = "out-hint";
+    hint.textContent = got === null ? "Press Run to check each line of output." : "";
+    stepsEl.appendChild(hint);
     return;
   }
   lesson().steps.forEach((step, i) => {
@@ -178,6 +198,7 @@ function escapeHtml(s) {
 function open(target) {
   lessonIndex = Math.max(0, Math.min(LESSONS.length - 1, target.lessonIndex));
   stage = target.stage;
+  lastRunOutput = null;
   saveProgress();
   clearOutput();
   clearErrorLine();
@@ -492,6 +513,7 @@ async function runCode() {
   } else {
     if (outputLines.length === 0) appendOutput("(your program ran, but it didn't print anything)");
     setStatus("ok", "Ran successfully");
+    if (stage === "practice") { lastRunOutput = outputLines.join("\n"); renderSteps(0); }
     tutor.onRun({ ok: true, output: outputLines.join("\n") });
   }
 }

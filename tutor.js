@@ -350,7 +350,6 @@ const tutor = (() => {
   function checkPractice() {
     const lines = codeLines();
     const n = countCorrect(lines);
-    ui.renderSteps(n);
     if (ghostAsked) {
       // ghost mode: behave like a lesson, but silent
       const line = lines[n];
