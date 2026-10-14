@@ -477,19 +477,33 @@ const voice = (() => {
   // cleaner "end" timing. Boundary events are offset back into the full text.
   // Split after . ! ? : only when followed by a space or the end, so "1.1"
   // and "3.14" stay whole. Each piece remembers where it started.
-  function chunk(text) {
-    const chunks = [];
+  function sentences(text) {
+    const out = [];
     let start = 0;
     for (let i = 0; i < text.length; i++) {
       if (/[.!?:]/.test(text[i]) && (i === text.length - 1 || /\s/.test(text[i + 1]))) {
         let j = i + 1;
         while (j < text.length && /\s/.test(text[j])) j++;
-        if (text.slice(start, j).trim()) chunks.push({ text: text.slice(start, j), offset: start });
+        if (text.slice(start, j).trim()) out.push({ text: text.slice(start, j), offset: start });
         start = j; i = j - 1;
       }
     }
-    if (start < text.length && text.slice(start).trim()) chunks.push({ text: text.slice(start), offset: start });
-    return chunks;
+    if (start < text.length && text.slice(start).trim()) out.push({ text: text.slice(start), offset: start });
+    return out;
+  }
+  // The engine pauses noticeably before every utterance it's handed, so
+  // sentences are grouped into utterances of up to ~140 characters: few
+  // enough pauses to sound fluent, short enough that the text reveal
+  // (anchored per utterance) stays close to the voice.
+  const UTTERANCE_MAX = 140;
+  function chunk(text) {
+    const groups = [];
+    for (const s of sentences(text)) {
+      const last = groups[groups.length - 1];
+      if (last && last.text.length + s.text.length <= UTTERANCE_MAX) last.text += s.text;
+      else groups.push({ text: s.text, offset: s.offset });
+    }
+    return groups;
   }
 
   let generation = 0;
