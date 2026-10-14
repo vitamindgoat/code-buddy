@@ -224,10 +224,10 @@ const MODULES = [
         expectedOutput: "False\nTrue\nFalse",
         done: "You just wrote a truth table. Every decision a computer makes is built from gates like these.",
         practice: {
-          task: "Print True and True on one line, then False or False on the next.",
+          task: "Use the gates to make the output below: line 1 must print True and line 2 must print False. Any mix of and / or / not works, as long as each line uses a gate (not just print(True)).",
           solution: ["print(True and True)", "print(False or False)"],
           expectedOutput: "True\nFalse",
-          hints: ["Which word gives True only when both sides are True? Which gives True when either side is?", "True and True: what comes out? False or False: what comes out?", "Which two values need a capital first letter here?"],
+          hints: ["Which gate gives True only when both sides are True? What two inputs would make it True?", "For False: what does or give when both sides are False? What does not give for True?", "Which two values need a capital first letter here?"],
         },
       },
     ],
