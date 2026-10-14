@@ -43,56 +43,97 @@ const read = (() => {
           <div class="read-num">${index + 1} of ${lesson.cards.length}</div>
           <h2 class="read-title">${escapeHtml(c.title)}</h2>
           ${c.text.split("\n").map((p) => `<p>${rich(p)}</p>`).join("")}
-          ${c.check ? `
-            <div class="read-check">
-              <div class="read-check-q">${escapeHtml(c.check.q)}</div>
-              <div class="quiz-choices">${shuffle(c.check).map((ch, i) => `<button class="quiz-choice" data-i="${i}" type="button"><span class="quiz-letter">${"ABCD"[i]}</span><code>${escapeHtml(ch.text)}</code></button>`).join("")}</div>
-              <div class="quiz-feedback" hidden></div>
-            </div>` : ""}
+          ${c.checks ? `<div class="read-check" id="read-check"></div>` : ""}
         </div>
       </div>
       <div class="read-foot">
         <button class="btn btn-ghost read-prev" type="button" ${index === 0 ? "disabled" : ""}>◀ Back</button>
-        <button class="btn btn-primary read-next" type="button" ${c.check ? "disabled" : ""}>${last ? "Finish ✓" : "Continue ▶"}</button>
+        <button class="btn btn-primary read-next" type="button" ${c.checks ? "disabled" : ""}>${last ? "Finish ✓" : "Continue ▶"}</button>
       </div>`;
 
     card.querySelector(".read-prev").addEventListener("click", () => { if (index > 0) { index--; render(); } });
     card.querySelector(".read-next").addEventListener("click", (e) => { e.currentTarget.disabled = true; index++; index < lesson.cards.length ? render() : finish(); });
-    if (c.check) {
-      const items = card._items;
-      card.querySelectorAll(".quiz-choice").forEach((b) => b.addEventListener("click", () => choose(+b.dataset.i, items, c.check)));
-    }
+    if (c.checks) { passed = false; askQuestion(c, pickQuestion(c)); }
     card.classList.remove("swap-in"); void card.offsetWidth; card.classList.add("swap-in");
     sfx.pop();
     // the voice says one short key line per card (the check question on a
     // check card), not the whole text: reading is the learner's job
     voice.stop();
-    const line = c.check ? c.check.q : c.say;
-    if (line) voice.speak(line.replace(/[*`]/g, ""));
+    if (!c.checks && c.say) voice.speak(c.say.replace(/[*`]/g, ""));
   }
 
-  function shuffle(check) {
-    const items = check.choices.map((text, i) => ({ text, correct: i === check.answer }));
+  // ---------- check questions ----------
+  // Each check card has a pool of questions. One is asked per visit, never
+  // the one from the last visit (remembered per card). A wrong answer shows
+  // the explanation, then asks a different question before Continue
+  // unlocks. Once passed, "Another question" offers more practice.
+  const SEEN_KEY = "codebuddy.readSeen";
+  let seen = {};
+  try { seen = JSON.parse(localStorage.getItem(SEEN_KEY) || "{}"); } catch {}
+  let passed = false, asked = [];
+  const cardKey = () => `${lesson.id}:${index}`;
+
+  function pickQuestion(c) {
+    const pool = c.checks.map((q, i) => i);
+    const last = seen[cardKey()];
+    let avail = pool.filter((i) => !asked.includes(i) && i !== last);
+    if (!avail.length) avail = pool.filter((i) => !asked.includes(i));
+    if (!avail.length) { asked = []; avail = pool.filter((i) => i !== last); }
+    const qi = avail[Math.floor(Math.random() * avail.length)];
+    asked.push(qi);
+    seen[cardKey()] = qi;
+    try { localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch {}
+    return qi;
+  }
+
+  function askQuestion(c, qi, { extra = false } = {}) {
+    const q = c.checks[qi];
+    const items = q.choices.map((text, i) => ({ text, correct: i === q.answer }));
     for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
-    card._items = items;
-    return items;
+    const box = card.querySelector("#read-check");
+    const [first, ...rest] = q.q.split("\n");
+    box.innerHTML = `
+      <div class="read-check-label">${extra ? "One more" : "Check"}</div>
+      <div class="read-check-q">${escapeHtml(first)}</div>
+      ${rest.length ? `<pre class="read-check-code">${colorCode(rest.join("\n"))}</pre>` : ""}
+      <div class="quiz-choices">${items.map((ch, i) => `<button class="quiz-choice" data-i="${i}" type="button"><span class="quiz-letter">${"ABCD"[i]}</span><code>${escapeHtml(ch.text)}</code></button>`).join("")}</div>
+      <div class="quiz-feedback" hidden></div>
+      <div class="read-check-actions" hidden>
+        <button class="btn btn-ghost read-more" type="button">Another question</button>
+      </div>`;
+    box.classList.remove("swap-in"); void box.offsetWidth; box.classList.add("swap-in");
+    answered = false;
+    box.querySelectorAll(".quiz-choice").forEach((b) => b.addEventListener("click", () => choose(+b.dataset.i, items, q, c)));
+    box.querySelector(".read-more").addEventListener("click", () => askQuestion(c, pickQuestion(c), { extra: true }));
+    voice.stop();
+    voice.speak(first);
   }
 
-  function choose(i, items, check) {
+  function choose(i, items, q, c) {
     if (answered) return;
     answered = true;
     const right = items[i].correct;
     if (right) sfx.success(); else sfx.error();
-    card.querySelectorAll(".quiz-choice").forEach((b, j) => {
+    const box = card.querySelector("#read-check");
+    box.querySelectorAll(".quiz-choice").forEach((b, j) => {
       b.disabled = true;
       if (items[j].correct) b.classList.add("right"); else if (j === i) b.classList.add("wrong");
     });
-    const fb = card.querySelector(".quiz-feedback");
+    const fb = box.querySelector(".quiz-feedback");
     fb.hidden = false;
     fb.className = `quiz-feedback ${right ? "ok" : "bad"}`;
-    fb.innerHTML = `<strong>${right ? "Correct!" : "Not quite."}</strong> ${escapeHtml(check.explain)}`;
-    card.querySelector(".read-next").disabled = false;
-    voice.speak(check.explain);
+    if (right) {
+      passed = true;
+      fb.innerHTML = `<strong>Correct!</strong> ${escapeHtml(q.explain)}`;
+      card.querySelector(".read-next").disabled = false;
+      box.querySelector(".read-check-actions").hidden = false;
+      voice.speak(q.explain);
+    } else {
+      fb.innerHTML = `<strong>Not quite.</strong> ${escapeHtml(q.explain)}${passed ? "" : `<div class="read-retry">Let's try a different one.</div>`}`;
+      voice.speak(q.explain);
+      if (passed) box.querySelector(".read-check-actions").hidden = false;
+      else setTimeout(() => askQuestion(c, pickQuestion(c)), 3200);   // time to read the answer
+    }
   }
 
   function finish() {
