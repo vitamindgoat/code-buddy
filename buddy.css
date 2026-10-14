@@ -287,6 +287,8 @@
 
 /* Section labels get a color by kind */
 .speech-label.label-ok   { color: var(--green); }
+/* Keyboard keys the learner has to press */
+.speech kbd.key { display: inline-block; font: inherit; font-size: 12px; font-weight: 800; color: var(--blue-ink); background: #fff; border: 1.5px solid var(--blue-line); border-bottom-width: 3px; border-radius: 6px; padding: 0 7px; margin: 0 1px; line-height: 1.5; vertical-align: baseline; }
 .speech-label.label-warn { color: var(--red); }
 .speech-label.label-type { color: var(--blue-dark); }
 .speech-label.label-win  { color: var(--green); }

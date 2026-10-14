@@ -43,6 +43,7 @@ const read = (() => {
           <div class="read-num">${index + 1} of ${lesson.cards.length}</div>
           <h2 class="read-title">${escapeHtml(c.title)}</h2>
           ${c.text.split("\n").map((p) => `<p>${rich(p)}</p>`).join("")}
+          ${c.say && !c.checks ? `<div class="read-remember"><span class="read-remember-label">Remember</span>${escapeHtml(c.say)}</div>` : ""}
           ${c.checks ? `<div class="read-check" id="read-check"></div>` : ""}
         </div>
       </div>
@@ -211,6 +212,7 @@ const read = (() => {
   function rich(s) {
     return escapeHtml(s)
       .replace(/`([^`]+)`/g, (_, c) => `<code class="chip">${c}</code>`)
+      .replace(/\*\*([^*]+)\*\*/g, (_, t) => `<strong class="key">${t}</strong>`)
       .replace(/\*([^*]+)\*/g, (_, t) => `<span class="term term-blue">${t}</span>`);
   }
   function escapeHtml(s) {

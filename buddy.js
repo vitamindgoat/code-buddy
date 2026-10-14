@@ -93,14 +93,16 @@ const buddy = (() => {
       const line = document.createElement("div");
       line.className = isLabel ? "speech-label " + labelClass(lineText) : "speech-line";
       // split into: `code chips`, *vocab terms*, and plain text
-      lineText.split(/(`[^`]*`|\*[^*]+\*)/).forEach((piece) => {
+      lineText.split(/(`[^`]*`|\*[^*]+\*|\b(?:Enter|Tab|Backspace)\b)/).forEach((piece) => {
         if (!piece) return;
         const isCode = piece.startsWith("`");
         const isTerm = !isCode && piece.startsWith("*") && piece.length > 2;
+        const isKey = !isCode && !isTerm && /^(Enter|Tab|Backspace)$/.test(piece);
         const text = isCode || isTerm ? piece.slice(1, -1) : piece;
         let el;
         if (isCode) { el = document.createElement("code"); el.className = "chip"; }
         else if (isTerm) { el = document.createElement("span"); el.className = "term " + termClass(text); }
+        else if (isKey) { el = document.createElement("kbd"); el.className = "key"; }
         else el = document.createElement("span");
         // code chips get syntax colors: each token is its own span
         const groups = isCode ? tokenize(text) : [{ cls: "", text }];
