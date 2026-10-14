@@ -274,7 +274,7 @@ const tutor = (() => {
   let ghostAsked = false;   // in "stuck" ghost mode: shown after a hint click
   function ghostFor(lines, idx) {
     if (!lesson || complete) return null;
-    if (mode === "practice" && hintsUsed < 3) return null;
+    if (mode === "practice" && !ghostAsked) return null;
     if (mode === "lesson" && ui.ghostMode() === "stuck" && !ghostAsked) return null;
     const target = targets()[idx];
     if (!target) return null;
@@ -300,7 +300,7 @@ const tutor = (() => {
     const lines = codeLines();
     const n = countCorrect(lines);
     ui.renderSteps(n);
-    if (hintsUsed >= 3) {
+    if (ghostAsked) {
       // ghost mode: behave like a lesson, but silent
       const line = lines[n];
       const typed = line ? line.text : "";
@@ -347,15 +347,23 @@ const tutor = (() => {
   };
   const describe = (ch) => (ch === undefined ? "nothing more" : NAMES[ch] || (/\d/.test(ch) ? `the number \`${ch}\`` : `the letter \`${ch}\``));
 
+  // Hints are questions, not answers: each one points at the idea they're
+  // missing and leaves the typing to them. After three, the gray letters
+  // turn on so nobody stays stuck forever.
   function practiceHint() {
     const p = lesson.practice;
-    if (hintsUsed >= 3) return say(`# No hints left\nThe gray letters show the answer now. Just follow them.`, "thinking");
+    if (hintsUsed >= 3) {
+      ghostAsked = true;
+      checkPractice();
+      return say(`# No hints left\nI'm out of questions, so the gray letters show the answer now. Follow them, then try to explain each line to yourself.`, "thinking");
+    }
     hintsUsed++;
     lastSaid = "";
     const left = 3 - hintsUsed;
-    const extra = hintsUsed === 3 ? "\nThat was my last hint, so the gray letters are on now. Follow them." : `\nYou have ${left} hint${left === 1 ? "" : "s"} left.`;
+    const extra = hintsUsed === 3
+      ? "\nThink about that one. If you're still stuck, click me once more and I'll show the gray letters."
+      : `\nThink it through and give it a try. ${left} hint${left === 1 ? "" : "s"} left.`;
     say(`# Hint ${hintsUsed} of 3\n${p.hints[hintsUsed - 1]}${extra}`, "pointing");
-    if (hintsUsed === 3) checkPractice();
   }
 
   // ---------- clicking a step in the panel ----------
@@ -417,7 +425,7 @@ const tutor = (() => {
   function start(l, saved) {
     mode = "lesson";
     reset(l);
-    if (saved && saved.code) return resume(saved);
+    if (saved && (saved.code || saved.hintsUsed)) return resume(saved);
     ui.renderSteps(0);
     ui.markLine(0);
     const who = l.inputs ? `\n# Input\nWhen the program asks, the user will type \`${l.inputs.join("`, then `")}\`.` : "";
@@ -429,7 +437,7 @@ const tutor = (() => {
   function startPractice(l, saved) {
     mode = "practice";
     reset(l);
-    if (saved && saved.code) return resume(saved);
+    if (saved && (saved.code || saved.hintsUsed)) return resume(saved);
     ui.renderSteps(0);
     ui.markLine(0);
     const who = l.practice.inputs ? `\n# Input\nWhen the program asks, the user will type \`${l.practice.inputs.join("`, then `")}\`.` : "";
@@ -441,7 +449,7 @@ const tutor = (() => {
   // usual "you finished a line!" chatter for every line already typed.
   function resume(saved) {
     ui.setCode(saved.code);
-    hintsUsed = saved.hintsUsed || 0;
+    hintsUsed = saved.hintsUsed || 0; ghostAsked = !!saved.ghostAsked;
     const lines = codeLines();
     const n = countCorrect(lines);
     stepIndex = Math.min(n, targets().length); partIndex = 0;
@@ -464,6 +472,6 @@ const tutor = (() => {
 
   return {
     start, startPractice, onChange, onRun, hint, review, ghostNow, ui,
-    get current() { return { mode, lesson, stepIndex, partIndex, complete, celebrated, hintsUsed }; },
+    get current() { return { mode, lesson, stepIndex, partIndex, complete, celebrated, hintsUsed, ghostAsked }; },
   };
 })();

@@ -29,7 +29,7 @@ const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
 
 const $ = (id) => document.getElementById(id);
 const runBtn = $("run-btn"), resetBtn = $("reset-btn"), prevBtn = $("prev-btn"), nextBtn = $("next-btn");
-const voiceBtn = $("voice-btn"), voicePick = $("voice-pick"), soundBtn = $("sound-btn");
+const voicePick = $("set-voicepick");
 const outputEl = $("output"), statusEl = $("status"), stepsEl = $("steps");
 const editorWrap = document.querySelector(".editor-wrap");
 const editorCard = document.querySelector(".editor-card"), outputCard = document.querySelector(".output-card");
@@ -61,7 +61,7 @@ function saveWork(patch) {
 let codeSaveTimer = null;
 function saveCodeSoon() {
   clearTimeout(codeSaveTimer);
-  codeSaveTimer = setTimeout(() => { if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed }); }, 300);
+  codeSaveTimer = setTimeout(() => { if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); }, 300);
 }
 
 const lesson = () => LESSONS[lessonIndex];
@@ -211,7 +211,7 @@ function open(target) {
 function finishStage() {
   const first = !progress.done[doneId()];
   progress.done[doneId()] = true;
-  if (stage === "lesson" || stage === "practice") { clearTimeout(codeSaveTimer); saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, finished: true }); }
+  if (stage === "lesson" || stage === "practice") { clearTimeout(codeSaveTimer); saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked, finished: true }); }
   else delete progress.work[workKey()];
   if (stage === "lesson" && first) progress.lessonsFinished = (progress.lessonsFinished || 0) + 1;
   saveProgress();
@@ -386,7 +386,7 @@ function floatBuddyToLine(lineNumber) {
 editor.on("cursorActivity", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("scroll", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("change", () => { clearErrorLine(); tutor.onChange(); saveCodeSoon(); });
-buddy.onClick(() => { sfx.click(); tutor.hint(); editor.focus(); saveCodeSoon(); });
+buddy.onClick(() => { sfx.click(); tutor.hint(); editor.focus(); clearTimeout(codeSaveTimer); if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); });
 
 // ---------- 9. Running code safely ----------
 
@@ -527,23 +527,12 @@ function fillVoices() {
 }
 function setVoice(on, { greet = true } = {}) {
   if (voice.on !== on) voice.toggle();
-  voiceBtn.textContent = on ? "🔊 Voice on" : "🔇 Voice off";
-  voiceBtn.setAttribute("aria-pressed", String(on));
-  voicePick.hidden = !on;
   $("set-voice").checked = on;
+  $("set-voicepick-row").hidden = !on;
   if (on) { fillVoices(); if (greet) voice.speak("Hi! I'm your coding buddy."); }
 }
-voiceBtn.addEventListener("click", () => setVoice(!voice.on));
 if (voice.on) setVoice(true, { greet: false });   // remembered from last visit
-voicePick.addEventListener("change", () => { voice.choose(voicePick.value); voice.speak("How's this voice?"); });
-if ("speechSynthesis" in window) window.speechSynthesis.addEventListener("voiceschanged", () => { if (!voicePick.hidden) fillVoices(); });
-
-function renderSoundBtn() {
-  soundBtn.textContent = sfx.on ? "🔔 Sound" : "🔕 Muted";
-  soundBtn.setAttribute("aria-pressed", String(sfx.on));
-}
-soundBtn.addEventListener("click", () => { sfx.toggle(); renderSoundBtn(); });
-renderSoundBtn();
+if ("speechSynthesis" in window) window.speechSynthesis.addEventListener("voiceschanged", fillVoices);
 
 // Click sound + ripple on every button
 document.addEventListener("click", (e) => {
@@ -579,7 +568,8 @@ function syncSettingsUI() {
   $("set-motion").checked = settings.motion !== "off";
   $("set-sound").checked = sfx.on;
   $("set-voice").checked = voice.on;
-  fillVoices(); $("set-voicepick").innerHTML = voicePick.innerHTML;
+  $("set-voicepick-row").hidden = !voice.on;
+  fillVoices();
 }
 const settingsLayer = $("settings-layer"), settingsBackdrop = $("settings-backdrop");
 let settingsClosing = null;
@@ -617,9 +607,9 @@ $("set-explain").addEventListener("change", (e) => { settings.explain = e.target
 $("set-ghost").addEventListener("change", (e) => { settings.ghost = e.target.value; applySettings(); tutor.onChange(); });
 $("set-size").addEventListener("change", (e) => { settings.textSize = e.target.value; applySettings(); });
 $("set-motion").addEventListener("change", (e) => { settings.motion = e.target.checked ? "on" : "off"; applySettings(); });
-$("set-sound").addEventListener("change", () => { sfx.toggle(); renderSoundBtn(); });
+$("set-sound").addEventListener("change", (e) => { if (sfx.on !== e.target.checked) sfx.toggle(); });
 $("set-voice").addEventListener("change", (e) => setVoice(e.target.checked));
-$("set-voicepick").addEventListener("change", (e) => { voice.choose(e.target.value); voicePick.value = e.target.value; voice.speak("How's this voice?"); });
+$("set-voicepick").addEventListener("change", (e) => { voice.choose(e.target.value); voice.speak("How's this voice?"); });
 $("set-tour").addEventListener("click", () => { closeSettings(); firstVisitTour(); });
 $("set-reset").addEventListener("click", () => { closeSettings(); $("reset-btn-all").click(); });
 $("set-test").addEventListener("click", () => {
@@ -640,8 +630,7 @@ function firstVisitTour() {
     { target: "#buddy", title: "Meet your buddy", text: "He explains each piece as you type it. <strong>Click him</strong> whenever you're stuck. In practice you get 3 hints.", place: "left" },
     { target: "#run-btn", title: "Run your code", text: "Press Run (or Ctrl+Enter) to see what your program does.", place: "bottom" },
     { target: "#next-btn", title: "Reading → Coding → Practice → Quiz", text: "📖 Reading lessons teach the ideas (click through the cards). Coding lessons use them. Practice proves it. Each module ends with a quiz.", place: "top" },
-    { target: "#sound-btn", title: "Sound and voice", text: "Mute the sound effects here, or turn on Voice and he'll read everything out loud.", place: "bottom" },
-    { target: "#settings-btn", title: "Settings", text: "How fast he talks, how long his explanations are, ghost letters, text size, and more.", place: "bottom" },
+    { target: "#settings-btn", title: "Settings", text: "Turn on his voice and pick one, set how fast he talks, sound effects, ghost letters, text size, and more.", place: "bottom" },
     { target: "#tour-btn", title: "See this again", text: "Click Tutorial any time to replay this walkthrough.", place: "bottom" },
   ], () => { progress.toured = true; saveProgress(); editor.focus(); });
 }

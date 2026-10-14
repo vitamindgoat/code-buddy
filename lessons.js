@@ -94,7 +94,7 @@ const MODULES = [
           task: "Print the numbers 1, 2 and 3, each on its own line, in order.",
           solution: ["print(1)", "print(2)", "print(3)"],
           expectedOutput: "1\n2\n3",
-          hints: ["You need three print lines, one per number.", "Numbers don't need quotes: `print(1)` works.", "Line 1 is `print(1)`. Then 2, then 3."],
+          hints: ["Which command puts text on the screen? You used it in the lesson.", "Do numbers need quotes around them, or only words?", "How many lines do you need if each number gets its own line?"],
         },
       },
       {
@@ -134,7 +134,7 @@ const MODULES = [
           task: "Print the binary form of 10.",
           solution: ["print(bin(10))"],
           expectedOutput: "0b1010",
-          hints: ["bin() converts a number to binary.", "Put bin(10) inside print( ).", "`print(bin(10))`"],
+          hints: ["Which function turned a number into binary in the lesson?", "Does bin() show anything on its own, or does it need to be inside something?", "Does the number need a variable, or can it go straight inside bin( )?"],
         },
       },
       {
@@ -173,7 +173,7 @@ const MODULES = [
           task: "Print \"ab\" repeated 5 times (one line).",
           solution: ['print("ab" * 5)'],
           expectedOutput: "ababababab",
-          hints: ["Use * to repeat a string.", "The string is \"ab\", the count is 5.", "`print(\"ab\" * 5)`"],
+          hints: ["What does the star do when one side is a string?", "Which part is the string and which part is the count?", "Does the string go in quotes? Does the count?"],
         },
       },
       {
@@ -219,7 +219,7 @@ const MODULES = [
           task: "Print True and True on one line, then False or False on the next.",
           solution: ["print(True and True)", "print(False or False)"],
           expectedOutput: "True\nFalse",
-          hints: ["Two print lines. Capital T and F.", "First: True and True. Second: False or False.", "`print(True and True)` then `print(False or False)`"],
+          hints: ["Which word gives True only when both sides are True? Which gives True when either side is?", "True and True: what comes out? False or False: what comes out?", "Which two values need a capital first letter here?"],
         },
       },
     ],
@@ -284,7 +284,7 @@ const MODULES = [
           task: "Add a comment that says anything, then print \"Python\" on one line and \"rocks\" on the next.",
           solution: ["# comment", 'print("Python")', 'print("rocks")'],
           expectedOutput: "Python\nrocks",
-          hints: ["Comments start with #. They don't print.", "Two print lines, each with words in quotes.", "`print(\"Python\")` then `print(\"rocks\")`"],
+          hints: ["Which symbol starts a comment? Does a comment print anything?", "How many print lines do you need for two separate lines of output?", "What's inside the quotes on the first print? On the second?"],
         },
       },
       {
@@ -312,7 +312,7 @@ const MODULES = [
           task: "Using ONE print, show \"Red\" on the first line and \"Blue\" on the second.",
           solution: ['print("Red\\nBlue")'],
           expectedOutput: "Red\nBlue",
-          hints: ["\\n inside a string starts a new line.", "One print with Red, then \\n, then Blue.", "`print(\"Red\\nBlue\")`"],
+          hints: ["Which two characters inside a string mean \"go to a new line\"?", "Can one print show two lines if the string has that in the middle?", "Where exactly does the \\n go: between Red and Blue, inside the same quotes?"],
         },
       },
       {
@@ -364,7 +364,7 @@ const MODULES = [
           task: "Make a variable called price holding 2.5, then print its type.",
           solution: ["price = 2.5", "print(type(price))"],
           expectedOutput: "<class 'float'>",
-          hints: ["A decimal number is a float.", "price = 2.5 on the first line, then print(type(price)).", "`price = 2.5` then `print(type(price))`"],
+          hints: ["Is 2.5 a whole number or a decimal? Which type is that?", "How do you store a value in a name, then look at its type?", "Which function reports a type, and what goes inside it?"],
         },
       },
       {
@@ -404,7 +404,7 @@ const MODULES = [
           task: "Print 17 % 5 on one line and 17 // 5 on the next.",
           solution: ["print(17 % 5)", "print(17 // 5)"],
           expectedOutput: "2\n3",
-          hints: ["% gives the remainder, // gives the whole-number part.", "17 ÷ 5 is 3 remainder 2.", "`print(17 % 5)` then `print(17 // 5)`"],
+          hints: ["Which operator gives the remainder? Which gives the whole-number part?", "What is 17 divided by 5, and what's left over?", "Two outputs on two lines: how many prints is that?"],
         },
       },
       {
@@ -439,7 +439,7 @@ const MODULES = [
           task: "Start y at 10. Floor-divide it by 3. Multiply it by itself. Print y.",
           solution: ["y = 10", "y = y // 3", "y = y * y", "print(y)"],
           expectedOutput: "9",
-          hints: ["Four lines: set, floor-divide, square, print.", "10 // 3 is 3, and 3 * 3 is 9.", "`y = 10`, `y = y // 3`, `y = y * y`, `print(y)`"],
+          hints: ["How do you change a variable using its own old value?", "Which operator keeps only the whole part of a division?", "How do you multiply y by itself? (No new function needed.)"],
         },
       },
       {
@@ -470,7 +470,7 @@ const MODULES = [
           task: "With score = 7, use an f-string to print exactly: Score: 7 out of 10",
           solution: ["score = 7", 'print(f"Score: {score} out of 10")'],
           expectedOutput: "Score: 7 out of 10",
-          hints: ["First line: score = 7.", "f\"...\" with {score} where the number goes.", "`print(f\"Score: {score} out of 10\")`"],
+          hints: ["What letter goes right before the opening quote to make an f-string?", "How do you drop a variable into the middle of the string?", "Does the word Score and \"out of 10\" go inside the string or outside?"],
         },
       },
       {
@@ -500,7 +500,7 @@ const MODULES = [
           inputs: ["pizza"],
           solution: ['food = input("Favorite food? ")', 'print("Yum, " + food + "!")'],
           expectedOutput: "Favorite food? pizza\nYum, pizza!",
-          hints: ["Store the input in a variable, then print with +.", "food = input(\"Favorite food? \")", "`print(\"Yum, \" + food + \"!\")`"],
+          hints: ["Which function asks the user something and waits? Where does its answer go?", "How do you glue two strings together?", "Which pieces are fixed text and which piece is the user's answer?"],
         },
       },
       {
@@ -531,7 +531,7 @@ const MODULES = [
           inputs: ["4"],
           solution: ['n = int(input("Number? "))', "print(n * 3)"],
           expectedOutput: "Number? 4\n12",
-          hints: ["int(input(...)) turns the typed text into a number.", "n = int(input(\"Number? \"))", "`print(n * 3)`"],
+          hints: ["What type does input() always give back? Can you multiply that?", "Which function turns text into a whole number?", "Does int() wrap around the input, or go after it?"],
         },
       },
       {
@@ -566,7 +566,7 @@ const MODULES = [
           task: "With age = 15, print exactly: Age: 15  (use + and str()).",
           solution: ["age = 15", 'print("Age: " + str(age))'],
           expectedOutput: "Age: 15",
-          hints: ["You can't + a string and an int directly.", "str(age) turns 15 into \"15\".", "`print(\"Age: \" + str(age))`"],
+          hints: ["What happens when you + a string and a number?", "Which function turns a number into text?", "Where does str() go: around age, or around the whole thing?"],
         },
       },
     ],
@@ -620,7 +620,7 @@ const MODULES = [
           task: "Print 10 <= 10 on one line and 2 >= 5 on the next.",
           solution: ["print(10 <= 10)", "print(2 >= 5)"],
           expectedOutput: "True\nFalse",
-          hints: ["<= is \"less than or equal\", >= is \"greater than or equal\".", "10 <= 10 is True. 2 >= 5 is False.", "`print(10 <= 10)` then `print(2 >= 5)`"],
+          hints: ["Which symbols mean \"less than or equal\" and \"greater than or equal\"?", "Is 10 <= 10 True or False? Is 2 >= 5?", "Do you need quotes around a comparison, or does print show the result directly?"],
         },
       },
       {
@@ -647,7 +647,7 @@ const MODULES = [
           task: "With temp = 75, print whether temp is above 60 AND below 90.",
           solution: ["temp = 75", "print(temp > 60 and temp < 90)"],
           expectedOutput: "True",
-          hints: ["Two comparisons joined with and.", "temp > 60 and temp < 90", "`print(temp > 60 and temp < 90)`"],
+          hints: ["How do you say \"both of these must be true\" in Python?", "Above 60 is one comparison. Below 90 is another. How do you join them?", "Which goes first on the line: the variable, or the print?"],
         },
       },
       {
@@ -680,7 +680,7 @@ const MODULES = [
           inputs: ["5"],
           solution: ['n = int(input("Number? "))', "if n > 10:", '    print("Big")', "else:", '    print("Small")'],
           expectedOutput: "Number? 5\nSmall",
-          hints: ["if n > 10: then an indented print, then else: and another.", "Don't forget the colons and the indentation.", "`if n > 10:` / `    print(\"Big\")` / `else:` / `    print(\"Small\")`"],
+          hints: ["Which keyword makes a decision? What goes at the end of that line?", "What happens to the line under an if? How is it placed?", "Which keyword handles \"otherwise\"? Does it line up with the if or with the print?"],
         },
       },
       {
@@ -706,7 +706,7 @@ const MODULES = [
           task: "With temp = 50: print \"Hot\" if above 80, \"Warm\" if above 60, otherwise \"Cold\".",
           solution: ["temp = 50", "if temp > 80:", '    print("Hot")', "elif temp > 60:", '    print("Warm")', "else:", '    print("Cold")'],
           expectedOutput: "Cold",
-          hints: ["if, elif, else: three branches.", "Check > 80 first, then > 60.", "`if temp > 80:` / `elif temp > 60:` / `else:` with an indented print in each."],
+          hints: ["Which keyword means \"else, if\"? How many checks do you need here?", "Which number should you check first: 80 or 60? Why does the order matter?", "What catches everything that didn't match either check?"],
         },
       },
       {
@@ -725,7 +725,7 @@ const MODULES = [
           task: "Print the length of \"Hello, world!\" then print max(3, 9).",
           solution: ['print(len("Hello, world!"))', "print(max(3, 9))"],
           expectedOutput: "13\n9",
-          hints: ["len() counts every character, spaces and punctuation too.", "max() gives the biggest of its inputs.", "`print(len(\"Hello, world!\"))` then `print(max(3, 9))`"],
+          hints: ["Which function counts characters? Do spaces and punctuation count?", "Which function picks the biggest of its inputs?", "Can a function call go directly inside print( )?"],
         },
       },
       {
@@ -760,7 +760,7 @@ const MODULES = [
           task: "Print 1, 2, 3 using a for loop with range(1, 4).",
           solution: ["for i in range(1, 4):", "    print(i)"],
           expectedOutput: "1\n2\n3",
-          hints: ["range(start, stop) begins at start and stops before stop.", "for i in range(1, 4): then an indented print(i).", "`for i in range(1, 4):` / `    print(i)`"],
+          hints: ["range(5) starts at 0. How do you make it start at 1?", "range stops BEFORE its last number. If you want 3, what do you pass?", "What goes on the indented line under the for?"],
         },
       },
       {
@@ -783,7 +783,7 @@ const MODULES = [
           task: "Add up all the EVEN numbers from 0 to 100 and print the total. (Hint: range can take a step.)",
           solution: ["total = 0", "for n in range(0, 101, 2):", "    total = total + n", "print(total)"],
           expectedOutput: "2550",
-          hints: ["range(start, stop, step): a step of 2 skips the odd numbers.", "for n in range(0, 101, 2):", "`total = 0` / `for n in range(0, 101, 2):` / `    total = total + n` / `print(total)`"],
+          hints: ["range can take a third number. What does it control?", "What step skips every other number? Where does the counting start?", "Where does the running total start, and where does the print go: inside or after the loop?"],
         },
       },
       {
@@ -809,7 +809,7 @@ const MODULES = [
           task: "Use a while loop to print 1, 2, 3, 4 (count up).",
           solution: ["n = 1", "while n <= 4:", "    print(n)", "    n = n + 1"],
           expectedOutput: "1\n2\n3\n4",
-          hints: ["Start n at 1, loop while n <= 4.", "Inside: print(n), then n = n + 1.", "`n = 1` / `while n <= 4:` / `    print(n)` / `    n = n + 1`"],
+          hints: ["What should the counter start at? When should the loop stop?", "What goes inside the loop so it eventually ends?", "Which comes first inside the loop: printing n, or adding 1 to it?"],
         },
       },
       {
@@ -834,7 +834,7 @@ const MODULES = [
           task: "Loop n over range(4). If n == 2, continue (skip it). Otherwise print n.",
           solution: ["for n in range(4):", "    if n == 2:", "        continue", "    print(n)"],
           expectedOutput: "0\n1\n3",
-          hints: ["continue jumps to the next loop round without running the rest.", "if n == 2: then an extra-indented continue.", "`for n in range(4):` / `    if n == 2:` / `        continue` / `    print(n)`"],
+          hints: ["Which keyword skips the rest of this round but keeps looping?", "What's the check that spots n being 2? What goes under it?", "How many levels of indentation does continue need: one or two?"],
         },
       },
       {
@@ -862,7 +862,7 @@ const MODULES = [
           task: "Print a triangle: * on line 1, ** on line 2, *** on line 3. (A single loop and string repetition will do it.)",
           solution: ["for row in range(1, 4):", '    print("*" * row)'],
           expectedOutput: "*\n**\n***",
-          hints: ["\"*\" * row repeats the star row times.", "for row in range(1, 4): gives 1, 2, 3.", "`for row in range(1, 4):` / `    print(\"*\" * row)`"],
+          hints: ["What does \"*\" * 3 give you?", "If row goes 1, 2, 3, what is \"*\" * row each time?", "Which range gives you 1, 2, 3?"],
         },
       },
     ],
