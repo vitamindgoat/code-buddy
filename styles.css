@@ -672,7 +672,7 @@ body { background: var(--bg); }
 .read-text .term { font-weight: 800; padding: 0 3px; border-radius: 4px; }
 .read-text p { color: var(--ink-soft); font-weight: 600; }
 .read-text .key { color: var(--blue-ink); font-weight: 800; background: var(--blue-soft); padding: 0 4px; border-radius: 5px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-.read-remember { margin-top: 14px; padding: 12px 14px 12px 16px; border-left: 4px solid var(--blue); background: var(--blue-soft); border-radius: 10px; color: var(--blue-ink); font-weight: 800; font-size: 15px; line-height: 1.45; animation: rise 0.4s ease-out 0.15s both; }
+.read-remember { margin-top: 14px; padding: 12px 14px; background: var(--blue-soft); border: 1px solid var(--blue-line); border-radius: 12px; color: var(--blue-ink); font-weight: 800; font-size: 15px; line-height: 1.45; animation: rise 0.4s ease-out 0.15s both; }
 .read-remember-label { display: block; font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--blue-dark); margin-bottom: 3px; }
 .read-text .chip { font-family: var(--mono); font-size: 14px; background: var(--blue-soft); color: var(--blue-dark); border: 1.5px solid var(--blue-line); border-radius: 8px; padding: 1px 6px; }
 .read-check { margin-top: 14px; padding: 14px; border-radius: 14px; background: var(--blue-soft); border: 1px solid var(--blue-line); animation: rise 0.4s ease-out; }
