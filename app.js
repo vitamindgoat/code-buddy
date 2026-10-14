@@ -289,10 +289,24 @@ function closeSidebar() { sidebar.classList.remove("open"); sidebar.setAttribute
 $("menu-btn").addEventListener("click", () => (sidebar.classList.contains("open") ? closeSidebar() : openSidebar()));
 $("sidebar-close").addEventListener("click", closeSidebar);
 backdrop.addEventListener("click", closeSidebar);
-$("reset-btn-all").addEventListener("click", () => {
+// Reset asks first (an in-app dialog, same look as the completion card)
+const confirmEl = $("confirm");
+function askReset() {
+  closeSidebar();
+  confirmEl.hidden = false; replayClass(confirmEl, "show");
+  setTimeout(() => $("confirm-no").focus(), 300);
+  sfx.pop();
+}
+$("confirm-no").addEventListener("click", () => { confirmEl.hidden = true; });
+confirmEl.addEventListener("click", (e) => { if (e.target === confirmEl) confirmEl.hidden = true; });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !confirmEl.hidden) confirmEl.hidden = true; });
+$("confirm-yes").addEventListener("click", () => { confirmEl.hidden = true; resetAll(); });
+$("reset-btn-all").addEventListener("click", askReset);
+function resetAll() {
   progress = { done: {}, work: {}, scores: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0 };
-  saveProgress(); open({ lessonIndex: 0, stage: "lesson" });
-});
+  saveProgress(); open({ lessonIndex: 0, stage: "lesson", fresh: true });
+  buddy.say("# Fresh start\nEverything is reset. Let's begin again from the top!", "happy");
+}
 $("redo-tour-btn").addEventListener("click", () => { closeSidebar(); firstVisitTour(); });
 $("tour-btn").addEventListener("click", firstVisitTour);
 
@@ -611,7 +625,7 @@ $("set-sound").addEventListener("change", (e) => { if (sfx.on !== e.target.check
 $("set-voice").addEventListener("change", (e) => setVoice(e.target.checked));
 $("set-voicepick").addEventListener("change", (e) => { voice.choose(e.target.value); voice.speak("How's this voice?"); });
 $("set-tour").addEventListener("click", () => { closeSettings(); firstVisitTour(); });
-$("set-reset").addEventListener("click", () => { closeSettings(); $("reset-btn-all").click(); });
+$("set-reset").addEventListener("click", () => { closeSettings(); askReset(); });
 $("set-test").addEventListener("click", () => {
   // testing the voice means you want to hear it: switch it on if it's off
   if (!voice.on) setVoice(true, { greet: false });

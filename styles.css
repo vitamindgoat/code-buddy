@@ -180,6 +180,11 @@ code {
 .btn-primary { background: var(--blue); color: #fff; }
 .btn-primary:hover { background: var(--blue-dark); }
 
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover { background: #c93c41; }
+.btn-danger.btn-big { box-shadow: 0 8px 20px rgba(229, 72, 77, 0.3); }
+.confirm-card { padding-top: 26px; }
+.confirm-card .done-title { font-size: 24px; margin-top: 0; }
 .btn-ghost { background: transparent; color: var(--ink-soft); }
 .btn-ghost:hover { background: var(--bg); }
 

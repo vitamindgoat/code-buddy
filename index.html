@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="40" />
+  <meta name="build" content="41" />
   <title>CodeBuddy – Learn to code with a friend</title>
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
@@ -18,8 +18,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=40" />
-  <link rel="stylesheet" href="buddy.css?v=40" />
+  <link rel="stylesheet" href="styles.css?v=41" />
+  <link rel="stylesheet" href="buddy.css?v=41" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -149,6 +149,18 @@
   </div>
   </div>
 
+  <!-- "Are you sure?" dialog (reset progress) -->
+  <div id="confirm" class="complete" hidden role="dialog" aria-label="Confirm">
+    <div class="done-card card confirm-card">
+      <h2 id="confirm-title" class="done-title">Reset all progress?</h2>
+      <p id="confirm-sub" class="done-sub">This erases every finished lesson, your saved code and your quiz scores. There's no undo.</p>
+      <div class="done-actions">
+        <button id="confirm-yes" class="btn btn-danger btn-big" type="button">Yes, reset everything</button>
+        <button id="confirm-no" class="btn btn-ghost" type="button">Keep my progress</button>
+      </div>
+    </div>
+  </div>
+
   <!-- "Lesson complete!" card: celebrates, then hands you the next step -->
   <div id="done" class="complete" hidden>
     <div class="done-card card">
@@ -164,14 +176,14 @@
     </div>
   </div>
 
-  <script src="sfx.js?v=40"></script>
-  <script src="fx.js?v=40"></script>
-  <script src="lessons.js?v=40"></script>
-  <script src="buddy.js?v=40"></script>
-  <script src="tutor.js?v=40"></script>
-  <script src="quiz.js?v=40"></script>
-  <script src="read.js?v=40"></script>
-  <script src="tour.js?v=40"></script>
-  <script src="app.js?v=40"></script>
+  <script src="sfx.js?v=41"></script>
+  <script src="fx.js?v=41"></script>
+  <script src="lessons.js?v=41"></script>
+  <script src="buddy.js?v=41"></script>
+  <script src="tutor.js?v=41"></script>
+  <script src="quiz.js?v=41"></script>
+  <script src="read.js?v=41"></script>
+  <script src="tour.js?v=41"></script>
+  <script src="app.js?v=41"></script>
 </body>
 </html>
