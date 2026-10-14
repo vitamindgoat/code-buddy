@@ -60,12 +60,24 @@ const tutor = (() => {
   };
 
   // Trim or expand an explanation to the learner's chosen length
+  // Explanation length (settings). Short: the first sentence only.
+  // Normal: the explanation. Detailed: plus the "more" note when a part
+  // has one (the why behind it, or a common mistake to watch for).
   function explainText(part) {
     const len = ui.explainLength();
-    const lines = part.explain.split("\n");
-    if (len === "short") return lines[0];
-    if (len === "long" && part.say) return `${part.explain}\n(${part.say})`;
+    if (len === "short") return firstSentence(part.explain);
+    if (len === "long" && part.more) return `${part.explain}\n${part.more}`;
     return part.explain;
+  }
+  function firstSentence(text) {
+    const m = text.replace(/\n/g, " ").match(/^.*?[.!?](?=\s|$)/);
+    return m ? m[0] : text.split("\n")[0];
+  }
+  // Whole-message trim for Short: every plain line keeps its first sentence.
+  // Labels (# ...) and code chips (lines that are just a `chip`) stay.
+  function trimForLength(text) {
+    if (ui.explainLength() !== "short") return text;
+    return text.split("\n").map((line) => (line.startsWith("# ") || /^`[^`]*`$/.test(line.trim()) ? line : firstSentence(line))).join("\n");
   }
 
   // ---------- normalizing: what counts as "the same code" ----------
@@ -166,6 +178,7 @@ const tutor = (() => {
   // ---------- speaking ----------
 
   function say(text, state) {
+    text = trimForLength(text);
     if (text === lastSaid) return;
     lastSaid = text;
     buddy.say(text, state);
@@ -429,7 +442,8 @@ const tutor = (() => {
     ui.renderSteps(0);
     ui.markLine(0);
     const who = l.inputs ? `\n# Input\nWhen the program asks, the user will type \`${l.inputs.join("`, then `")}\`.` : "";
-    say(`# Lesson ${l.number} · ${l.title}\n${l.intro} Let's build it together, one piece at a time.${who}\n${typeSection()}`, "idle");
+    const deep = ui.explainLength() === "long" && l.why ? `\n# Why it matters\n${l.why}` : "";
+    say(`# Lesson ${l.number} · ${l.title}\n${l.intro} Let's build it together, one piece at a time.${deep}${who}\n${typeSection()}`, "idle");
     showGhost([], 0);
     armStuck(STUCK_AFTER_IDLE_MS);
   }
