@@ -216,6 +216,22 @@ const buddy = (() => {
     if (!smoothRaf && target > revealed) smoothRaf = requestAnimationFrame(smooth);
   }
 
+  // Long runs of the same digit ("00000000", "0 0 0 0 0 0 0 0") make the
+  // voice stutter. Say them as a count instead: "eight zeros". Works on the
+  // per-character spoken pieces, so the typewriter mapping stays exact.
+  const DIGIT_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+  const COUNT_WORDS = ["", "", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
+  function collapseRuns(text, pieces) {
+    const re = /(?<![\w])(\d)(?:(?: ?)\1){2,}(?![\w])/g;
+    let m;
+    while ((m = re.exec(text))) {
+      const d = m[1], n = m[0].replace(/ /g, "").length;
+      pieces[m.index] = ` ${COUNT_WORDS[n] || n} ${DIGIT_WORDS[+d]}s `;
+      for (let k = m.index + 1; k < m.index + m[0].length; k++) pieces[k] = "";
+    }
+    return pieces;
+  }
+
   const KEEP_CAPS = new Set(["CSP", "RLE", "API", "JPEG", "PNG", "URL", "HTML", "CSS"]);
 
   // How the voice reads code: one spoken piece per character, so the
@@ -241,7 +257,7 @@ const buddy = (() => {
       }
       out.push(ch);
     }
-    return out;
+    return collapseRuns(text, out);
   }
 
   const SYMBOLS = {
@@ -273,7 +289,7 @@ const buddy = (() => {
         out.push(ch);
       }
     }
-    return out;
+    return collapseRuns(code, out);
   }
 
   // Vocabulary words get a color by category
