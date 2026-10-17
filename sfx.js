@@ -6,7 +6,9 @@
    blip" sounds are made.
 
      sfx.tick()      a piece of the line finished (soft blip)
-     sfx.success()   a whole line finished (two-note chime)
+     sfx.success()   a right answer (two-note chime)
+     sfx.lineDone()  a whole line of code finished: one of eight little
+                     jingles, never the same one twice in a row
      sfx.levelUp()   lesson complete (rising arpeggio)
      sfx.error()     a wrong character appeared (soft low bonk)
      sfx.click()     any button
@@ -70,6 +72,28 @@ const sfx = (() => {
 
   const tick = () => note({ type: "sine", freq: 880, dur: 0.08, vol: 0.12 });
   const success = () => { note({ freq: 523.25, dur: 0.14 }); note({ freq: 659.25, start: 0.09, dur: 0.18 }); };
+  // Finishing a line: eight different jingles so it doesn't get old. They
+  // play in a shuffled order and reshuffle once all eight have been heard.
+  const LINE_JINGLES = [
+    () => { note({ freq: 523.25, dur: 0.14 }); note({ freq: 659.25, start: 0.09, dur: 0.18 }); },                                   // C E  (the classic)
+    () => { note({ freq: 659.25, dur: 0.12 }); note({ freq: 783.99, start: 0.08, dur: 0.12 }); note({ freq: 1046.5, start: 0.16, dur: 0.2 }); },   // E G C  rising
+    () => { note({ type: "triangle", freq: 783.99, dur: 0.1, vol: 0.16 }); note({ type: "triangle", freq: 587.33, start: 0.08, dur: 0.2, vol: 0.16 }); },  // G D  down-up bounce
+    () => { note({ freq: 440, slideTo: 880, dur: 0.16, vol: 0.14 }); note({ freq: 1174.7, start: 0.14, dur: 0.14, vol: 0.12 }); },   // swoop up + ping
+    () => { [523.25, 659.25, 783.99].forEach((f, i) => note({ type: "triangle", freq: f, start: i * 0.05, dur: 0.14, vol: 0.14 })); },  // quick C major strum
+    () => { note({ type: "sine", freq: 987.77, dur: 0.07, vol: 0.14 }); note({ type: "sine", freq: 987.77, start: 0.1, dur: 0.07, vol: 0.14 }); note({ type: "sine", freq: 1318.5, start: 0.2, dur: 0.18, vol: 0.14 }); },  // B B E  double tap + high
+    () => { note({ type: "triangle", freq: 392, dur: 0.1, vol: 0.16 }); note({ type: "triangle", freq: 523.25, start: 0.07, dur: 0.1, vol: 0.16 }); note({ type: "triangle", freq: 659.25, start: 0.14, dur: 0.1, vol: 0.16 }); note({ type: "triangle", freq: 783.99, start: 0.21, dur: 0.22, vol: 0.16 }); },  // G C E G  fanfare
+    () => { note({ type: "sine", freq: 880, slideTo: 1760, dur: 0.1, vol: 0.12 }); note({ type: "sine", freq: 1318.5, start: 0.12, dur: 0.1, vol: 0.1 }); note({ type: "sine", freq: 1760, start: 0.2, dur: 0.16, vol: 0.1 }); },  // zip + sparkle
+  ];
+  let bag = [], lastJingle = -1;
+  const lineDone = () => {
+    if (!bag.length) {
+      bag = LINE_JINGLES.map((_, i) => i);
+      for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; }
+      if (bag[bag.length - 1] === lastJingle) bag.unshift(bag.pop());   // a fresh bag never repeats the last one
+    }
+    lastJingle = bag.pop();
+    LINE_JINGLES[lastJingle]();
+  };
   const levelUp = () => [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => note({ type: "triangle", freq: f, start: i * 0.09, dur: 0.22, vol: 0.2 }));
   const error = () => note({ type: "triangle", freq: 220, slideTo: 160, dur: 0.16, vol: 0.14 });
   const click = () => note({ type: "square", freq: 1200, dur: 0.035, vol: 0.05 });
@@ -83,5 +107,5 @@ const sfx = (() => {
     return on;
   }
 
-  return { tick, success, levelUp, error, click, pop, run, toggle, get on() { return on; } };
+  return { tick, success, lineDone, levelUp, error, click, pop, run, toggle, get on() { return on; } };
 })();

@@ -361,7 +361,7 @@ tutor.ui.markLine = (lineNumber) => {
 };
 // A line was finished: flash it green and pop sparkles at its end
 tutor.ui.onStepDone = (lineNumber) => {
-  sfx.success();
+  sfx.lineDone();
   const handle = editor.addLineClass(lineNumber, "background", "done-line");
   setTimeout(() => editor.removeLineClass(handle, "background", "done-line"), 900);
   const end = editor.charCoords({ line: lineNumber, ch: editor.getLine(lineNumber).length }, "page");
