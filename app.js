@@ -680,6 +680,10 @@ function firstVisitTour() {
 
 // ---------- 14. Go ----------
 
+// The logo is Buddy's own SVG peeking over a terminal, inlined so its
+// arms and sparkles can animate on hover (an <img> can't do that).
+fetch(`assets/logo.svg?v=${BUILD}`).then((r) => r.text()).then((svg) => { $("brand-logo").innerHTML = svg; }).catch(() => {});
+
 applySettings();
 renderHeader();
 renderSidebar();
