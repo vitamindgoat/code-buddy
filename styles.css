@@ -59,16 +59,21 @@ code {
 }
 
 .brand { display: flex; align-items: center; gap: 10px; }
-/* Logo: the real buddy (all five poses) peeking over a terminal box.
-   The box sits in front, so his lower half and the bottom of his arms
-   hide behind it, like he's leaning on the edge. */
-.brand-logo { position: relative; width: 42px; height: 40px; display: block; cursor: pointer; }
-.brand-logo .buddy { position: absolute; left: 50%; top: -2px; width: 44px !important; margin-left: -22px; }
-.brand-logo .buddy .pose { width: 44px !important; }
-.brand-term { position: absolute; left: 2px; right: 2px; bottom: 0; height: 19px; border-radius: 6px; background: var(--blue); display: block; }
-.brand-term svg { width: 100%; height: 100%; display: block; }
-.brand-logo .buddy[data-state="happy"] .pose { animation-name: bounce-small; }
-.brand-logo .buddy[data-state="celebrate"] .pose { animation-name: jump-small; }
+/* Logo: Buddy peeking over a terminal, hands resting on its edge. Three
+   poses baked into one SVG; CSS shows one. No idle motion: he only moves
+   when you hover (happy: wave, sparkles) or click (celebrate: stars). */
+.brand-logo { width: 40px; height: 40px; display: block; cursor: pointer; }
+.brand-logo svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.brand-logo .pose { display: none; }
+.brand-logo[data-pose="idle"] .pose-idle, .brand-logo[data-pose="happy"] .pose-happy, .brand-logo[data-pose="celebrate"] .pose-celebrate { display: block; }
+.brand-logo .joint { transform-box: view-box; transform-origin: 0 0; }
+/* arms wave in place, pivoting at the shoulder so the hands stay on the box */
+.brand-logo[data-pose="happy"] .arm-left .joint { animation: wave-left 0.5s ease-in-out infinite; }
+.brand-logo[data-pose="happy"] .arm-right .joint { animation: wave-right 0.5s ease-in-out infinite; }
+.brand-logo[data-pose="happy"] .sparkles { animation: pop-in 0.5s ease-out 1, twinkle 1.2s ease-in-out 0.5s infinite; transform-box: fill-box; transform-origin: center; }
+.brand-logo[data-pose="celebrate"] .arm-left .joint { animation: flap-left 0.35s ease-in-out infinite; }
+.brand-logo[data-pose="celebrate"] .arm-right .joint { animation: flap-right 0.35s ease-in-out infinite; }
+.brand-logo[data-pose="celebrate"] .sparkles, .brand-logo[data-pose="celebrate"] .stars { animation: pop-in 0.4s ease-out 1, twinkle 0.8s ease-in-out 0.4s infinite; transform-box: fill-box; transform-origin: center; }
 .topbar { overflow: visible; }
 }
 

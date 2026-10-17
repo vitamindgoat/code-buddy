@@ -680,20 +680,22 @@ function firstVisitTour() {
 
 // ---------- 14. Go ----------
 
-// The logo is a real five-pose buddy (same art and animations as the
-// tutor) peeking over a little terminal. Hover: happy. Click: celebrate.
-buddy.mount($("brand-buddy"), "idle");
-{
-  const bb = $("brand-buddy"), brand = document.querySelector(".brand");
+// The logo: Buddy's own art peeking over a terminal, hands on its edge.
+// Built from the idle/happy/celebrate poses (assets/logo.svg) and inlined
+// so CSS can swap the face and wave the arms. Hover: happy. Click: party.
+fetch(`assets/logo.svg?v=${BUILD}`).then((r) => r.text()).then((svg) => {
+  const el = $("brand-logo"); el.innerHTML = svg;
+  const brand = document.querySelector(".brand");
   let party = null;
-  brand.addEventListener("mouseenter", () => { if (!party) bb.setAttribute("data-state", "happy"); });
-  brand.addEventListener("mouseleave", () => { if (!party) bb.setAttribute("data-state", "idle"); });
+  const show = (pose) => el.setAttribute("data-pose", pose);
+  show("idle");
+  brand.addEventListener("mouseenter", () => { if (!party) show("happy"); });
+  brand.addEventListener("mouseleave", () => { if (!party) show("idle"); });
   brand.addEventListener("click", () => {
-    clearTimeout(party);
-    bb.setAttribute("data-state", "celebrate"); sfx.pop();
-    party = setTimeout(() => { party = null; bb.setAttribute("data-state", brand.matches(":hover") ? "happy" : "idle"); }, 1400);
+    clearTimeout(party); show("celebrate"); sfx.pop();
+    party = setTimeout(() => { party = null; show(brand.matches(":hover") ? "happy" : "idle"); }, 1400);
   });
-}
+}).catch(() => {});
 
 applySettings();
 renderHeader();
