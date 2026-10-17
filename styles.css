@@ -67,13 +67,45 @@ code {
 .brand-logo .pose { display: none; }
 .brand-logo[data-pose="idle"] .pose-idle, .brand-logo[data-pose="happy"] .pose-happy, .brand-logo[data-pose="celebrate"] .pose-celebrate { display: block; }
 .brand-logo .joint { transform-box: view-box; transform-origin: 0 0; }
-/* arms wave in place, pivoting at the shoulder so the hands stay on the box */
-.brand-logo[data-pose="happy"] .arm-left .joint { animation: wave-left 0.5s ease-in-out infinite; }
-.brand-logo[data-pose="happy"] .arm-right .joint { animation: wave-right 0.5s ease-in-out infinite; }
-.brand-logo[data-pose="happy"] .sparkles { animation: pop-in 0.5s ease-out 1, twinkle 1.2s ease-in-out 0.5s infinite; transform-box: fill-box; transform-origin: center; }
-.brand-logo[data-pose="celebrate"] .arm-left .joint { animation: flap-left 0.35s ease-in-out infinite; }
-.brand-logo[data-pose="celebrate"] .arm-right .joint { animation: flap-right 0.35s ease-in-out infinite; }
-.brand-logo[data-pose="celebrate"] .sparkles, .brand-logo[data-pose="celebrate"] .stars { animation: pop-in 0.4s ease-out 1, twinkle 0.8s ease-in-out 0.4s infinite; transform-box: fill-box; transform-origin: center; }
+/* Hover: a proper wave hello. The right arm lifts off the box and waves
+   side to side; the left hand stays on the edge. Click: both arms shoot up
+   and shake (a cheer). All keyframes are the logo's own. */
+.brand-logo[data-pose="happy"] .arm-right .joint { animation: logo-wave 1.6s ease-in-out infinite; }
+.brand-logo[data-pose="happy"] .sparkles { animation: logo-sparkle 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.brand-logo[data-pose="celebrate"] .arm-left .joint { animation: logo-cheer-left 0.5s ease-in-out infinite; }
+.brand-logo[data-pose="celebrate"] .arm-right .joint { animation: logo-cheer-right 0.5s ease-in-out infinite; }
+.brand-logo[data-pose="celebrate"] .sparkles, .brand-logo[data-pose="celebrate"] .stars { animation: logo-burst 0.7s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes logo-wave {
+  0%   { transform: rotate(0deg); }
+  18%  { transform: rotate(-70deg); }   /* lift */
+  32%  { transform: rotate(-95deg); }   /* wave out */
+  46%  { transform: rotate(-65deg); }   /* and back */
+  60%  { transform: rotate(-95deg); }
+  74%  { transform: rotate(-65deg); }
+  88%  { transform: rotate(-80deg); }
+  100% { transform: rotate(0deg); }     /* hand back on the box */
+}
+@keyframes logo-sparkle {
+  0%, 100% { transform: scale(0.85); opacity: 0.6; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}
+@keyframes logo-cheer-left {
+  0%, 100% { transform: rotate(0deg); }
+  30%      { transform: rotate(85deg); }
+  50%      { transform: rotate(70deg); }
+  70%      { transform: rotate(85deg); }
+}
+@keyframes logo-cheer-right {
+  0%, 100% { transform: rotate(0deg); }
+  30%      { transform: rotate(-85deg); }
+  50%      { transform: rotate(-70deg); }
+  70%      { transform: rotate(-85deg); }
+}
+@keyframes logo-burst {
+  0%   { transform: scale(0.6); opacity: 0; }
+  40%  { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.7; }
+}
 .topbar { overflow: visible; }
 }
 
