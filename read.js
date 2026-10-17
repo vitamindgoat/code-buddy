@@ -88,6 +88,17 @@ const read = (() => {
   }
 
   function askQuestion(c, qi, { extra = false } = {}) {
+    // a question already on screen slides out first, then the new one rises in
+    const box = card.querySelector("#read-check");
+    if (box && box.children.length && !box.classList.contains("swap-out")) {
+      box.classList.add("swap-out");
+      setTimeout(() => { box.classList.remove("swap-out"); renderQuestion(c, qi, { extra }); }, 180);
+      return;
+    }
+    renderQuestion(c, qi, { extra });
+  }
+
+  function renderQuestion(c, qi, { extra = false } = {}) {
     const q = c.checks[qi];
     const items = q.choices.map((text, i) => ({ text, correct: i === q.answer }));
     for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }

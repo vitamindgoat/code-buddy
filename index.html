@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="60" />
+  <meta name="build" content="61" />
   <title>CodeBuddy – Learn to code with a friend</title>
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=60" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=60" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=61" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=61" />
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -20,8 +21,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=60" />
-  <link rel="stylesheet" href="buddy.css?v=60" />
+  <link rel="stylesheet" href="styles.css?v=61" />
+  <link rel="stylesheet" href="buddy.css?v=61" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -35,8 +36,8 @@
     </div>
     <div class="topbar-right">
       <span class="pill" id="lesson-pill">Lesson 1</span>
-      <button id="settings-btn" class="btn btn-ghost btn-icon-only" type="button" title="Settings">⚙ Settings</button>
-      <button id="tour-btn" class="btn btn-ghost btn-icon-only" type="button" title="Redo the tutorial">❔ Tutorial</button>
+      <button id="settings-btn" class="btn btn-ghost btn-icon-only" type="button" title="Settings" aria-label="Settings">⚙ <span class="btn-text">Settings</span></button>
+      <button id="tour-btn" class="btn btn-ghost btn-icon-only" type="button" title="Redo the tutorial" aria-label="Tutorial">❔ <span class="btn-text">Tutorial</span></button>
     </div>
   </header>
 
@@ -86,7 +87,7 @@
         <div class="card-header">
           <span class="card-label">Your code</span>
           <div class="actions">
-            <button id="reset-btn" class="btn btn-ghost" type="button">Start over</button>
+            <button id="reset-btn" class="btn btn-ghost" type="button" title="Start over"><span class="btn-text">Start over</span><span class="btn-text-short" aria-hidden="true">↺</span></button>
             <span id="run-tag" class="callout run-tag" hidden>Now run it</span>
             <button id="run-btn" class="btn btn-primary" type="button" disabled>
               <span class="btn-icon">▶</span> Run
@@ -178,14 +179,14 @@
     </div>
   </div>
 
-  <script src="sfx.js?v=60"></script>
-  <script src="fx.js?v=60"></script>
-  <script src="lessons.js?v=60"></script>
-  <script src="buddy.js?v=60"></script>
-  <script src="tutor.js?v=60"></script>
-  <script src="quiz.js?v=60"></script>
-  <script src="read.js?v=60"></script>
-  <script src="tour.js?v=60"></script>
-  <script src="app.js?v=60"></script>
+  <script src="sfx.js?v=61"></script>
+  <script src="fx.js?v=61"></script>
+  <script src="lessons.js?v=61"></script>
+  <script src="buddy.js?v=61"></script>
+  <script src="tutor.js?v=61"></script>
+  <script src="quiz.js?v=61"></script>
+  <script src="read.js?v=61"></script>
+  <script src="tour.js?v=61"></script>
+  <script src="app.js?v=61"></script>
 </body>
 </html>
