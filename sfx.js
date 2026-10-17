@@ -36,6 +36,23 @@ const sfx = (() => {
     return ctx;
   }
 
+  // Phones (iOS especially) only let a page make sound if the audio context
+  // was created or resumed INSIDE a touch or key handler. The first tap or
+  // keypress anywhere unlocks it, with a silent blip so iOS counts it as
+  // "played"; after that, sounds fired from timers work too.
+  let unlocked = false;
+  function unlock() {
+    const c = ready(); if (!c) return;
+    if (c.state === "suspended") c.resume();
+    if (unlocked) return;
+    unlocked = true;
+    try {
+      const buf = c.createBuffer(1, 1, c.sampleRate);
+      const src = c.createBufferSource(); src.buffer = buf; src.connect(c.destination); src.start(0);
+    } catch {}
+  }
+  for (const ev of ["touchend", "pointerdown", "keydown"]) document.addEventListener(ev, unlock, { capture: true, passive: true });
+
   // One note: `type` is the waveform, freq in Hz, timing in seconds.
   // The gain envelope goes 0 -> vol quickly, then decays to silence.
   function note({ type = "sine", freq = 440, start = 0, dur = 0.12, vol = 0.18, slideTo = null }) {

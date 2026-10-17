@@ -516,11 +516,15 @@ async function runCode() {
     if (!tutor.onError({ error: r.error, line: r.line })) {
       buddy.say(`# Python stopped${r.line ? ` on line ${r.line}` : ""}\nHere's what it said:\n\`${r.error}\`\n# Tip\nRead the last line of an *error* first: it names the problem.`, "pointing");
     }
+    if (stage === "lesson") saveWork({ cpIndex: tutor.current.cpIndex, awaitingRun: tutor.current.awaitingRun });
   } else {
     if (outputLines.length === 0) appendOutput("(your program ran, but it didn't print anything)");
     setStatus("ok", "Ran successfully");
     if (stage === "practice") { lastRunOutput = outputLines.join("\n"); renderSteps(0); }
     tutor.onRun({ ok: true, output: outputLines.join("\n") });
+    // remember which checkpoints have been run, so coming back doesn't ask
+    // for a Run that already happened
+    if (stage === "lesson") saveWork({ cpIndex: tutor.current.cpIndex, awaitingRun: tutor.current.awaitingRun });
   }
 }
 

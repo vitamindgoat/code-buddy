@@ -578,6 +578,13 @@ const tutor = (() => {
       cpIndex = 0;
       while (cpIndex < checkpoints().length - 1 && stepIndex > checkpoints()[cpIndex].after + 1) cpIndex++;
       awaitingRun = !saved.finished && stepIndex >= checkpoints()[cpIndex].after + 1;
+      // a run they already did counts: the saved checkpoint position wins
+      // when the code still matches it
+      if (saved.cpIndex !== undefined && saved.cpIndex >= cpIndex && saved.cpIndex < checkpoints().length
+          && stepIndex >= (saved.cpIndex ? checkpoints()[saved.cpIndex - 1].after + 1 : 0)) {
+        cpIndex = saved.cpIndex;
+        awaitingRun = !saved.finished && !!saved.awaitingRun && stepIndex >= checkpoints()[cpIndex].after + 1;
+      }
     }
     if (saved.finished) { complete = true; celebrated = true; }
     else if (mode === "lesson" && stepIndex === lesson.steps.length) complete = true;
@@ -590,9 +597,32 @@ const tutor = (() => {
         : `# Welcome back!\nYou already finished this lesson, and your code is still here. Try the practice next, or run it again.`, "happy");
       return;
     }
-    say(`# Welcome back!\nYour code is right where you left it.\n${mode === "practice" ? `# Goal\n${goalText(lesson.practice)}` : complete ? "Everything is typed. Press Run to see it work." : awaitingRun ? "# Now run it\nPress Run to see what it prints, then we'll add the next line." : typeSection()}`, "happy");
+    // Pick up the conversation where it stopped: the buddy repeats what he
+    // was saying when they left (the last finished piece and what to type
+    // next, or the "run it" prompt), after a short hello.
+    let body;
+    if (mode === "practice") body = `# Goal\n${goalText(lesson.practice)}`;
+    else if (complete) body = "# Next\nEverything is typed. Press Run to see it work.";
+    else {
+      const cur = lines[stepIndex], step = lesson.steps[stepIndex];
+      partIndex = cur && step ? countParts(cur.text, { parts: stepParts(step, stepIndex) }) : 0;
+      const donePiece = (parts, k) => `# ✓ \`${parts[k].text}\`\n${explainText(parts[k])}\n`;
+      if (awaitingRun) {
+        const fparts = stepParts(lesson.steps[stepIndex - 1], stepIndex - 1);
+        const cp = checkpoint(), last = cpIndex === checkpoints().length - 1;
+        body = `${donePiece(fparts, fparts.length - 1)}# Now run it\n${cp.error ? "Press Run and watch what happens." : last ? "That's the whole program! Press Run to see what it prints." : "Before we add more, press Run and see what this prints so far."}`;
+      } else if (partIndex > 0) {
+        body = `${donePiece(stepParts(step, stepIndex), partIndex - 1)}${typeSection("Now type")}`;
+      } else if (stepIndex > 0) {
+        const fparts = stepParts(lesson.steps[stepIndex - 1], stepIndex - 1);
+        body = `${donePiece(fparts, fparts.length - 1)}${typeSection("Next line")}`;
+      } else {
+        body = `${lesson.intro}\n${typeSection()}`;
+      }
+    }
+    say(`# Welcome back!\nYour code is right where you left it.\n${body}`, "happy");
     if (awaitingRun) ui.onReadyToRun();
-    if (mode === "practice") checkPractice(); else { const cur = lines[stepIndex], step = lesson.steps[stepIndex]; partIndex = cur && step ? countParts(cur.text, step) : 0; showGhost(lines, stepIndex); }
+    if (mode === "practice") checkPractice(); else showGhost(lines, stepIndex);
     clearTimeout(diagnoseTimer);   // setCode fired onChange; don't let it talk over the welcome
     armStuck(STUCK_AFTER_IDLE_MS);
   }

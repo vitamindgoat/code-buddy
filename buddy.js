@@ -80,6 +80,7 @@ const buddy = (() => {
   let spoken = "";       // the text the voice reads (labels left out)
   let spokenIndex = [];  // chars[i] -> its index in `spoken`
 
+  let voiceStarted = false, voiceWatchdog = 0;   // did the voice begin this message?
   function say(message, state) {
     clearTimeout(typingTimer);
     chars = []; spokenIndex = []; revealed = 0; spoken = "";
@@ -149,7 +150,7 @@ const buddy = (() => {
     const started = voice.speak(spoken, {
       // the speech engine tells us where it is; we keep the text in step
       // (and re-anchor the pacing cursor to the voice's real position)
-      onChunk: (from, to) => { revealTo(from); startPacing(from, to); },
+      onChunk: (from, to) => { voiceStarted = true; revealTo(from); startPacing(from, to); },
       onChunkEnd: (from, to) => { learnSpeed(to - from, performance.now() - pacedStart); revealTo(to); },
       onWord: (charIndex) => { revealTo(charIndex + 18); startPacing(charIndex + 18, pacedLimit); },
       onEnd: () => finishTyping(false),
@@ -162,6 +163,18 @@ const buddy = (() => {
       // voice's own "end" finishes it.
       startPacing(0, 0);       // nothing shows until the voice actually starts
       paced();
+      // Phones often accept the utterance and then never start it (iOS
+      // wants a tap first, Android may have no voice installed). If the
+      // voice hasn't begun in a moment, drop it and type the text out
+      // the plain way so the bubble never stays empty.
+      voiceStarted = false;
+      clearTimeout(voiceWatchdog);
+      voiceWatchdog = setTimeout(() => {
+        if (voiceStarted || revealed >= chars.length) return;
+        voice.stop();
+        clearTimeout(typingTimer);
+        tick();
+      }, 1500);
     } else {
       tick();
     }
@@ -385,6 +398,7 @@ const buddy = (() => {
   // otherwise the message ended naturally and the voice finishes on its own
   function finishTyping(skipped = true) {
     clearTimeout(typingTimer);
+    clearTimeout(voiceWatchdog);
     if (skipped) {
       cancelAnimationFrame(smoothRaf); smoothRaf = 0;
       while (revealed < chars.length) chars[revealed++].classList.add("on");
@@ -517,6 +531,7 @@ const voice = (() => {
   function speak(text, { onWord, onEnd, onChunk, onChunkEnd } = {}) {
     if (!on || !("speechSynthesis" in window)) return false;
     window.speechSynthesis.cancel();
+    try { window.speechSynthesis.resume(); } catch {}   // iOS can leave the engine paused
     const gen = ++generation;
     const chunks = chunk(text);
     if (!chunks.length) return false;
