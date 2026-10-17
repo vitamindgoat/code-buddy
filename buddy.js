@@ -80,7 +80,7 @@ const buddy = (() => {
   let spoken = "";       // the text the voice reads (labels left out)
   let spokenIndex = [];  // chars[i] -> its index in `spoken`
 
-  let voiceStarted = false, voiceWatchdog = 0;   // did the voice begin this message?
+  let voiceStarted = false, voiceWatchdog = 0, typingBlind = false;   // did the voice begin this message? are we typing without it?
   function say(message, state) {
     clearTimeout(typingTimer);
     chars = []; spokenIndex = []; revealed = 0; spoken = "";
@@ -150,7 +150,11 @@ const buddy = (() => {
     const started = voice.speak(spoken, {
       // the speech engine tells us where it is; we keep the text in step
       // (and re-anchor the pacing cursor to the voice's real position)
-      onChunk: (from, to) => { voiceStarted = true; revealTo(from); startPacing(from, to); },
+      onChunk: (from, to) => {
+        voiceStarted = true;
+        if (typingBlind) { typingBlind = false; clearTimeout(typingTimer); paced(); }   // the voice showed up late: follow it again
+        revealTo(from); startPacing(from, to);
+      },
       onChunkEnd: (from, to) => { learnSpeed(to - from, performance.now() - pacedStart); revealTo(to); },
       onWord: (charIndex) => { revealTo(charIndex + 18); startPacing(charIndex + 18, pacedLimit); },
       onEnd: () => finishTyping(false),
@@ -167,14 +171,14 @@ const buddy = (() => {
       // wants a tap first, Android may have no voice installed). If the
       // voice hasn't begun in a moment, drop it and type the text out
       // the plain way so the bubble never stays empty.
-      voiceStarted = false;
+      voiceStarted = false; typingBlind = false;
       clearTimeout(voiceWatchdog);
       voiceWatchdog = setTimeout(() => {
         if (voiceStarted || revealed >= chars.length) return;
-        voice.stop();
+        typingBlind = true;        // type on without the voice; if it does start, it takes over
         clearTimeout(typingTimer);
         tick();
-      }, 1500);
+      }, 2000);
     } else {
       tick();
     }
@@ -322,29 +326,18 @@ const buddy = (() => {
     for (const [cls, words] of Object.entries(TERMS)) if (words.includes(t)) return "term-" + cls;
     return "term-blue";
   }
-  // Section labels are shown as short headers ("Goal", "Hint 2 of 3") but
-  // spoken as a natural lead-in ("Here's your goal for this practice.").
+  // Section labels are shown as short headers ("Goal", "Hint 2 of 3") and
+  // spoken just as short: the label itself, not a lead-in sentence. Anything
+  // the voice says that isn't on screen makes the typewriter stand still,
+  // so these stay to a word or two.
   const LABEL_SPEECH = [
     [/^✓/, ""],                                   // the "✓ `code`" chip header: the explanation follows
     [/^(type|now type|next|input)$/i, ""],       // the body line already says it
-    [/^goal$/i, "Here's your goal for this practice."],
-    [/^stuck\?$/i, "If you get stuck,"],
-    [/^hint (\d) of 3$/i, (m) => `Here's hint ${m[1]}.`],
-    [/^hint$/i, "Here's a hint."],
-    [/^no hints left$/i, "No hints left."],
-    [/^next line$/i, "Now the next line."],
-    [/^whole program typed!$/i, "That's the whole program!"],
-    [/^all typed!$/i, "Everything is typed!"],
-    [/^ran your code/i, "I ran your code."],
-    [/^running$/i, "Running!"],
-    [/^infinite loop!$/i, "Uh oh, an infinite loop!"],
+    [/^hint (\d) of 3$/i, (m) => `Hint ${m[1]}.`],
     [/^python stopped(.*)$/i, (m) => `Python stopped${m[1]}.`],
-    [/^tip$/i, "Here's a tip."],
-    [/^line (\d+)$/i, (m) => `Here's line ${m[1]} again.`],
-    [/^not yet$/i, "Not yet!"],
-    [/^lesson (\S+) · (.+)$/i, (m) => `Lesson ${m[1]}: ${m[2]}.`],
-    [/^practice · (.+)$/i, (m) => `Practice time: ${m[1]}.`],
-    [/^testing$/i, "Testing!"],
+    [/^lesson (\S+) · .+$/i, (m) => `Lesson ${m[1]}.`],
+    [/^practice · .+$/i, "Practice."],
+    [/^welcome back!$/i, "Welcome back!"],
   ];
   function spokenLabel(text) {
     const plain = text.replace(/`[^`]*`/g, "").replace(/[*]/g, "").trim();
@@ -352,7 +345,7 @@ const buddy = (() => {
       const m = plain.match(re);
       if (m) { const t = typeof out === "function" ? out(m) : out; return t ? t + " " : ""; }
     }
-    return plain ? plain.replace(/[.!?:]?$/, ".") + " " : "";
+    return plain ? (/[!?]$/.test(plain) ? plain : plain.replace(/[.:]?$/, ".")) + " " : "";
   }
 
   function labelClass(text) {
