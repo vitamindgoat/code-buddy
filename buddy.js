@@ -145,7 +145,10 @@ const buddy = (() => {
     void speechEl.offsetWidth;
     speechEl.classList.add("pop");
 
-    if (state) set(state);   // the pose holds until the bubble finishes
+    // A happy or celebrate pose is a quick reaction, not a way of talking:
+    // he bounces for a moment, then settles back to idle while the words
+    // keep coming. Other poses (thinking, pointing) hold.
+    if (state) set(state, state === "happy" ? 1400 : state === "celebrate" ? 3000 : 0);
 
     const started = voice.speak(spoken, {
       // the speech engine tells us where it is; we keep the text in step
