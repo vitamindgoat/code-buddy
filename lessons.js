@@ -455,7 +455,7 @@ const MODULES = [
         expectedOutput: "12",
         done: "Tracing is how you find bugs: pretend to be the computer and track every variable.",
         practice: {
-          task: "Trace this in your head first, then write it: start y at 10, floor-divide it by 3, then multiply it by itself, then print y. Check: did you predict the number below?",
+          task: "Start y at 10, floor-divide it by 3, then multiply it by itself, then print y. Before you press Run, trace it in your head: do you get the number below?",
           solution: ["y = 10", "y = y // 3", "y = y * y", "print(y)"],
           expectedOutput: "9",
           hints: ["How do you change a variable using its own old value?", "Which operator keeps only the whole part of a division?", "How do you multiply y by itself? (No new function needed.)"],
@@ -590,7 +590,7 @@ const MODULES = [
             code: 'print("total is " + str(total))',
             bug: {
               code: 'print("total is " + total)',
-              parts: [{ text: 'print("total is " + total)', say: "Press Enter. Now print the words total is, joined with a plus to total.", explain: "+ joins two *strings*. But total is an int, not a string..." }],
+              parts: [{ text: 'print("total is " + total)', say: "Press Enter. Now print the words total is, then a plus sign, then total.", explain: "+ joins two *strings*. But total is an int, not a string..." }],
               explain: "TypeError: can only concatenate str (not \"int\") to str. The plus can join text to text, but total is a number.",
               fix: "Wrap total in str( ) to turn the number into text. Change the line to:",
             },

@@ -176,7 +176,7 @@ function renderSteps(stepIndex) {
   lesson().steps.forEach((step, i) => {
     const li = document.createElement("li");
     li.className = i < stepIndex ? "done" : i === stepIndex ? "current" : "";
-    li.innerHTML = `<span class="step-mark"></span><code>${colorCode(step.code.trim())}</code>`;
+    li.innerHTML = `<span class="step-mark"></span><code>${colorCode((tutor.displayCode(i) || step.code).trim())}</code>`;
     li.title = "Click to hear this step again";
     li.addEventListener("click", () => { tutor.review(i); editor.focus(); });
     stepsEl.appendChild(li);

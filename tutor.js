@@ -144,13 +144,15 @@ const tutor = (() => {
   // runs, and watches crash, before fixing it to the real code. While a
   // step's bug phase is on, its target (and parts) are the buggy version.
   let bugDone = {};           // step index -> true once the crash was seen
+  let earlyFix = false;       // they fixed a bug line without running the crash
   const stepCode = (st, i) => (st.bug && !bugDone[i] ? st.bug.code : st.code);
   const stepParts = (st, i) => (st.bug && !bugDone[i] ? st.bug.parts : st.parts);
   const targets = () => (mode === "practice" ? lesson.practice.solution : lesson.steps.map((st, i) => stepCode(st, i)));
   // the practice goal as the buddy says it: the task, then the exact output
   function goalText(pr) {
     const lines = pr.expectedOutput.split("\n");
-    const out = lines.length === 1 ? `It should print \`${lines[0]}\`.` : `It should print these ${lines.length} lines:\n${lines.map((l) => `\`${l}\``).join("\n")}`;
+    const show = (l) => (/[<>]/.test(l) ? l : `\`${l}\``);   // <class 'float'> reads badly as code
+    const out = lines.length === 1 ? `It should print ${show(lines[0])}.` : `It should print these ${lines.length} lines:\n${lines.map(show).join("\n")}`;
     return `${pr.task}\n${out}`;
   }
   const checkpoints = () => (lesson.checkpoints && lesson.checkpoints.length ? lesson.checkpoints : [{ after: lesson.steps.length - 1, output: lesson.expectedOutput }]);
@@ -287,6 +289,12 @@ const tutor = (() => {
     const cmp = compare(typed, stepCode(step(), stepIndex));
     const off = !cmp.onTrack || (cmp.indent && norm(typed).length > 1);
 
+    const stillBuggy = step().bug && bugDone[stepIndex] && norm(typed) === norm(step().bug.code);
+    if (off && stillBuggy) {
+      // the crash was seen; the old line just needs the fix the buddy showed
+      ui.markWrong(); ui.markLine(line.number); ui.ghost();
+      return;
+    }
     if (off) {
       // Silent: red underline + no ghost. The buddy only speaks if asked.
       if (!mistake) { mistake = true; ui.onMistake(); }
@@ -478,6 +486,13 @@ const tutor = (() => {
     const expected = mode === "practice" ? lesson.practice.expectedOutput : lesson.expectedOutput;
     lastSaid = "";
     // a mid-lesson checkpoint: explain what printed, then open the next line
+    if (mode === "lesson" && awaitingRun && checkpoint().error) {
+      // they were meant to see a crash here but the code ran: they fixed
+      // it early. Fine, count the bug as seen and judge the real output.
+      bugDone[checkpoint().after] = true;
+      cpIndex++;
+      earlyFix = true;
+    }
     if (mode === "lesson" && awaitingRun && cpIndex < checkpoints().length - 1) {
       const cp = checkpoint();
       if (output.trim() === cp.output.trim()) {
@@ -495,7 +510,7 @@ const tutor = (() => {
       celebrated = true;
       complete = true;
       ui.ghost(); ui.markWrong(); ui.stuckTag(false);
-      const done = mode === "practice" ? "You solved it on your own!" : lesson.done;
+      const done = mode === "practice" ? "You solved it on your own!" : earlyFix ? "You fixed the bug before it even crashed. Nice catch!" : lesson.done;
       say(`# Ran your code ✓\nYes! It worked. ${done}\n# What now?\nClick the *Next* button when you're ready to move on.`, "celebrate");
       ui.onComplete(mode);
     } else if (celebrated) {
@@ -514,7 +529,7 @@ const tutor = (() => {
   function reset(l) {
     lesson = l;
     stepIndex = 0; partIndex = 0; hintsUsed = 0; ghostAsked = false;
-    cpIndex = 0; awaitingRun = false; talking = false; bugDone = {};
+    cpIndex = 0; awaitingRun = false; talking = false; bugDone = {}; earlyFix = false;
     complete = false; celebrated = false; mistake = false;
     lastSaid = "";
     clearTimeout(stuckTimer); clearTimeout(diagnoseTimer);
@@ -585,5 +600,6 @@ const tutor = (() => {
   return {
     start, startPractice, onChange, onRun, onError, hint, review, ghostNow, ui,
     get current() { return { mode, lesson, stepIndex, partIndex, complete, celebrated, hintsUsed, ghostAsked, cpIndex, awaitingRun }; },
+    displayCode: (i) => (lesson && lesson.steps[i] ? stepCode(lesson.steps[i], i) : ""),
   };
 })();
