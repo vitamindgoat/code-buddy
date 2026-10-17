@@ -70,19 +70,20 @@ code {
 /* Hover: a proper wave hello. The right arm lifts off the box and waves
    side to side; the left hand stays on the edge. Click: both arms shoot up
    and shake (a cheer). All keyframes are the logo's own. */
-.brand-logo[data-pose="happy"] .arm-right .joint { animation: logo-wave 1.6s ease-in-out infinite; }
+.brand-logo .edge { transform-box: view-box; transform-origin: 0 0; }
+.brand-logo[data-pose="happy"] .pose-happy .edge:has(.arm-right) { animation: logo-wave 1.6s ease-in-out infinite; }
 .brand-logo[data-pose="happy"] .sparkles { animation: logo-sparkle 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-.brand-logo[data-pose="celebrate"] .arm-left .joint { animation: logo-cheer-left 0.5s ease-in-out infinite; }
-.brand-logo[data-pose="celebrate"] .arm-right .joint { animation: logo-cheer-right 0.5s ease-in-out infinite; }
+.brand-logo[data-pose="celebrate"] .pose-celebrate .edge:has(.arm-left) { animation: logo-cheer-left 0.5s ease-in-out infinite; }
+.brand-logo[data-pose="celebrate"] .pose-celebrate .edge:has(.arm-right) { animation: logo-cheer-right 0.5s ease-in-out infinite; }
 .brand-logo[data-pose="celebrate"] .sparkles, .brand-logo[data-pose="celebrate"] .stars { animation: logo-burst 0.7s ease-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes logo-wave {
   0%   { transform: rotate(0deg); }
-  18%  { transform: rotate(-70deg); }   /* lift */
-  32%  { transform: rotate(-95deg); }   /* wave out */
-  46%  { transform: rotate(-65deg); }   /* and back */
-  60%  { transform: rotate(-95deg); }
-  74%  { transform: rotate(-65deg); }
-  88%  { transform: rotate(-80deg); }
+  18%  { transform: rotate(-95deg); }   /* lift beside the head */
+  32%  { transform: rotate(-120deg); }  /* wave out */
+  46%  { transform: rotate(-90deg); }   /* and back */
+  60%  { transform: rotate(-120deg); }
+  74%  { transform: rotate(-90deg); }
+  88%  { transform: rotate(-105deg); }
   100% { transform: rotate(0deg); }     /* hand back on the box */
 }
 @keyframes logo-sparkle {
@@ -91,15 +92,15 @@ code {
 }
 @keyframes logo-cheer-left {
   0%, 100% { transform: rotate(0deg); }
-  30%      { transform: rotate(85deg); }
-  50%      { transform: rotate(70deg); }
-  70%      { transform: rotate(85deg); }
+  30%      { transform: rotate(110deg); }
+  50%      { transform: rotate(95deg); }
+  70%      { transform: rotate(110deg); }
 }
 @keyframes logo-cheer-right {
   0%, 100% { transform: rotate(0deg); }
-  30%      { transform: rotate(-85deg); }
-  50%      { transform: rotate(-70deg); }
-  70%      { transform: rotate(-85deg); }
+  30%      { transform: rotate(-110deg); }
+  50%      { transform: rotate(-95deg); }
+  70%      { transform: rotate(-110deg); }
 }
 @keyframes logo-burst {
   0%   { transform: scale(0.6); opacity: 0; }
