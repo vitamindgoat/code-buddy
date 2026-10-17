@@ -680,9 +680,20 @@ function firstVisitTour() {
 
 // ---------- 14. Go ----------
 
-// The logo is Buddy's own SVG peeking over a terminal, inlined so its
-// arms and sparkles can animate on hover (an <img> can't do that).
-fetch(`assets/logo.svg?v=${BUILD}`).then((r) => r.text()).then((svg) => { $("brand-logo").innerHTML = svg; }).catch(() => {});
+// The logo is a real five-pose buddy (same art and animations as the
+// tutor) peeking over a little terminal. Hover: happy. Click: celebrate.
+buddy.mount($("brand-buddy"), "idle");
+{
+  const bb = $("brand-buddy"), brand = document.querySelector(".brand");
+  let party = null;
+  brand.addEventListener("mouseenter", () => { if (!party) bb.setAttribute("data-state", "happy"); });
+  brand.addEventListener("mouseleave", () => { if (!party) bb.setAttribute("data-state", "idle"); });
+  brand.addEventListener("click", () => {
+    clearTimeout(party);
+    bb.setAttribute("data-state", "celebrate"); sfx.pop();
+    party = setTimeout(() => { party = null; bb.setAttribute("data-state", brand.matches(":hover") ? "happy" : "idle"); }, 1400);
+  });
+}
 
 applySettings();
 renderHeader();
