@@ -681,19 +681,19 @@ function firstVisitTour() {
 // ---------- 14. Go ----------
 
 // The logo: Buddy's own art peeking over a terminal, hands on its edge.
-// Built from the idle/happy/celebrate poses (assets/logo.svg) and inlined
-// so CSS can swap the face and wave the arms. Hover: happy. Click: party.
+// Built from the idle/celebrate poses (assets/logo.svg) and inlined so CSS
+// can swap the face and pump the arms. Hover and click both cheer.
 fetch(`assets/logo.svg?v=${BUILD}`).then((r) => r.text()).then((svg) => {
   const el = $("brand-logo"); el.innerHTML = svg;
   const brand = document.querySelector(".brand");
   let party = null;
   const show = (pose) => el.setAttribute("data-pose", pose);
   show("idle");
-  brand.addEventListener("mouseenter", () => { if (!party) show("happy"); });
+  brand.addEventListener("mouseenter", () => { if (!party) show("celebrate"); });
   brand.addEventListener("mouseleave", () => { if (!party) show("idle"); });
   brand.addEventListener("click", () => {
     clearTimeout(party); show("celebrate"); sfx.pop();
-    party = setTimeout(() => { party = null; show(brand.matches(":hover") ? "happy" : "idle"); }, 1400);
+    party = setTimeout(() => { party = null; show(brand.matches(":hover") ? "celebrate" : "idle"); }, 1400);
   });
 }).catch(() => {});
 
