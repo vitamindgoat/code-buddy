@@ -107,14 +107,12 @@ function renderHeader() {
   $("stage-badge").className = "stage-badge stage-" + (isReading() && stage === "lesson" ? "read" : stage);
   $("lesson-number").textContent = stage === "quiz" ? `Module ${l.moduleIndex + 1}` : l.number;
   $("lesson-title").textContent = stage === "quiz" ? `${m.title} quiz` : l.title;
-  $("lesson-intro").innerHTML = stage === "practice" ? richText(l.practice.task) : stage === "quiz" ? `${m.quiz.length} questions. No help from the buddy on this one!` : richText(l.intro);
+  $("lesson-intro").innerHTML = stage === "practice" ? practiceGoalHtml(l.practice) : stage === "quiz" ? `${m.quiz.length} questions. No help from the buddy on this one!` : richText(l.intro);
   $("lesson-pill").textContent = stage === "quiz" ? `Quiz · Module ${l.moduleIndex + 1}` : `${kind} ${l.number} · ${l.title}`;
 
   // the expected output lives in the checklist now; this box only notes
   // what the user will type when the program asks
-  const pb = $("practice-box");
-  pb.hidden = !(stage === "practice" && l.practice.inputs);
-  if (!pb.hidden) $("practice-expected").textContent = `When asked, the user types: ${l.practice.inputs.join(", ")}`;
+  $("practice-box").hidden = true;   // the goal block above covers inputs and output now
 
   prevBtn.disabled = !prevTarget();
   const nt = nextTarget();
@@ -123,6 +121,12 @@ function renderHeader() {
 }
 
 // *term* -> colored span, `code` -> chip (for the lesson panel)
+// The practice goal always ends with the exact output to produce, so the
+// learner never has to guess what "right" looks like.
+function practiceGoalHtml(pr) {
+  const inputs = pr.inputs ? `<div class="goal-inputs">When it asks, the user will type <code class="chip">${pr.inputs.map(escapeHtml).join("</code>, <code class=\"chip\">")}</code></div>` : "";
+  return `${richText(pr.task)}${inputs}<div class="goal-out"><span class="goal-out-label">Your program should print</span><pre>${escapeHtml(pr.expectedOutput)}</pre></div>`;
+}
 function richText(s) {
   return escapeHtml(s)
     .replace(/`([^`]+)`/g, (_, c) => `<code class="chip">${c}</code>`)
@@ -509,7 +513,9 @@ async function runCode() {
     setStatus("bad", "Error");
     sfx.error();
     replayClass(outputCard, "error-shake");
-    buddy.say(`# Python stopped${r.line ? ` on line ${r.line}` : ""}\nHere's what it said:\n\`${r.error}\`\n# Tip\nRead the last line of an *error* first: it names the problem.`, "pointing");
+    if (!tutor.onError({ error: r.error, line: r.line })) {
+      buddy.say(`# Python stopped${r.line ? ` on line ${r.line}` : ""}\nHere's what it said:\n\`${r.error}\`\n# Tip\nRead the last line of an *error* first: it names the problem.`, "pointing");
+    }
   } else {
     if (outputLines.length === 0) appendOutput("(your program ran, but it didn't print anything)");
     setStatus("ok", "Ran successfully");

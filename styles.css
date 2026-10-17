@@ -534,6 +534,10 @@ body { background: var(--bg); }
 .practice-box { margin-top: 10px; }
 .practice-label { font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--green); margin-bottom: 6px; }
 .practice-expected { margin: 0; font-family: var(--mono); font-size: 13px; background: var(--blue-soft); border: 1px solid var(--blue-line); border-radius: 10px; padding: 10px 12px; white-space: pre-wrap; }
+.goal-inputs { margin-top: 8px; font-weight: 700; color: var(--ink-soft); font-size: 14px; }
+.goal-out { margin-top: 12px; background: var(--blue-soft); border: 1px solid var(--blue-line); border-radius: 12px; padding: 10px 12px; }
+.goal-out-label { display: block; font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--blue-dark); margin-bottom: 4px; }
+.goal-out pre { margin: 0; font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--blue-ink); white-space: pre-wrap; }
 .steps li.out-row { flex-wrap: wrap; }
 .steps li.out-row.wrong { border-color: #f5c2c4; background: var(--red-soft); color: #842029; }
 .steps li.out-row.wrong .step-mark { background: var(--red); border-color: var(--red); color: #fff; }

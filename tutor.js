@@ -140,7 +140,19 @@ const tutor = (() => {
       .filter((l) => l.text.trim() !== "");
   }
 
-  const targets = () => (mode === "practice" ? lesson.practice.solution : lesson.steps.map((s) => s.code));
+  // A step may carry a `bug`: a broken version the learner types FIRST,
+  // runs, and watches crash, before fixing it to the real code. While a
+  // step's bug phase is on, its target (and parts) are the buggy version.
+  let bugDone = {};           // step index -> true once the crash was seen
+  const stepCode = (st, i) => (st.bug && !bugDone[i] ? st.bug.code : st.code);
+  const stepParts = (st, i) => (st.bug && !bugDone[i] ? st.bug.parts : st.parts);
+  const targets = () => (mode === "practice" ? lesson.practice.solution : lesson.steps.map((st, i) => stepCode(st, i)));
+  // the practice goal as the buddy says it: the task, then the exact output
+  function goalText(pr) {
+    const lines = pr.expectedOutput.split("\n");
+    const out = lines.length === 1 ? `It should print \`${lines[0]}\`.` : `It should print these ${lines.length} lines:\n${lines.map((l) => `\`${l}\``).join("\n")}`;
+    return `${pr.task}\n${out}`;
+  }
   const checkpoints = () => (lesson.checkpoints && lesson.checkpoints.length ? lesson.checkpoints : [{ after: lesson.steps.length - 1, output: lesson.expectedOutput }]);
   const checkpoint = () => checkpoints()[Math.min(cpIndex, checkpoints().length - 1)];
   // lines past the current checkpoint are off-limits until it's been run
@@ -203,7 +215,7 @@ const tutor = (() => {
   });
 
   const step = () => lesson.steps[stepIndex];
-  const part = () => step().parts[partIndex];
+  const part = () => stepParts(step(), stepIndex)[partIndex];
 
   // "Type" section: the piece the learner should type right now
   function typeSection(label = "Type") {
@@ -243,7 +255,8 @@ const tutor = (() => {
     if (n > stepIndex) {
       // they finished one or more whole lines
       const finished = lesson.steps[n - 1];
-      const lastPart = finished.parts[finished.parts.length - 1];
+      const fparts = stepParts(finished, n - 1);
+      const lastPart = fparts[fparts.length - 1];
       stepIndex = n; partIndex = 0; mistake = false;
       ui.renderSteps(stepIndex);
       ui.markWrong();
@@ -253,7 +266,8 @@ const tutor = (() => {
         awaitingRun = true;
         ui.ghost(); ui.markLine(null); ui.stuckTag(false);
         const last = cpIndex === checkpoints().length - 1;
-        say(`# ✓ \`${lastPart.text}\`\n${explainText(lastPart)}\n# Now run it\n${last ? "That's the whole program! Press Run to see what it prints." : "Before we add more, press Run and see what this prints so far."}`, "happy");
+        const cp = checkpoint();
+        say(`# ✓ \`${lastPart.text}\`\n${explainText(lastPart)}\n# Now run it\n${cp.error ? "Press Run and watch what happens." : last ? "That's the whole program! Press Run to see what it prints." : "Before we add more, press Run and see what this prints so far."}`, "happy");
         ui.onReadyToRun();
         return;
       }
@@ -270,7 +284,7 @@ const tutor = (() => {
 
     const line = lines[stepIndex];
     const typed = line ? line.text : "";
-    const cmp = compare(typed, step().code);
+    const cmp = compare(typed, stepCode(step(), stepIndex));
     const off = !cmp.onTrack || (cmp.indent && norm(typed).length > 1);
 
     if (off) {
@@ -289,9 +303,9 @@ const tutor = (() => {
     showGhost(lines, stepIndex);
 
     // Did they finish a PIECE of the line? Teach it.
-    const p = line ? countParts(typed, step()) : 0;
+    const p = line ? countParts(typed, { parts: stepParts(step(), stepIndex) }) : 0;
     if (p > partIndex) {
-      const done = step().parts[p - 1];
+      const done = stepParts(step(), stepIndex)[p - 1];
       partIndex = p;
       ui.onPartDone();
       say(`# ✓ \`${done.text}\`\n${explainText(done)}\n${typeSection("Now type")}`, "happy");
@@ -310,7 +324,7 @@ const tutor = (() => {
   function pieceRemainder(typed, target) {
     const rest = remainder(typed, target);
     if (mode !== "lesson" || !rest) return rest;
-    const parts = step().parts;
+    const parts = stepParts(step(), stepIndex);
     const upto = parts.slice(0, partIndex + 1).map((p) => p.text).join("");
     // how much of the target does the current piece reach?
     const reach = target.indexOf(upto.trim()) >= 0 ? target.indexOf(upto.trim()) + upto.trim().length : target.length;
@@ -376,7 +390,7 @@ const tutor = (() => {
     const lines = codeLines();
     const line = lines[stepIndex];
     const typed = line ? line.text : "";
-    const cmp = compare(typed, step().code);
+    const cmp = compare(typed, stepCode(step(), stepIndex));
     lastSaid = "";
 
     if (cmp.indent === "more") return say(`# Hint\nThis line needs to be indented more. Press Tab at the start of it.\n${typeSection()}`, "pointing");
@@ -384,7 +398,7 @@ const tutor = (() => {
     if (!cmp.onTrack) {
       const s = step();
       const h = (s.hints || []).find((h) => h.match.test(typed));
-      const g = norm(s.code), i = cmp.matched;
+      const g = norm(stepCode(s, stepIndex)), i = cmp.matched;
       const generic = `The red part isn't right.\nAfter \`${g.slice(Math.max(0, i - 8), i) || "the start"}\` it should be ${describe(g[i])}.`;
       return say(`# Hint\n${h ? h.say : generic}\nDelete the red part, then follow the gray letters.\n${typeSection()}`, "pointing");
     }
@@ -438,6 +452,27 @@ const tutor = (() => {
 
   // ---------- after Run ----------
 
+  // Python crashed. If this checkpoint EXPECTED that crash (a bug step), the
+  // crash is the lesson: explain it, then flip the step to its fixed code.
+  // Returns true when handled, so app.js skips its generic error message.
+  function onError({ error, line }) {
+    if (!lesson || mode !== "lesson" || !awaitingRun) return false;
+    const cp = checkpoint();
+    if (!cp.error || !error.includes(cp.error)) return false;
+    const i = cp.after;
+    const st = lesson.steps[i];
+    bugDone[i] = true;
+    awaitingRun = false; cpIndex++;
+    stepIndex = i; partIndex = 0;     // back onto this line, now with the fixed target
+    const lines = codeLines();
+    ui.renderSteps(stepIndex);
+    if (lines[i]) ui.markLine(lines[i].number);
+    lastSaid = "";
+    say(`# It crashed, on purpose\n${st.bug.explain}\n# Fix it\n${st.bug.fix}\n\`${st.code.trim()}\``, "pointing");
+    armStuck(STUCK_AFTER_IDLE_MS);
+    return true;
+  }
+
   function onRun({ ok, output }) {
     if (!lesson || !ok) return; // errors are handled by app.js (it has the line number)
     const expected = mode === "practice" ? lesson.practice.expectedOutput : lesson.expectedOutput;
@@ -466,7 +501,7 @@ const tutor = (() => {
     } else if (celebrated) {
       say("# Ran your code ✓\nNice experiment! Change something else and run it again, or move on when you're ready.", "happy");
     } else if (mode === "practice") {
-      say(`# Ran your code ✓\nIt ran, but that's not the output we want yet.\n# Goal\n${lesson.practice.task}\n# Stuck?\nClick me if you want a hint.`, "thinking");
+      say(`# Ran your code ✓\nIt ran, but that's not the output we want yet.\n# Goal\n${goalText(lesson.practice)}\n# Stuck?\nClick me if you want a hint.`, "thinking");
     } else if (!complete) {
       say(`# Ran your code ✓\nIt works so far, but we're not finished yet.\n${typeSection()}`, "happy");
     } else {
@@ -479,7 +514,7 @@ const tutor = (() => {
   function reset(l) {
     lesson = l;
     stepIndex = 0; partIndex = 0; hintsUsed = 0; ghostAsked = false;
-    cpIndex = 0; awaitingRun = false; talking = false;
+    cpIndex = 0; awaitingRun = false; talking = false; bugDone = {};
     complete = false; celebrated = false; mistake = false;
     lastSaid = "";
     clearTimeout(stuckTimer); clearTimeout(diagnoseTimer);
@@ -508,7 +543,7 @@ const tutor = (() => {
     ui.renderSteps(0);
     ui.markLine(0);
     const who = l.practice.inputs ? `\n# Input\nWhen the program asks, the user will type \`${l.practice.inputs.join("`, then `")}\`.` : "";
-    say(`# Practice · ${l.title}\nYour turn! This time you write the code without my help.\n# Goal\n${l.practice.task}${who}\n# Stuck?\nClick me. You get 3 hints.`, "idle");
+    say(`# Practice · ${l.title}\nYour turn! This time you write the code without my help.\n# Goal\n${goalText(l.practice)}${who}\n# Stuck?\nClick me. You get 3 hints.`, "idle");
     armStuck(STUCK_AFTER_IDLE_MS);
   }
 
@@ -521,6 +556,8 @@ const tutor = (() => {
     const n = countCorrect(lines);
     stepIndex = Math.min(n, targets().length); partIndex = 0;
     if (mode === "lesson") {
+      // a fixed bug line in the saved code means that crash was already seen
+      lesson.steps.forEach((st, i) => { const ln = lines[i]; if (st.bug && ln && lineMatches(ln.text, st.code)) bugDone[i] = true; });
       // which checkpoint are they on? a typed-but-not-run checkpoint line
       // means they still owe a Run
       cpIndex = 0;
@@ -538,7 +575,7 @@ const tutor = (() => {
         : `# Welcome back!\nYou already finished this lesson, and your code is still here. Try the practice next, or run it again.`, "happy");
       return;
     }
-    say(`# Welcome back!\nYour code is right where you left it.\n${mode === "practice" ? `# Goal\n${lesson.practice.task}` : complete ? "Everything is typed. Press Run to see it work." : awaitingRun ? "# Now run it\nPress Run to see what it prints, then we'll add the next line." : typeSection()}`, "happy");
+    say(`# Welcome back!\nYour code is right where you left it.\n${mode === "practice" ? `# Goal\n${goalText(lesson.practice)}` : complete ? "Everything is typed. Press Run to see it work." : awaitingRun ? "# Now run it\nPress Run to see what it prints, then we'll add the next line." : typeSection()}`, "happy");
     if (awaitingRun) ui.onReadyToRun();
     if (mode === "practice") checkPractice(); else { const cur = lines[stepIndex], step = lesson.steps[stepIndex]; partIndex = cur && step ? countParts(cur.text, step) : 0; showGhost(lines, stepIndex); }
     clearTimeout(diagnoseTimer);   // setCode fired onChange; don't let it talk over the welcome
@@ -546,7 +583,7 @@ const tutor = (() => {
   }
 
   return {
-    start, startPractice, onChange, onRun, hint, review, ghostNow, ui,
+    start, startPractice, onChange, onRun, onError, hint, review, ghostNow, ui,
     get current() { return { mode, lesson, stepIndex, partIndex, complete, celebrated, hintsUsed, ghostAsked, cpIndex, awaitingRun }; },
   };
 })();
