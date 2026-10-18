@@ -364,8 +364,8 @@ tutor.ui.onStepDone = (lineNumber) => {
   sfx.lineDone();
   const handle = editor.addLineClass(lineNumber, "background", "done-line");
   setTimeout(() => editor.removeLineClass(handle, "background", "done-line"), 900);
-  const end = editor.charCoords({ line: lineNumber, ch: editor.getLine(lineNumber).length }, "page");
-  fx.burst(end.right + 10, (end.top + end.bottom) / 2 - window.scrollY);
+  const end = editor.charCoords({ line: lineNumber, ch: editor.getLine(lineNumber).length }, "window");
+  fx.burst(end.right + 10, (end.top + end.bottom) / 2);
 };
 
 // Ghost letters: gray text showing what's left to type. It's an OVERLAY
@@ -384,7 +384,9 @@ tutor.ui.ghost = (lineNumber, text) => {
 function renderGhost() {
   if (!ghostState || ghostState.lineNumber >= editor.lineCount()) { ghostEl.hidden = true; return; }
   const { lineNumber, text } = ghostState;
-  const pos = editor.charCoords({ line: lineNumber, ch: editor.getLine(lineNumber).length }, "page");
+  // "window" coords match getBoundingClientRect; "page" ones include the
+  // page scroll, which put the ghost below the editor on a scrolled phone
+  const pos = editor.charCoords({ line: lineNumber, ch: editor.getLine(lineNumber).length }, "window");
   const box = editor.getWrapperElement().getBoundingClientRect();
   ghostEl.textContent = text;
   ghostEl.style.left = `${pos.left - box.left}px`;
@@ -408,7 +410,7 @@ tutor.ui.markWrong = (lineNumber, fromCh, toCh) => {
 
 let lastFloatY = 8;
 function floatBuddyToLine(lineNumber) {
-  const coords = editor.charCoords({ line: lineNumber, ch: 0 }, "page");
+  const coords = editor.charCoords({ line: lineNumber, ch: 0 }, "window");
   const box = editorWrap.getBoundingClientRect();
   const lineCenter = (coords.top + coords.bottom) / 2 - box.top;
   const floatEl = $("buddy-float");
