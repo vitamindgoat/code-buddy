@@ -79,6 +79,7 @@ const quiz = (() => {
     codeEditor = CodeMirror.fromTextArea(card.querySelector("#quiz-code"), {
       mode: "python", lineNumbers: true, indentUnit: 4, tabSize: 4, indentWithTabs: false, autofocus: true,
     });
+    if (window.keybar) keybar.attach(codeEditor, () => card.querySelector(".quiz-run")?.click());
     const out = card.querySelector(".quiz-output");
     const runIt = async () => {
       if (!sandbox || !sandbox.ready) return null;

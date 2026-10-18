@@ -926,3 +926,28 @@ body { overflow-x: hidden; }
   .steps li, .quiz-choice, .sb-lesson { -webkit-tap-highlight-color: transparent; }
   .buddy:hover { filter: none; }
 }
+
+/* ---------- Typo callout and phone key bar ---------- */
+.fix-tag { background: var(--red); }
+.fix-tag::after { border-bottom-color: var(--red); }
+.wrong-char { cursor: pointer; }
+.keybar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 75;
+  display: flex; gap: 6px; align-items: center; padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgba(6, 51, 126, 0.12);
+}
+/* the keys scroll sideways; Run stays put on the right */
+.keybar-keys { display: flex; gap: 6px; flex: 1; min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; touch-action: pan-x; padding-right: 4px; }
+.keybar-keys::-webkit-scrollbar { display: none; }
+.keybar[hidden] { display: none; }
+.keybar button {
+  flex: none; min-width: 40px; height: 40px; padding: 0 10px;
+  font: 800 17px var(--mono); color: var(--blue-dark);
+  background: var(--blue-soft); border: 1px solid var(--blue-line); border-radius: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+.keybar button:active { background: var(--blue-line); }
+.keybar .keybar-wide { font-family: "Nunito", sans-serif; font-size: 14px; }
+.keybar .keybar-run { font-family: "Nunito", sans-serif; font-size: 14px; color: #fff; background: var(--blue); border-color: var(--blue); flex: none; }
+/* room so the last code line isn't hidden under the bar */
+body.kb-open .layout { padding-bottom: 72px; }

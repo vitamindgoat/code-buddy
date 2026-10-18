@@ -408,7 +408,7 @@ const tutor = (() => {
       const h = (s.hints || []).find((h) => h.match.test(typed));
       const g = norm(stepCode(s, stepIndex)), i = cmp.matched;
       const generic = `The red part isn't right.\nAfter \`${g.slice(Math.max(0, i - 8), i) || "the start"}\` it should be ${describe(g[i])}.`;
-      return say(`# Hint\n${h ? h.say : generic}\nDelete the red part, then follow the gray letters.\n${typeSection()}`, "pointing");
+      return say(`# Hint\n${h ? h.say : generic}\nTap the red part to clear it, then follow the gray letters.\n${typeSection()}`, "pointing");
     }
     say(`# Hint\nYou're on track! The gray letters show what's left.\n${typeSection()}`, "pointing");
   }

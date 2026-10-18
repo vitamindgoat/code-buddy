@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="68" />
+  <meta name="build" content="69" />
   <title>CodeBuddy – Learn to code with a friend</title>
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=68" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=68" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=69" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=69" />
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,8 +21,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=68" />
-  <link rel="stylesheet" href="buddy.css?v=68" />
+  <link rel="stylesheet" href="styles.css?v=69" />
+  <link rel="stylesheet" href="buddy.css?v=69" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -108,6 +108,7 @@
             <div class="buddy-col">
               <div id="buddy" title="Click me for a hint"></div>
               <div id="stuck-tag" class="callout callout-up stuck-tag" hidden>Stuck? Click me</div>
+              <div id="fix-tag" class="callout callout-up stuck-tag fix-tag" hidden>Typo! Tap me to fix it</div>
             </div>
           </div>
         </div>
@@ -179,14 +180,40 @@
     </div>
   </div>
 
-  <script src="sfx.js?v=68"></script>
-  <script src="fx.js?v=68"></script>
-  <script src="lessons.js?v=68"></script>
-  <script src="buddy.js?v=68"></script>
-  <script src="tutor.js?v=68"></script>
-  <script src="quiz.js?v=68"></script>
-  <script src="read.js?v=68"></script>
-  <script src="tour.js?v=68"></script>
-  <script src="app.js?v=68"></script>
+  <!-- Phone key bar: sits above the on-screen keyboard while a code editor
+       has focus, with the keys phone keyboards hide and cursor arrows -->
+  <div id="keybar" class="keybar" hidden aria-label="Code keys">
+    <div class="keybar-keys">
+    <button type="button" data-cmd="left" aria-label="Cursor left">◀</button>
+    <button type="button" data-cmd="right" aria-label="Cursor right">▶</button>
+    <button type="button" data-cmd="tab" class="keybar-wide">Tab</button>
+    <button type="button" data-ins="(">(</button>
+    <button type="button" data-ins=")">)</button>
+    <button type="button" data-ins='"'>"</button>
+    <button type="button" data-ins="'">'</button>
+    <button type="button" data-ins=":">:</button>
+    <button type="button" data-ins="=">=</button>
+    <button type="button" data-ins=",">,</button>
+    <button type="button" data-ins=".">.</button>
+    <button type="button" data-ins="+">+</button>
+    <button type="button" data-ins="-">-</button>
+    <button type="button" data-ins="*">*</button>
+    <button type="button" data-ins="<">&lt;</button>
+    <button type="button" data-ins=">">&gt;</button>
+    <button type="button" data-ins="[">[</button>
+    <button type="button" data-ins="]">]</button>
+    </div>
+    <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
+  </div>
+
+  <script src="sfx.js?v=69"></script>
+  <script src="fx.js?v=69"></script>
+  <script src="lessons.js?v=69"></script>
+  <script src="buddy.js?v=69"></script>
+  <script src="tutor.js?v=69"></script>
+  <script src="quiz.js?v=69"></script>
+  <script src="read.js?v=69"></script>
+  <script src="tour.js?v=69"></script>
+  <script src="app.js?v=69"></script>
 </body>
 </html>

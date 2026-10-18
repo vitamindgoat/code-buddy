@@ -41,6 +41,15 @@ const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
       if (cm.somethingSelected()) cm.indentSelection("add");
       else cm.replaceSelection(" ".repeat(4 - (cur.ch % 4)), "end");
     },
+    Backspace: (cm) => {
+      // one Backspace clears the whole red part of a line, instead of one
+      // character at a time (see fixTypo)
+      if (wrongMark && !cm.somethingSelected()) {
+        const r = wrongMark.find(), cur = cm.getCursor();
+        if (r && cur.line === r.from.line && cur.ch > r.from.ch) return fixTypo();
+      }
+      return CodeMirror.Pass;
+    },
     "Shift-Tab": (cm) => {
       const cur = cm.getCursor(), text = cm.getLine(cur.line);
       const have = text.match(/^ */)[0].length;
@@ -368,7 +377,7 @@ tutor.ui.getCode = () => editor.getValue();
 tutor.ui.getCursorLine = () => editor.getCursor().line;
 tutor.ui.setCode = (text) => editor.setValue(text);
 tutor.ui.renderSteps = renderSteps;
-tutor.ui.stuckTag = (show) => { stuckTag.hidden = !show; if (show) sfx.pop(); };
+tutor.ui.stuckTag = (show) => { show = show && fixTag.hidden; stuckTag.hidden = !show; if (show) sfx.pop(); };   // the typo callout takes the spot
 tutor.ui.onPartDone = () => sfx.tick();
 tutor.ui.onMistake = () => sfx.error();
 tutor.ui.onComplete = () => finishStage();
@@ -425,11 +434,74 @@ editor.on("cursorActivity", renderGhost);
 
 // Red underline on the wrong part of a line
 let wrongMark = null;
+const fixTag = $("fix-tag");
 tutor.ui.markWrong = (lineNumber, fromCh, toCh) => {
   if (wrongMark) { wrongMark.clear(); wrongMark = null; }
+  fixTag.hidden = true;
   if (lineNumber === undefined || fromCh === null || fromCh === undefined) return;
   wrongMark = editor.markText({ line: lineNumber, ch: fromCh }, { line: lineNumber, ch: Math.max(fromCh + 1, toCh) }, { className: "wrong-char" });
+  fixTag.hidden = false; stuckTag.hidden = true;
 };
+// One tap fixes a typo: the red part (everything from the first wrong
+// character to the end of the line) goes away, the cursor lands there and
+// the gray letters come back. Reached by tapping the red text, tapping the
+// buddy, or one Backspace while the line is red.
+function fixTypo() {
+  if (!wrongMark) return false;
+  const r = wrongMark.find();
+  if (!r) { wrongMark = null; fixTag.hidden = true; return false; }
+  const end = { line: r.from.line, ch: editor.getLine(r.from.line).length };
+  editor.replaceRange("", r.from, end);
+  editor.setCursor(r.from);
+  editor.focus();
+  sfx.pop();
+  return true;
+}
+editor.getWrapperElement().addEventListener("click", (e) => { if (e.target.closest && e.target.closest(".wrong-char")) fixTypo(); });
+
+// ---------- 7b. Phone key bar ----------
+// Shows while a code editor has focus on a touch screen, pinned just above
+// the on-screen keyboard (the visual viewport tells us where that is).
+const keybar = (() => {
+  const bar = $("keybar");
+  let active = null, runFor = null, hideTimer = null;
+  const coarse = () => window.matchMedia("(pointer: coarse)").matches;
+  function place() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const lift = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+    bar.style.transform = `translateY(${-lift}px)`;
+  }
+  function show() { clearTimeout(hideTimer); if (!coarse() || !userActed) return; bar.hidden = false; document.body.classList.add("kb-open"); place(); }
+  function hide() { clearTimeout(hideTimer); hideTimer = setTimeout(() => { bar.hidden = true; document.body.classList.remove("kb-open"); }, 120); }
+  if (window.visualViewport) { window.visualViewport.addEventListener("resize", place); window.visualViewport.addEventListener("scroll", place); }
+  // taps on the bar must not steal focus from the editor
+  bar.addEventListener("pointerdown", (e) => e.preventDefault());
+  // the editor autofocuses on load; the bar should only appear once the
+  // learner has actually tapped something (so the keyboard is coming up)
+  let userActed = false;
+  for (const ev of ["pointerdown", "touchstart", "keydown"]) document.addEventListener(ev, () => { userActed = true; }, { capture: true, passive: true, once: true });
+  bar.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b || !active) return;
+    if (b.dataset.ins) active.replaceSelection(b.dataset.ins, "end");
+    else if (b.dataset.cmd === "left") active.execCommand("goCharLeft");
+    else if (b.dataset.cmd === "right") active.execCommand("goCharRight");
+    else if (b.dataset.cmd === "tab") active.getOption("extraKeys").Tab(active);
+    else if (b.dataset.cmd === "run") { runFor && runFor(); return; }
+    active.focus();
+    sfx.click();
+  });
+  function attach(cm, run) {
+    cm.on("focus", () => { active = cm; runFor = run; show(); });
+    // the editor may already be focused (autofocus) when the learner taps it
+    cm.getWrapperElement().addEventListener("pointerdown", () => { userActed = true; active = cm; runFor = run; show(); });
+    cm.on("blur", hide);
+    // the Tab rule lives in the main editor's extraKeys; give others a plain soft tab
+    if (!cm.getOption("extraKeys") || !cm.getOption("extraKeys").Tab) cm.setOption("extraKeys", { ...(cm.getOption("extraKeys") || {}), Tab: (c) => c.replaceSelection("    ", "end") });
+  }
+  return { attach };
+})();
+keybar.attach(editor, () => runCode());
 
 // ---------- 8. The floating buddy ----------
 
@@ -452,7 +524,7 @@ function floatBuddyToLine(lineNumber) {
 editor.on("cursorActivity", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("scroll", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("change", () => { clearErrorLine(); tutor.onChange(); saveCodeSoon(); });
-buddy.onClick(() => { sfx.click(); tutor.hint(); editor.focus(); clearTimeout(codeSaveTimer); if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); });
+buddy.onClick(() => { if (wrongMark && (stage === "lesson" || stage === "practice")) { fixTypo(); return; } sfx.click(); tutor.hint(); editor.focus(); clearTimeout(codeSaveTimer); if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); });
 
 // ---------- 9. Running code safely ----------
 
