@@ -23,6 +23,31 @@ const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
   indentWithTabs: false,
   lineWrapping: true,
   autofocus: true,
+  extraKeys: {
+    // Tab only ever means "indent this line". In a guided lesson it works
+    // only when the line really needs more indentation (and the cursor is
+    // still in the leading space); anywhere else it does nothing, so it can
+    // never push the gray letters out of place. Shift-Tab un-indents.
+    Tab: (cm) => {
+      const cur = cm.getCursor(), text = cm.getLine(cur.line);
+      const have = text.match(/^ */)[0].length;
+      const t = tutor.current;
+      if (t.mode === "lesson" && t.lesson && !t.complete) {
+        const want = (tutor.displayCode(cur.line) || "").match(/^ */)[0].length;
+        if (cur.ch > have || have >= want) return;
+        cm.replaceRange(" ".repeat(Math.min(4, want - have)), { line: cur.line, ch: 0 });
+        return;
+      }
+      if (cm.somethingSelected()) cm.indentSelection("add");
+      else cm.replaceSelection(" ".repeat(4 - (cur.ch % 4)), "end");
+    },
+    "Shift-Tab": (cm) => {
+      const cur = cm.getCursor(), text = cm.getLine(cur.line);
+      const have = text.match(/^ */)[0].length;
+      if (!have) return;
+      cm.replaceRange("", { line: cur.line, ch: 0 }, { line: cur.line, ch: Math.min(have, 4) });
+    },
+  },
 });
 
 // ---------- 2. Elements ----------
@@ -590,7 +615,7 @@ document.addEventListener("click", (e) => {
 });
 
 // Ctrl+Enter (or Cmd+Enter on Mac) runs the code
-editor.setOption("extraKeys", { "Ctrl-Enter": runCode, "Cmd-Enter": runCode });
+editor.setOption("extraKeys", { ...editor.getOption("extraKeys"), "Ctrl-Enter": runCode, "Cmd-Enter": runCode });   // keep the Tab rules
 window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSidebar(); });
 
 // ---------- 12. Settings ----------
