@@ -81,7 +81,27 @@ const buddy = (() => {
   let spokenIndex = [];  // chars[i] -> its index in `spoken`
 
   let voiceStarted = false, voiceWatchdog = 0, typingBlind = false;   // did the voice begin this message? are we typing without it?
+  // While the tutorial runs the buddy holds his tongue: anything he was
+  // saying, or is asked to say meanwhile, waits and is said in full once
+  // the tutorial ends.
+  let paused = false, pendingSay = null, lastSay = null;
+  function pause() {
+    if (paused) return;
+    paused = true;
+    if (speechEl.classList.contains("typing") && lastSay) pendingSay = lastSay;
+    voice.stop();
+    clearTimeout(typingTimer); clearTimeout(voiceWatchdog);
+    cancelAnimationFrame(smoothRaf); smoothRaf = 0;
+    speechEl.classList.remove("typing");
+  }
+  function unpause() {
+    if (!paused) return;
+    paused = false;
+    if (pendingSay) { const [m, s] = pendingSay; pendingSay = null; say(m, s); }
+  }
   function say(message, state) {
+    if (paused) { pendingSay = [message, state]; return; }
+    lastSay = [message, state];
     clearTimeout(typingTimer);
     chars = []; spokenIndex = []; revealed = 0; spoken = "";
     target = 0; carry = 0; lastFrame = 0; cancelAnimationFrame(smoothRaf); smoothRaf = 0;
@@ -430,7 +450,7 @@ const buddy = (() => {
   function onDone(f) { doneHandlers.push(f); }
 
   return {
-    set, say, mount, floatTo, finishTyping, onClick, onDone, tokenize, setSpeed,
+    set, say, mount, floatTo, finishTyping, onClick, onDone, tokenize, setSpeed, pause, unpause,
     get state() { return host.getAttribute("data-state"); },
     get talking() { return speechEl.classList.contains("typing"); },
   };

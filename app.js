@@ -671,7 +671,18 @@ $("set-test").addEventListener("click", () => {
 
 function firstVisitTour() {
   closeSidebar();
+  // the walkthrough points at the editor and the buddy, so it needs a
+  // coding lesson on screen
   if (stage === "quiz") open({ lessonIndex, stage: "lesson" });
+  if (isReading()) open({ lessonIndex: 0, stage: "lesson" });
+  // the lesson waits: the buddy stops talking and the editor won't take
+  // typing until the walkthrough is over, then he picks up where he was
+  buddy.pause();
+  voice.stop();
+  editor.setOption("readOnly", "nocursor");
+  stuckTag.hidden = true;
+  // the "gray letters" step needs some to point at
+  if (stage === "lesson" && !editor.getValue().trim()) tutor.ui.ghost(0, lesson().steps[0].code);
   tour.run([
     { target: "#menu-btn", title: "All the lessons", text: "This menu lists every module and lesson. Jump anywhere, see what you've finished.", place: "bottom" },
     { target: "#steps", title: "Your lesson", text: "Each row is one line of code you'll type. Click a row to hear it explained again.", place: "right" },
@@ -681,7 +692,12 @@ function firstVisitTour() {
     { target: "#next-btn", title: "Reading → Coding → Practice → Quiz", text: "📖 Reading lessons teach the ideas (click through the cards). Coding lessons use them. Practice proves it. Each module ends with a quiz.", place: "top" },
     { target: "#settings-btn", title: "Settings", text: "Turn on his voice and pick one, set how fast he talks, sound effects, ghost letters, text size, and more.", place: "bottom" },
     { target: "#tour-btn", title: "See this again", text: "Click Tutorial any time to replay this walkthrough.", place: "bottom" },
-  ], () => { progress.toured = true; saveProgress(); editor.focus(); });
+  ], () => {
+    progress.toured = true; saveProgress();
+    editor.setOption("readOnly", false);
+    buddy.unpause();
+    editor.focus();
+  });
 }
 
 // ---------- 14. Go ----------
