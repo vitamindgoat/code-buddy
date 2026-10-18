@@ -299,7 +299,7 @@ const tutor = (() => {
       // Silent: red underline + no ghost. The buddy only speaks if asked.
       if (!mistake) { mistake = true; ui.onMistake(); }
       ui.markLine(line.number);
-      ui.markWrong(line.number, cmp.wrongAt ?? 0, typed.length);
+      ui.markWrong(line.number, cmp.wrongAt ?? 0, typed.length, stepCode(step(), stepIndex));
       ui.ghost();
       armStuck(STUCK_AFTER_MISTAKE_MS);
       return;
@@ -379,7 +379,7 @@ const tutor = (() => {
       const target = lesson.practice.solution[n];
       if (!target) { ui.ghost(); ui.markWrong(); return; }
       const cmp = compare(typed, target);
-      if (!cmp.onTrack) { ui.markWrong(line.number, cmp.wrongAt ?? 0, typed.length); ui.ghost(); }
+      if (!cmp.onTrack) { ui.markWrong(line.number, cmp.wrongAt ?? 0, typed.length, target); ui.ghost(); }
       else { ui.markWrong(); showGhost(lines, n); }
     }
   }
@@ -408,7 +408,7 @@ const tutor = (() => {
       const h = (s.hints || []).find((h) => h.match.test(typed));
       const g = norm(stepCode(s, stepIndex)), i = cmp.matched;
       const generic = `The red part isn't right.\nAfter \`${g.slice(Math.max(0, i - 8), i) || "the start"}\` it should be ${describe(g[i])}.`;
-      return say(`# Hint\n${h ? h.say : generic}\nTap the red part to clear it, then follow the gray letters.\n${typeSection()}`, "pointing");
+      return say(`# Hint\n${h ? h.say : generic}\nTap the little bubble above the red part to fix it.\n${typeSection()}`, "pointing");
     }
     say(`# Hint\nYou're on track! The gray letters show what's left.\n${typeSection()}`, "pointing");
   }

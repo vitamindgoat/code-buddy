@@ -41,15 +41,6 @@ const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
       if (cm.somethingSelected()) cm.indentSelection("add");
       else cm.replaceSelection(" ".repeat(4 - (cur.ch % 4)), "end");
     },
-    Backspace: (cm) => {
-      // one Backspace clears the whole red part of a line, instead of one
-      // character at a time (see fixTypo)
-      if (wrongMark && !cm.somethingSelected()) {
-        const r = wrongMark.find(), cur = cm.getCursor();
-        if (r && cur.line === r.from.line && cur.ch > r.from.ch) return fixTypo();
-      }
-      return CodeMirror.Pass;
-    },
     "Shift-Tab": (cm) => {
       const cur = cm.getCursor(), text = cm.getLine(cur.line);
       const have = text.match(/^ */)[0].length;
@@ -377,7 +368,7 @@ tutor.ui.getCode = () => editor.getValue();
 tutor.ui.getCursorLine = () => editor.getCursor().line;
 tutor.ui.setCode = (text) => editor.setValue(text);
 tutor.ui.renderSteps = renderSteps;
-tutor.ui.stuckTag = (show) => { show = show && fixTag.hidden; stuckTag.hidden = !show; if (show) sfx.pop(); };   // the typo callout takes the spot
+tutor.ui.stuckTag = (show) => { stuckTag.hidden = !show; if (show) sfx.pop(); };
 tutor.ui.onPartDone = () => sfx.tick();
 tutor.ui.onMistake = () => sfx.error();
 tutor.ui.onComplete = () => finishStage();
@@ -434,30 +425,71 @@ editor.on("cursorActivity", renderGhost);
 
 // Red underline on the wrong part of a line
 let wrongMark = null;
-const fixTag = $("fix-tag");
-tutor.ui.markWrong = (lineNumber, fromCh, toCh) => {
+// Autocorrect-style fix: when a line goes red, a little bubble floats
+// right above the wrong word showing what it should be. Tapping it swaps
+// the word out (cursor lands after it, gray letters come back). Nothing
+// changes unless they tap.
+const fixPill = document.createElement("button");
+fixPill.type = "button"; fixPill.className = "fixpill"; fixPill.hidden = true;
+editorWrap.appendChild(fixPill);
+let fix = null;   // { line, from, text } -> replace line[from..end] with text
+tutor.ui.markWrong = (lineNumber, fromCh, toCh, target) => {
   if (wrongMark) { wrongMark.clear(); wrongMark = null; }
-  fixTag.hidden = true;
+  fix = null; fixPill.hidden = true;
   if (lineNumber === undefined || fromCh === null || fromCh === undefined) return;
   wrongMark = editor.markText({ line: lineNumber, ch: fromCh }, { line: lineNumber, ch: Math.max(fromCh + 1, toCh) }, { className: "wrong-char" });
-  fixTag.hidden = false; stuckTag.hidden = true;
+  if (target === undefined) return;
+  // the suggestion covers the whole word the typo is in (back to the last
+  // space, quote, bracket or operator), replaced by the same stretch of the
+  // right line, run out to the end of that word
+  const typed = editor.getLine(lineNumber) || "";
+  const sep = /[\s"'()\[\],.:=+\-*\/<>%#]/;
+  let from = fromCh;
+  while (from > 0 && !sep.test(typed[from - 1]) && !sep.test(target[from - 1] || " ")) from--;
+  let to, typedTo;
+  if (from >= target.length) return;
+  if (sep.test(target[from])) {
+    // the wrong thing is a symbol: suggest it in place of the rest of the line
+    to = from + 1; typedTo = typed.length;
+  } else {
+    // otherwise the whole right word, swapped for the whole typed word (what
+    // comes after the word stays, it may well be right)
+    to = from; while (to < target.length && !sep.test(target[to])) to++;
+    typedTo = fromCh; while (typedTo < typed.length && !sep.test(typed[typedTo])) typedTo++;
+  }
+  const text = target.slice(from, to);
+  if (!text || text === typed.slice(from, typedTo)) return;
+  fix = { line: lineNumber, from, to: typedTo, text };
+  fixPill.textContent = text;
+  fixPill.hidden = false;
+  fixPill.classList.remove("pop"); void fixPill.offsetWidth; fixPill.classList.add("pop");
+  placeFixPill();
 };
-// One tap fixes a typo: the red part (everything from the first wrong
-// character to the end of the line) goes away, the cursor lands there and
-// the gray letters come back. Reached by tapping the red text, tapping the
-// buddy, or one Backspace while the line is red.
-function fixTypo() {
-  if (!wrongMark) return false;
-  const r = wrongMark.find();
-  if (!r) { wrongMark = null; fixTag.hidden = true; return false; }
-  const end = { line: r.from.line, ch: editor.getLine(r.from.line).length };
-  editor.replaceRange("", r.from, end);
-  editor.setCursor(r.from);
+function placeFixPill() {
+  if (!fix || fixPill.hidden) return;
+  const pos = editor.charCoords({ line: fix.line, ch: fix.from }, "window");
+  const box = editorWrap.getBoundingClientRect();
+  const h = fixPill.offsetHeight || 30;
+  const above = pos.top - box.top - h - 6;
+  const below = pos.bottom - box.top + 6;
+  const flip = above < -34;                       // only drop under the line when it can't even hang over the header
+  fixPill.classList.toggle("below", flip);
+  fixPill.style.left = `${Math.max(4, Math.min(box.width - fixPill.offsetWidth - 4, pos.left - box.left - 8))}px`;
+  fixPill.style.top = `${flip ? below : above}px`;
+}
+function applyFix() {
+  if (!fix) return;
+  const { line, from, to, text } = fix;
+  editor.replaceRange(text, { line, ch: from }, { line, ch: Math.min(to, editor.getLine(line).length) });
+  editor.setCursor({ line, ch: editor.getLine(line).length });   // carry on from the end of the line
   editor.focus();
   sfx.pop();
-  return true;
 }
-editor.getWrapperElement().addEventListener("click", (e) => { if (e.target.closest && e.target.closest(".wrong-char")) fixTypo(); });
+fixPill.addEventListener("pointerdown", (e) => e.preventDefault());   // keep the editor (and phone keyboard) focused
+fixPill.addEventListener("click", applyFix);
+editor.on("scroll", placeFixPill);
+editor.on("change", placeFixPill);
+window.addEventListener("resize", placeFixPill);
 
 // ---------- 7b. Phone key bar ----------
 // Shows while a code editor has focus on a touch screen, pinned just above
@@ -524,7 +556,7 @@ function floatBuddyToLine(lineNumber) {
 editor.on("cursorActivity", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("scroll", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("change", () => { clearErrorLine(); tutor.onChange(); saveCodeSoon(); });
-buddy.onClick(() => { if (wrongMark && (stage === "lesson" || stage === "practice")) { fixTypo(); return; } sfx.click(); tutor.hint(); editor.focus(); clearTimeout(codeSaveTimer); if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); });
+buddy.onClick(() => { sfx.click(); tutor.hint(); editor.focus(); clearTimeout(codeSaveTimer); if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); });
 
 // ---------- 9. Running code safely ----------
 
