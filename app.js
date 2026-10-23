@@ -49,6 +49,7 @@ const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
     },
   },
 });
+editor.getInputField().setAttribute("aria-label", "Code editor: type your Python here");   // screen readers announce it
 
 // ---------- 2. Elements ----------
 
@@ -474,8 +475,8 @@ function renderSidebar() {
     open({ lessonIndex: LESSONS.findIndex((x) => x.id === m.lessons[m.lessons.length - 1].id), stage: "quiz" });
   }));
 }
-function openSidebar() { sidebar.classList.add("open"); sidebar.setAttribute("aria-hidden", "false"); backdrop.hidden = false; sfx.pop(); }
-function closeSidebar() { sidebar.classList.remove("open"); sidebar.setAttribute("aria-hidden", "true"); backdrop.hidden = true; }
+function openSidebar() { sidebar.classList.add("open"); sidebar.setAttribute("aria-hidden", "false"); sidebar.inert = false; backdrop.hidden = false; sfx.pop(); }
+function closeSidebar() { sidebar.classList.remove("open"); sidebar.setAttribute("aria-hidden", "true"); sidebar.inert = true; backdrop.hidden = true; }   // inert: a closed sidebar is not reachable with Tab
 $("menu-btn").addEventListener("click", () => (sidebar.classList.contains("open") ? closeSidebar() : openSidebar()));
 $("sidebar-close").addEventListener("click", closeSidebar);
 backdrop.addEventListener("click", closeSidebar);

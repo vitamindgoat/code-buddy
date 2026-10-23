@@ -332,7 +332,7 @@
 /* Syntax colors inside code chips and the step list */
 .tok-kw      { color: #7e22ce; }
 .tok-fn      { color: #1d4ed8; }
-.tok-str     { color: #15803d; }
+.tok-str     { color: #116b33; }   /* a touch darker than the editor green: it sits on pale blue chips */
 .tok-num     { color: #c2410c; }
 .tok-comment { color: #6b7280; font-style: italic; }
 .tok-name    { color: #0f766e; }

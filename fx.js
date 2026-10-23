@@ -17,6 +17,7 @@
 const fx = (() => {
   const canvas = document.createElement("canvas");
   canvas.className = "fx-canvas";
+  canvas.setAttribute("aria-hidden", "true");   // decoration only
   document.body.appendChild(canvas);
   const ctx = canvas.getContext("2d");
 

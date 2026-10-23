@@ -130,6 +130,7 @@ const quiz = (() => {
     codeEditor = CodeMirror.fromTextArea(card.querySelector("#quiz-code"), {
       mode: "python", lineNumbers: true, indentUnit: 4, tabSize: 4, indentWithTabs: false, autofocus: !done,
     });
+    codeEditor.getInputField().setAttribute("aria-label", "Quiz answer: type your Python here");
     if (a && a.code !== undefined) codeEditor.setValue(a.code);
     else if (a && a.draft) codeEditor.setValue(a.draft);
     if (done) codeEditor.setOption("readOnly", true);
