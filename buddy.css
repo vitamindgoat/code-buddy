@@ -296,7 +296,7 @@
 
 /* The buddy himself is clickable now */
 .buddy { pointer-events: auto; cursor: pointer; transition: filter 0.2s ease; }
-.buddy:hover { filter: drop-shadow(0 4px 10px rgba(30, 111, 217, 0.35)); }
+.buddy:hover { filter: drop-shadow(0 3px 6px rgba(15, 30, 60, 0.18)); }
 
 /* "Stuck?" callout under the bubble, pointing at the buddy (see .callout
    in styles.css for the shared look) */
