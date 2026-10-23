@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="106" />
+  <meta name="build" content="107" />
   <!-- Theme before first paint, so dark mode never flashes white -->
   <script>
     try {
@@ -30,8 +30,8 @@
   <meta name="twitter:title" content="CodeBuddy – Learn Python by typing every line" />
   <meta name="twitter:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on." />
   <meta name="twitter:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=106" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=106" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=107" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=107" />
   <!-- Installable app: icon, name and colors for "Add to Home Screen" -->
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -49,9 +49,9 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=106" />
-  <link rel="stylesheet" href="buddy.css?v=106" />
-  <link rel="stylesheet" href="dark.css?v=106" />
+  <link rel="stylesheet" href="styles.css?v=107" />
+  <link rel="stylesheet" href="buddy.css?v=107" />
+  <link rel="stylesheet" href="dark.css?v=107" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -83,7 +83,7 @@
     <div class="sidebar-foot">
       <button id="sb-play-btn" class="btn btn-ghost" type="button" title="Write any Python you like">🧪 <span>Playground</span></button>
       <button id="cert-btn" class="btn btn-ghost" type="button" title="Your progress and certificate">🎓 <span>Certificate</span></button>
-      <button id="trophies-btn" class="btn btn-ghost" type="button" title="Badges you've earned">🏆 <span>Trophies</span> <span class="sb-count" data-trophy-count>0 / 16</span></button>
+      <button id="trophies-btn" class="btn btn-ghost" type="button" title="Badges you've earned">🏆 <span>Trophies</span> <span class="sb-count" data-trophy-count>0 / 17</span></button>
       <button id="redo-tour-btn" class="btn btn-ghost" type="button">❔ Redo tutorial</button>
       <button id="reset-btn-all" class="btn btn-ghost" type="button">↺ Reset progress</button>
     </div>
@@ -370,7 +370,7 @@
         </div>
       </div>
       <div class="finish-foot">
-        <button id="finish-trophies" class="btn btn-ghost" type="button">🏆 Trophies <span data-trophy-count>0 / 16</span></button>
+        <button id="finish-trophies" class="btn btn-ghost" type="button">🏆 Trophies <span data-trophy-count>0 / 17</span></button>
         <button id="finish-back" class="btn btn-ghost" type="button">Back to lessons</button>
       </div>
     </div>
@@ -399,6 +399,7 @@
       <p id="done-sub" class="done-sub"></p>
       <div class="done-actions">
         <button id="done-next" class="btn btn-primary btn-big" type="button">Practice ▶</button>
+        <button id="done-play" class="btn btn-ghost done-play" type="button" hidden>🧪 Make it random in the Playground</button>
         <button id="done-stay" class="btn btn-ghost" type="button">Stay here</button>
       </div>
     </div>
@@ -494,19 +495,19 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=106"></script>
-  <script src="fx.js?v=106"></script>
-  <script src="lessons.js?v=106"></script>
-  <script src="buddy.js?v=106"></script>
-  <script src="tutor.js?v=106"></script>
-  <script src="scratch.js?v=106"></script>
-  <script src="quiz.js?v=106"></script>
-  <script src="read.js?v=106"></script>
-  <script src="finish.js?v=106"></script>
-  <script src="badges.js?v=106"></script>
-  <script src="playground.js?v=106"></script>
-  <script src="viz.js?v=106"></script>
-  <script src="tour.js?v=106"></script>
-  <script src="app.js?v=106"></script>
+  <script src="sfx.js?v=107"></script>
+  <script src="fx.js?v=107"></script>
+  <script src="lessons.js?v=107"></script>
+  <script src="buddy.js?v=107"></script>
+  <script src="tutor.js?v=107"></script>
+  <script src="scratch.js?v=107"></script>
+  <script src="quiz.js?v=107"></script>
+  <script src="read.js?v=107"></script>
+  <script src="finish.js?v=107"></script>
+  <script src="badges.js?v=107"></script>
+  <script src="playground.js?v=107"></script>
+  <script src="viz.js?v=107"></script>
+  <script src="tour.js?v=107"></script>
+  <script src="app.js?v=107"></script>
 </body>
 </html>

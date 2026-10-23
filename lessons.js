@@ -931,6 +931,60 @@ const MODULES = [
           hints: ["Which loop is the rows and which is the columns? Which one goes inside?", "What stops the stars from each going on their own line?", "After the inner loop finishes a row, what moves to the next line?"],
         },
       },
+      {
+        id: "m3-final",
+        title: "Final project: Guess the number",
+        final: true,
+        why: "This is a real, playable game, built only from things you already know. Every big program is small pieces like these, put together.",
+        intro: "Time to build a *game*! The computer picks a secret number, and the player keeps guessing until they get it. It uses everything: variables, a while loop, input, if/elif and an f-string.",
+        inputs: ["3", "9", "7"],
+        steps: [
+          { code: "secret = 7", parts: [{ text: "secret = 7", more: "At the end you'll make the secret random, so it's a surprise every game.", say: "Let's build a guessing game! First, the secret number. We'll use 7 for now.", explain: "`secret` holds the number the player must guess." }] },
+          { code: "guess = 0", parts: [{ text: "guess = 0", say: "Press Enter. Make a variable for the player's guess. Start it at 0, a number that can't be the secret.", explain: "0 is never right, so the loop below is sure to start." }] },
+          { code: "tries = 0", parts: [{ text: "tries = 0", say: "Press Enter. And a counter for how many guesses they take.", explain: "A *counter* starts at 0 and goes up by 1 each round." }] },
+          {
+            code: "while guess != secret:",
+            parts: [{ text: "while guess != secret:", more: "!= means \"is not equal to\". The loop runs as long as the guess is wrong.", say: "Press Enter. Now the game loop: keep going while the guess is not the secret.", explain: "`while` repeats until the condition is False.\nHere: until the player guesses right." }],
+          },
+          {
+            code: '    guess = int(input("Guess 1-10: "))',
+            parts: [
+              { text: "guess = ", say: "Press Enter. Inside the loop, ask for a guess and store it in guess.", explain: "Each round, `guess` gets the new answer." },
+              { text: 'int(input("Guess 1-10: "))', more: "Without int(), guess would be the text \"7\", and \"7\" != 7 is always True: the game would never end!", say: "Ask with input, and wrap it in int so it becomes a number.", explain: "`input` gives back *text*. `int()` turns it into a number we can compare." },
+            ],
+          },
+          { code: "    tries = tries + 1", parts: [{ text: "tries = tries + 1", say: "Press Enter. Still in the loop: add one to tries.", explain: "One more guess counted." }] },
+          {
+            code: "    if guess < secret:",
+            parts: [{ text: "if guess < secret:", say: "Press Enter. Now give a clue. If the guess is smaller than the secret...", explain: "An `if` inside a loop: checked every round." }],
+          },
+          { code: '        print("Too low!")', parts: [{ text: 'print("Too low!")', say: "Press Enter. Indent twice, then tell them it's too low.", explain: "Two indents: inside the `if`, inside the loop." }] },
+          {
+            code: "    elif guess > secret:",
+            parts: [{ text: "elif guess > secret:", say: "Press Enter, then Backspace once to line up with the if. Otherwise, if it's bigger than the secret...", explain: "`elif` only checks if the `if` above was False." }],
+          },
+          { code: '        print("Too high!")', parts: [{ text: 'print("Too high!")', say: "Press Enter. Indent, and say it's too high.", explain: "If it's not too low and not too high, it's right, and the loop ends by itself." }] },
+          {
+            code: 'print(f"You got it in {tries} tries!")',
+            parts: [{ text: 'print(f"You got it in {tries} tries!")', more: "This line only runs after the loop is over, which means the guess was right.", say: "Press Enter, then Backspace twice to get all the way out of the loop. Celebrate, and show how many tries it took.", explain: "An f-string drops `tries` right into the message." }],
+          },
+        ],
+        checkpoints: [{"after": 5, "output": "Guess 1-10: 3\nGuess 1-10: 9\nGuess 1-10: 7"}, {"after": 10, "output": "Guess 1-10: 3\nToo low!\nGuess 1-10: 9\nToo high!\nGuess 1-10: 7\nYou got it in 3 tries!"}],
+        expectedOutput: "Guess 1-10: 3\nToo low!\nGuess 1-10: 9\nToo high!\nGuess 1-10: 7\nYou got it in 3 tries!",
+        done: "You built a real game! Open it in the Playground to make the secret random and play it for real.",
+        playground: {
+          name: "Guess the number",
+          inputs: "5\n8\n7\n6\n4\n9\n3\n10\n2\n1",
+          code: 'import random\n\nsecret = random.randint(1, 10)\nguess = 0\ntries = 0\nwhile guess != secret:\n    guess = int(input("Guess 1-10: "))\n    tries = tries + 1\n    if guess < secret:\n        print("Too low!")\n    elif guess > secret:\n        print("Too high!")\nprint(f"You got it in {tries} tries!")\n',
+        },
+        practice: {
+          task: "Build a password checker. Keep asking \"Password? \" until the user types python. After each wrong try, print \"Wrong, try again.\" At the end, print \"Welcome in! It took 3 tries.\" using a tries counter and an f-string.",
+          inputs: ["cat", "Python", "python"],
+          solution: ['password = ""', "tries = 0", 'while password != "python":', '    password = input("Password? ")', "    tries = tries + 1", '    if password != "python":', '        print("Wrong, try again.")', 'print(f"Welcome in! It took {tries} tries.")'],
+          expectedOutput: "Password? cat\nWrong, try again.\nPassword? Python\nWrong, try again.\nPassword? python\nWelcome in! It took 3 tries.",
+          hints: ["It's the same shape as the guessing game: a variable for the answer, a counter, and a while loop that runs while the answer is wrong.", "Start password as an empty string \"\" so the loop runs at least once. Inside: ask, add 1 to tries, then check.", "The welcome line goes after the loop, with no indent. Python is picky: \"Python\" with a capital P is not \"python\"."],
+        },
+      },
     ],
     quizBank: {
       draw: { mc: 7, code: 5 },

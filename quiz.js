@@ -129,6 +129,12 @@ const quiz = (() => {
       ${nav(done)}`;
     codeEditor = CodeMirror.fromTextArea(card.querySelector("#quiz-code"), {
       mode: "python", lineNumbers: true, indentUnit: 4, tabSize: 4, indentWithTabs: false, autofocus: !done,
+      // Tab = 4 spaces (a real tab mixed with spaces makes Python fail), Backspace un-indents a level
+      extraKeys: {
+        Tab: (c) => (c.somethingSelected() ? c.indentSelection("add") : c.replaceSelection(" ".repeat(4 - (c.getCursor().ch % 4)), "end")),
+        "Shift-Tab": (c) => c.indentSelection("subtract"),
+        Backspace: (c) => (typeof smartBackspace === "function" ? smartBackspace(c) : CodeMirror.Pass),
+      },
     });
     codeEditor.getInputField().setAttribute("aria-label", "Quiz answer: type your Python here");
     if (a && a.code !== undefined) codeEditor.setValue(a.code);

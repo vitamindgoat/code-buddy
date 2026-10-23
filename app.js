@@ -15,6 +15,17 @@ const SAVE_KEY = "codebuddy.progress";
 
 // ---------- 1. Editor ----------
 
+// Backspace in the spaces at the start of a line removes a whole indent
+// level (4 spaces), like real code editors do. So "press Backspace once to
+// un-indent" means exactly one press. Anywhere else it's a normal Backspace.
+// (Shared by the Playground and quiz editors too.)
+function smartBackspace(cm) {
+  if (cm.somethingSelected()) return CodeMirror.Pass;
+  const cur = cm.getCursor(), before = cm.getLine(cur.line).slice(0, cur.ch);
+  if (cur.ch === 0 || /[^ ]/.test(before)) return CodeMirror.Pass;
+  cm.replaceRange("", { line: cur.line, ch: Math.floor((cur.ch - 1) / 4) * 4 }, cur);
+}
+
 const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
   mode: "python",
   lineNumbers: true,
@@ -47,6 +58,7 @@ const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
       if (!have) return;
       cm.replaceRange("", { line: cur.line, ch: 0 }, { line: cur.line, ch: Math.min(have, 4) });
     },
+    Backspace: smartBackspace,
   },
 });
 editor.getInputField().setAttribute("aria-label", "Code editor: type your Python here");   // screen readers announce it
@@ -401,6 +413,7 @@ function finishStage() {
     moduleDone: m.lessons.every((l) => progress.done[l.id] && (l.type === "read" || progress.done[l.id + "-practice"])) && progress.done[m.id + "-quiz"],
     courseDone: courseComplete(),
   });
+  if (stage === "lesson" && lesson().final) badges.earn("final");
   renderHeader();
   renderHeader();
   renderSidebar();
@@ -431,6 +444,10 @@ function showDone() {
     : `Up next: ${LESSONS[t.lessonIndex].number} · ${LESSONS[t.lessonIndex].title}`;
   $("done-next").textContent = t ? t.label : "Back to the start";
   $("done-next").onclick = () => { hideDone(); open(t || { lessonIndex: 0, stage: "lesson" }); };
+  // the final project: one more button, to play the game for real
+  const pgx = stage === "lesson" && lesson().playground;
+  $("done-play").hidden = !pgx;
+  if (pgx) $("done-play").onclick = () => { hideDone(); voice.stop(); playground.openWith({ ...pgx, note: "Now the secret is random (that's what import random and random.randint do). Press Run, and change the guesses in the answers box to play again." }); };
   buddy.mount($("done-buddy"), "celebrate");
   doneEl.hidden = false;
   replayClass(doneEl, "show");
@@ -467,9 +484,9 @@ function renderSidebar() {
         const idx = LESSONS.findIndex((x) => x.id === l.id);
         const cur = idx === lessonIndex && stage !== "quiz";
         const reading = l.type === "read";
-        return `<button class="sb-lesson ${cur ? "current" : ""} ${reading ? "sb-read" : ""}" data-idx="${idx}" type="button">
+        return `<button class="sb-lesson ${cur ? "current" : ""} ${reading ? "sb-read" : ""} ${l.final ? "sb-final" : ""}" data-idx="${idx}" type="button">
           <span class="sb-lnum">${mi + 1}.${li + 1}</span>
-          <span class="sb-ltitle">${reading ? "📖 " : ""}${l.title}</span>
+          <span class="sb-ltitle">${reading ? "📖 " : l.final ? "🎮 " : ""}${l.title}</span>
           <span class="sb-marks">
             <span class="sb-mark ${isDone(l.id) ? "on" : ""}" title="${reading ? "Reading" : "Lesson"}">${reading ? "R" : "L"}</span>
             ${reading ? "" : `<span class="sb-mark ${isDone(l.id + "-practice") ? "on" : ""}" title="Practice">P</span>`}

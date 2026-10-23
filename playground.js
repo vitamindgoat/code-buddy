@@ -162,8 +162,9 @@ const playground = (() => {
       mode: "python", lineNumbers: true, indentUnit: 4, tabSize: 4, indentWithTabs: false, lineWrapping: true,
       extraKeys: {
         "Ctrl-Enter": run, "Cmd-Enter": run,
-        Tab: (c) => c.somethingSelected() ? c.indentSelection("add") : c.replaceSelection("    "),
+        Tab: (c) => (c.somethingSelected() ? c.indentSelection("add") : c.replaceSelection(" ".repeat(4 - (c.getCursor().ch % 4)), "end")),
         "Shift-Tab": (c) => c.indentSelection("subtract"),
+        Backspace: (c) => (typeof smartBackspace === "function" ? smartBackspace(c) : CodeMirror.Pass),
       },
     });
     cm.getInputField().setAttribute("aria-label", "Playground editor: write any Python here");
@@ -206,5 +207,12 @@ const playground = (() => {
   $("pg-close").addEventListener("click", close);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !root.hidden && !document.querySelector(".complete:not([hidden])")) close(); });
 
-  return { open, close, explain, run, get isOpen() { return !root.hidden; }, get editor() { return cm; } };
+  // open with a ready-made program (the final project's "make it random")
+  function openWith(p) {
+    open();
+    openProgram({ ...p, id: null }, { quiet: true });
+    say(`Here's "${p.name}"!`, p.note || "Press Run to play. Change the answers in the box below to guess differently.", "celebrate");
+  }
+
+  return { open, openWith, close, explain, run, get isOpen() { return !root.hidden; }, get editor() { return cm; } };
 })();
