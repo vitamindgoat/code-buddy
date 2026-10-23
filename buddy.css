@@ -267,7 +267,21 @@
 
 /* ---------- Bubble sections ---------- */
 
-.speech-col { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.speech-col { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; position: relative; }
+
+/* "Say that again": a small round button tucked at the bubble's corner,
+   shown once he's finished (while typing, a click on the bubble skips) */
+.replay-btn {
+  position: absolute; right: -6px; bottom: -8px; z-index: 2;
+  width: 26px; height: 26px; border-radius: 50%; padding: 0;
+  font: 800 15px/1 "Nunito", sans-serif; color: var(--blue-dark);
+  background: #fff; border: 1.5px solid var(--blue-line); box-shadow: 0 3px 8px rgba(19, 90, 182, 0.15);
+  cursor: pointer; pointer-events: auto; display: grid; place-items: center;
+  transition: opacity 0.2s ease, transform 0.15s ease, background 0.15s ease;
+}
+.replay-btn:hover { background: var(--blue-soft); transform: rotate(-30deg); }
+.replay-btn:active { transform: rotate(-120deg) scale(0.95); }
+.speech-col:has(.speech.typing) .replay-btn, .speech-col:has(.speech:empty) .replay-btn { opacity: 0; pointer-events: none; }
 
 .speech-label {
   font-size: 11px;

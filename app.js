@@ -574,6 +574,7 @@ function floatBuddyToLine(lineNumber) {
 editor.on("cursorActivity", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("scroll", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("change", () => { clearErrorLine(); tutor.onChange(); saveCodeSoon(); });
+$("replay-btn").addEventListener("click", (e) => { e.stopPropagation(); sfx.click(); buddy.replay(); editor.focus(); });
 buddy.onClick(() => { sfx.click(); tutor.hint(); editor.focus(); clearTimeout(codeSaveTimer); if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); });
 
 // ---------- 9. Running code safely ----------

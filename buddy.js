@@ -94,6 +94,12 @@ const buddy = (() => {
     cancelAnimationFrame(smoothRaf); smoothRaf = 0;
     speechEl.classList.remove("typing");
   }
+  // say the last message again (the replay button)
+  function replay() {
+    if (!lastSay || paused) return;
+    const [m, s] = lastSay;
+    say(m, s);
+  }
   function unpause() {
     if (!paused) return;
     paused = false;
@@ -450,7 +456,7 @@ const buddy = (() => {
   function onDone(f) { doneHandlers.push(f); }
 
   return {
-    set, say, mount, floatTo, finishTyping, onClick, onDone, tokenize, setSpeed, pause, unpause,
+    set, say, mount, floatTo, finishTyping, onClick, onDone, tokenize, setSpeed, pause, unpause, replay,
     get state() { return host.getAttribute("data-state"); },
     get talking() { return speechEl.classList.contains("typing"); },
   };
