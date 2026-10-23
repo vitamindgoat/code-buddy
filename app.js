@@ -522,6 +522,13 @@ fixPill.addEventListener("click", applyFix);
 editor.on("scroll", placeFixPill);
 editor.on("change", placeFixPill);
 window.addEventListener("resize", placeFixPill);
+// on phones the buddy's bubble sits above the editor and changes height with
+// every message, which moves the code: follow it
+if (window.ResizeObserver) {
+  const ro = new ResizeObserver(() => placeFixPill());
+  ro.observe($("buddy-float"));
+  ro.observe(editor.getWrapperElement());
+}
 
 // ---------- 7b. Phone key bar ----------
 // Shows while a code editor has focus on a touch screen, pinned just above
