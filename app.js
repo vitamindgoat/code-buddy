@@ -53,6 +53,10 @@ const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
 // ---------- 2. Elements ----------
 
 const $ = (id) => document.getElementById(id);
+// On a phone, focusing the editor pops the keyboard up, so the app only
+// refocuses it on its own when a real keyboard is likely (fine pointer).
+const touchDevice = () => window.matchMedia("(pointer: coarse)").matches;
+const refocus = () => { if (!touchDevice()) editor.focus(); };
 const runBtn = $("run-btn"), resetBtn = $("reset-btn"), prevBtn = $("prev-btn"), nextBtn = $("next-btn");
 const voicePick = $("set-voicepick");
 const outputEl = $("output"), statusEl = $("status"), stepsEl = $("steps");
@@ -193,7 +197,7 @@ function renderSteps(stepIndex) {
     lesson().steps.forEach((step, i) => rows.push({
       cls: i < stepIndex ? "done" : i === stepIndex ? "current" : "",
       html: `<span class="step-mark"></span><code>${colorCode((tutor.displayCode(i) || step.code).trim())}</code>`,
-      title: "Click to hear this step again", onClick: () => { tutor.review(i); editor.focus(); },
+      title: "Click to hear this step again", onClick: () => { tutor.review(i); refocus(); },
     }));
     if (stepIndex >= lesson().steps.length) rows.push({ cls: "current run-step", html: `<span class="step-mark"></span><span>Press <strong>Run</strong></span>`, onClick: runCode });
   }
@@ -280,7 +284,7 @@ function open(target) {
   replayClass(document.querySelector(".lesson"), "swap-in");
   replayClass(showQuiz ? quizCard : showRead ? readCard : editorCard, "swap-in");
   renderSidebar();
-  if (!showQuiz) editor.focus();
+  if (!showQuiz) refocus();
   sfx.pop();
 }
 
@@ -526,11 +530,16 @@ const keybar = (() => {
   const bar = $("keybar");
   let active = null, runFor = null, hideTimer = null;
   const coarse = () => window.matchMedia("(pointer: coarse)").matches;
+  let kbWasOpen = false;
   function place() {
     const vv = window.visualViewport;
     if (!vv) return;
     const lift = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
     bar.style.transform = `translateY(${-lift}px)`;
+    // the on-screen keyboard shrinks the visual viewport; when it grows
+    // back the keyboard is gone, so the bar goes too
+    if (lift > 100) kbWasOpen = true;
+    else if (kbWasOpen && lift < 40) { kbWasOpen = false; hide(); }
   }
   function show() { clearTimeout(hideTimer); if (!coarse() || !userActed) return; bar.hidden = false; document.body.classList.add("kb-open"); place(); }
   function hide() { clearTimeout(hideTimer); hideTimer = setTimeout(() => { bar.hidden = true; document.body.classList.remove("kb-open"); }, 120); }
@@ -584,8 +593,8 @@ function floatBuddyToLine(lineNumber) {
 editor.on("cursorActivity", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("scroll", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("change", () => { clearErrorLine(); tutor.onChange(); saveCodeSoon(); });
-$("replay-btn").addEventListener("click", (e) => { e.stopPropagation(); sfx.click(); buddy.replay(); editor.focus(); });
-buddy.onClick(() => { sfx.click(); tutor.hint(); editor.focus(); clearTimeout(codeSaveTimer); if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); });
+$("replay-btn").addEventListener("click", (e) => { e.stopPropagation(); sfx.click(); buddy.replay(); refocus(); });
+buddy.onClick(() => { sfx.click(); tutor.hint(); refocus(); clearTimeout(codeSaveTimer); if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); });
 
 // ---------- 9. Running code safely ----------
 
@@ -696,7 +705,7 @@ function finishRun() {
   running = false;
   runBtn.disabled = !pythonReady;
   outputCard.classList.remove("is-running");
-  if (stage !== "quiz") editor.focus();   // back to typing without an extra click
+  if (stage !== "quiz") refocus();   // back to typing without an extra click (not on phones: that pops the keyboard)
 }
 
 // ---------- 10. Small helpers for the UI ----------
@@ -864,7 +873,7 @@ function firstVisitTour() {
     progress.toured = true; saveProgress();
     editor.setOption("readOnly", false);
     buddy.unpause();
-    editor.focus();
+    refocus();
   });
 }
 
