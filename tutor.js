@@ -558,7 +558,8 @@ const tutor = (() => {
     ui.renderSteps(0);
     ui.markLine(0);
     const who = l.practice.inputs ? `\n# Input\nWhen the program asks, the user will type \`${l.practice.inputs.join("`, then `")}\`.` : "";
-    say(`# Practice · ${l.title}\nYour turn! This time you write the code without my help.\n# Goal\n${goalText(l.practice)}${who}\n# Stuck?\nClick me. You get 3 hints.`, "idle");
+    const nm = ui.name && ui.name() ? `, ${ui.name()}` : "";
+    say(`# Practice · ${l.title}\nYour turn${nm}! This time you write the code without my help.\n# Goal\n${goalText(l.practice)}${who}\n# Stuck?\nClick me. You get 3 hints.`, "idle");
     armStuck(STUCK_AFTER_IDLE_MS);
   }
 
@@ -630,7 +631,8 @@ const tutor = (() => {
         body = `${lesson.intro}\n${typeSection()}`;
       }
     }
-    say(`# Welcome back!\nYour code is right where you left it.\n${body}`, "happy");
+    const nm = ui.name && ui.name() ? `, ${ui.name()}` : "";
+    say(`# Welcome back${nm}!\nYour code is right where you left it.\n${body}`, "happy");
     if (awaitingRun) ui.onReadyToRun();
     if (mode === "practice") checkPractice(); else showGhost(lines, stepIndex);
     clearTimeout(diagnoseTimer);   // setCode fired onChange; don't let it talk over the welcome

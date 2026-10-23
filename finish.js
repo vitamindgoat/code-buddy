@@ -128,7 +128,8 @@ const finish = (() => {
     const st = o.stats;
     root.classList.toggle("complete-yes", o.complete);
     $("finish-kicker").textContent = o.complete ? "Course complete" : "Your progress";
-    $("finish-title").textContent = o.complete ? "You finished CodeBuddy!" : `${st.done} of ${st.total} done`;
+    const who = (o.name || "").trim();
+    $("finish-title").textContent = o.complete ? `You finished CodeBuddy${who ? `, ${who}` : ""}!` : `${st.done} of ${st.total} done`;
     $("finish-sub").textContent = o.complete
       ? "Every lesson, every practice, every quiz. That is real Python you wrote."
       : `${st.total - st.done} to go. Finish everything to unlock your certificate.`;

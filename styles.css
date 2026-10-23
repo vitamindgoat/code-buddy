@@ -652,6 +652,14 @@ body { background: var(--bg); }
 .btn-big { font-size: 17px; padding: 12px 28px; border-radius: 14px; box-shadow: 0 8px 20px rgba(30, 111, 217, 0.3); }
 .done-actions .btn-ghost { font-size: 13px; }
 
+/* ---------- Name card ---------- */
+.name-card { width: 400px; }
+.name-title { font-size: 26px; }
+.name-input { position: relative; display: block; width: 100%; box-sizing: border-box; margin: 0 0 16px; font: 800 20px "Nunito", sans-serif; text-align: center; color: var(--blue-ink); border: 2px solid var(--blue-line); border-radius: 14px; padding: 11px 14px; background: #fff; outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+.name-input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(30, 111, 217, 0.15); }
+#set-name { font: 700 14px "Nunito", sans-serif; color: var(--ink); border: 1.5px solid var(--blue-line); border-radius: 9px; padding: 6px 10px; width: 160px; max-width: 50%; outline: none; }
+#set-name:focus { border-color: var(--blue); }
+
 /* ---------- Course complete + certificate ---------- */
 .finish { z-index: 85; }
 .finish-card { width: 560px; padding-top: 24px; }

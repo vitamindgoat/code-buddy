@@ -347,7 +347,7 @@ function showDone() {
   const t = nextTarget();
   const what = stage === "practice" ? "Practice" : isReading() ? "Reading" : "Lesson";
   $("done-kicker").textContent = `${what} ${lesson().number} · ${lesson().title}`;
-  $("done-title").textContent = stage === "practice" ? "You solved it!" : isReading() ? "Reading complete!" : "Lesson complete!";
+  $("done-title").textContent = stage === "practice" ? `You solved it${nm()}!` : isReading() ? "Reading complete!" : `Lesson complete${nm()}!`;
   $("done-sub").textContent = !t ? "That was the last one. You finished everything!"
     : t.stage === "practice" ? "Up next: a practice. Same idea, but you write it without my help."
     : t.stage === "quiz" ? "Up next: the module quiz. Everything in it was covered in the lessons."
@@ -442,6 +442,7 @@ tutor.ui.onComplete = () => finishStage();
 // Whole program typed: point them at Run
 tutor.ui.onReadyToRun = () => { runTag.hidden = false; runBtn.classList.add("pulse"); sfx.pop(); };
 tutor.ui.explainLength = () => settings.explain;
+tutor.ui.name = () => settings.name || "";
 tutor.ui.ghostMode = () => settings.ghost;
 tutor.ui.markLine = (lineNumber) => {
   if (activeLineHandle) editor.removeLineClass(activeLineHandle, "background", "active-line");
@@ -822,6 +823,7 @@ function applySettings() {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {}
 }
 function syncSettingsUI() {
+  $("set-name").value = settings.name || "";
   $("set-speed").value = settings.speed;
   paintSpeed();
   $("set-explain").value = settings.explain;
@@ -872,6 +874,7 @@ $("set-speed").addEventListener("input", (e) => {
 });
 $("set-speed").addEventListener("change", applySettings);
 $("set-explain").addEventListener("change", (e) => { settings.explain = e.target.value; applySettings(); });
+$("set-name").addEventListener("change", (e) => { settings.name = cleanName(e.target.value); applySettings(); renderHeader(); });
 $("set-ghost").addEventListener("change", (e) => { settings.ghost = e.target.value; applySettings(); tutor.onChange(); });
 $("set-size").addEventListener("change", (e) => { settings.textSize = e.target.value; applySettings(); });
 $("set-motion").addEventListener("change", (e) => { settings.motion = e.target.checked ? "on" : "off"; applySettings(); });
@@ -887,6 +890,32 @@ $("set-test").addEventListener("click", () => {
 });
 
 // ---------- 13. The tutorial ----------
+
+// ---------- The learner's name ----------
+// Asked once, right after the first tutorial (or on the next visit for
+// anyone who toured before this existed). Skippable; Settings has it too.
+const cleanName = (v) => (v || "").replace(/\s+/g, " ").trim().slice(0, 40);
+const nameEl = $("namecard");
+function askName(then) {
+  settings.nameAsked = true; applySettings();
+  $("name-input").value = settings.name || "";
+  buddy.mount($("name-buddy"), "happy");
+  nameEl.hidden = false; replayClass(nameEl, "show"); sfx.pop();
+  setTimeout(() => $("name-input").focus(), 400);
+  const close = (save) => {
+    if (nameEl.hidden) return;
+    if (save) settings.name = cleanName($("name-input").value);
+    applySettings(); renderHeader();
+    nameEl.hidden = true;
+    if (settings.name && save) { sfx.success(); buddy.say(`# Hi, ${settings.name}!\nNice to meet you. Let's write some Python.`, "celebrate"); }
+    if (then) then();
+  };
+  $("name-form").onsubmit = (e) => { e.preventDefault(); close(true); };
+  $("name-skip").onclick = () => close(false);
+}
+const needsName = () => !settings.name && !settings.nameAsked;
+// a friendly ", Alex" to tack onto a cheer (empty when no name is set)
+const nm = () => (settings.name ? `, ${settings.name}` : "");
 
 function firstVisitTour() {
   closeSidebar();
@@ -914,8 +943,8 @@ function firstVisitTour() {
   ], () => {
     progress.toured = true; saveProgress();
     editor.setOption("readOnly", false);
-    buddy.unpause();
-    refocus();
+    const go = () => { buddy.unpause(); refocus(); };
+    if (needsName()) askName(go); else go();
   });
 }
 
@@ -945,6 +974,7 @@ editorCard.classList.add("loading");
 startWorker(); // Python loads in the background; Run stays disabled until it's ready
 open({ lessonIndex: progress.lessonIndex || 0, stage: progress.stage || "lesson" });
 if (!progress.toured) firstVisitTour();
+else if (needsName()) setTimeout(() => askName(refocus), 900);   // toured before names existed
 window.addEventListener("resize", () => floatBuddyToLine(editor.getCursor().line));
 
 // Dev helper: add ?debug to the URL to get buddy state buttons + "show all 5"
