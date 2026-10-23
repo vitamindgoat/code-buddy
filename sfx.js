@@ -11,6 +11,7 @@
                      jingles, never the same one twice in a row
      sfx.levelUp()   lesson complete (rising arpeggio)
      sfx.error()     a wrong character appeared (soft low bonk)
+     sfx.badge()     a badge was earned (bright fanfare)
      sfx.click()     any button
      sfx.run()       Run pressed (whoosh)
      sfx.pop()       bubble / tour card appears
@@ -113,6 +114,8 @@ const sfx = (() => {
   };
   const levelUp = () => [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => note({ type: "triangle", freq: f, start: i * 0.09, dur: 0.22, vol: 0.2 }));
   const error = () => note({ type: "triangle", freq: 220, slideTo: 160, dur: 0.16, vol: 0.14 });
+  // badge earned: a bright little three-note fanfare with a shimmer on top
+  const badge = () => { [659.25, 880, 1318.5].forEach((f, i) => note({ type: "triangle", freq: f, start: i * 0.07, dur: 0.2, vol: 0.16 })); note({ type: "sine", freq: 2637, start: 0.22, dur: 0.25, vol: 0.06 }); };
   const click = () => note({ type: "square", freq: 1200, dur: 0.035, vol: 0.05 });
   const pop = () => note({ type: "sine", freq: 600, slideTo: 900, dur: 0.07, vol: 0.1 });
   const run = () => { whoosh(); note({ type: "triangle", freq: 440, slideTo: 880, dur: 0.25, vol: 0.1 }); };
@@ -124,5 +127,5 @@ const sfx = (() => {
     return on;
   }
 
-  return { tick, success, lineDone, levelUp, error, click, pop, run, toggle, get on() { return on; } };
+  return { tick, success, lineDone, levelUp, error, badge, click, pop, run, toggle, get on() { return on; } };
 })();

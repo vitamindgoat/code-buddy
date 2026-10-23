@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="89" />
+  <meta name="build" content="90" />
   <title>CodeBuddy – Learn to code with a friend</title>
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=89" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=89" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=90" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=90" />
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,8 +21,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=89" />
-  <link rel="stylesheet" href="buddy.css?v=89" />
+  <link rel="stylesheet" href="styles.css?v=90" />
+  <link rel="stylesheet" href="buddy.css?v=90" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -51,6 +51,7 @@
     <nav id="sidebar-list" class="sidebar-list"></nav>
     <div class="sidebar-foot">
       <button id="cert-btn" class="btn btn-ghost" type="button" title="Your progress and certificate">🎓 <span>Certificate</span></button>
+      <button id="trophies-btn" class="btn btn-ghost" type="button" title="Badges you've earned">🏆 <span>Trophies</span> <span class="sb-count" data-trophy-count>0 / 14</span></button>
       <button id="redo-tour-btn" class="btn btn-ghost" type="button">❔ Redo tutorial</button>
       <button id="reset-btn-all" class="btn btn-ghost" type="button">↺ Reset progress</button>
     </div>
@@ -206,9 +207,25 @@
           <button id="cert-share" class="btn btn-ghost" type="button" hidden>Share…</button>
         </div>
       </div>
-      <button id="finish-back" class="btn btn-ghost" type="button">Back to lessons</button>
+      <div class="finish-foot">
+        <button id="finish-trophies" class="btn btn-ghost" type="button">🏆 Trophies <span data-trophy-count>0 / 14</span></button>
+        <button id="finish-back" class="btn btn-ghost" type="button">Back to lessons</button>
+      </div>
     </div>
   </div>
+
+  <!-- Trophies: every badge, earned or locked (badges.js) -->
+  <div id="trophies" class="complete trophies" hidden role="dialog" aria-label="Trophies">
+    <div class="done-card trophies-card card">
+      <button id="trophies-close" class="finish-close" type="button" aria-label="Close">✕</button>
+      <div class="done-kicker">Trophies</div>
+      <h2 class="done-title trophies-title">Your badges</h2>
+      <p id="trophies-sub" class="done-sub"></p>
+      <div id="trophies-grid" class="trophies-grid"></div>
+    </div>
+  </div>
+  <!-- Badge toasts slide in here -->
+  <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
 
   <!-- "Lesson complete!" card: celebrates, then hands you the next step -->
   <div id="done" class="complete" hidden>
@@ -315,16 +332,17 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=89"></script>
-  <script src="fx.js?v=89"></script>
-  <script src="lessons.js?v=89"></script>
-  <script src="buddy.js?v=89"></script>
-  <script src="tutor.js?v=89"></script>
-  <script src="scratch.js?v=89"></script>
-  <script src="quiz.js?v=89"></script>
-  <script src="read.js?v=89"></script>
-  <script src="finish.js?v=89"></script>
-  <script src="tour.js?v=89"></script>
-  <script src="app.js?v=89"></script>
+  <script src="sfx.js?v=90"></script>
+  <script src="fx.js?v=90"></script>
+  <script src="lessons.js?v=90"></script>
+  <script src="buddy.js?v=90"></script>
+  <script src="tutor.js?v=90"></script>
+  <script src="scratch.js?v=90"></script>
+  <script src="quiz.js?v=90"></script>
+  <script src="read.js?v=90"></script>
+  <script src="finish.js?v=90"></script>
+  <script src="badges.js?v=90"></script>
+  <script src="tour.js?v=90"></script>
+  <script src="app.js?v=90"></script>
 </body>
 </html>

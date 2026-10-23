@@ -263,6 +263,7 @@ const tutor = (() => {
       ui.renderSteps(stepIndex);
       ui.markWrong();
       ui.onStepDone(lines[n - 1].number);
+      if (finished.bug && bugDone[n - 1] && ui.onBugFixed) ui.onBugFixed();   // the planted crash is fixed
       if (stepIndex >= lineLimit()) {
         // reached a checkpoint: run it before going on
         awaitingRun = true;

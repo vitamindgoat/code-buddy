@@ -316,6 +316,10 @@ function showFinish() {
   sfx.pop();
 }
 $("cert-btn").addEventListener("click", showFinish);
+$("trophies-btn").addEventListener("click", () => { closeSidebar(); badges.show(); });
+$("finish-trophies").addEventListener("click", () => badges.show());
+// opening the scratch pad (from a quiz) is a badge of its own
+{ const t = scratch.toggle; scratch.toggle = (k) => { badges.earn("scratch"); return t(k); }; }
 
 function finishStage() {
   const first = !progress.done[doneId()];
@@ -324,6 +328,16 @@ function finishStage() {
   // (a finished quiz keeps its saved state so its score screen comes back on a revisit)
   if (stage === "lesson" && first) progress.lessonsFinished = (progress.lessonsFinished || 0) + 1;
   saveProgress();
+  const m = module_(), sc = progress.scores[m.id];
+  badges.check({
+    lessonsDone: LESSONS.filter((l) => progress.done[l.id]).length,
+    lessonType: stage === "lesson" && !isReading() ? "code" : "other",
+    practiceNoHints: stage === "practice" && !(tutor.current.hintsUsed > 0),
+    quizDone: stage === "quiz",
+    quizPerfect: stage === "quiz" && sc && sc.total && sc.score === sc.total,
+    moduleDone: m.lessons.every((l) => progress.done[l.id] && (l.type === "read" || progress.done[l.id + "-practice"])) && progress.done[m.id + "-quiz"],
+    courseDone: courseComplete(),
+  });
   renderHeader();
   renderHeader();
   renderSidebar();
@@ -443,6 +457,7 @@ tutor.ui.onComplete = () => finishStage();
 tutor.ui.onReadyToRun = () => { runTag.hidden = false; runBtn.classList.add("pulse"); sfx.pop(); };
 tutor.ui.explainLength = () => settings.explain;
 tutor.ui.name = () => settings.name || "";
+tutor.ui.onBugFixed = () => badges.earn("bug-squash");
 tutor.ui.ghostMode = () => settings.ghost;
 tutor.ui.markLine = (lineNumber) => {
   if (activeLineHandle) editor.removeLineClass(activeLineHandle, "background", "active-line");
@@ -455,6 +470,7 @@ tutor.ui.markLine = (lineNumber) => {
 // A line was finished: flash it green and pop sparkles at its end
 tutor.ui.onStepDone = (lineNumber) => {
   sfx.lineDone();
+  badges.earn("first-line");
   const handle = editor.addLineClass(lineNumber, "background", "done-line");
   setTimeout(() => editor.removeLineClass(handle, "background", "done-line"), 900);
   const end = editor.charCoords({ line: lineNumber, ch: editor.getLine(lineNumber).length }, "window");
@@ -711,6 +727,7 @@ async function runCode() {
   runBtn.disabled = true;
   replayClass(runBtn, "pressed");
   sfx.run();
+  badges.earn("first-run");
 
   const t0 = performance.now();
   const r = await sandbox.run(code, inputs, (text, isError) => appendOutput(text, isError));
@@ -968,6 +985,13 @@ fetch(`assets/logo.svg?v=${BUILD}`).then((r) => r.text()).then((svg) => {
 }).catch(() => {});
 
 applySettings();
+badges.init({ get: () => progress.badges, save: (b) => { progress.badges = b; saveProgress(); } });
+// coming back on a later day, with something already done, earns "Back again"
+{
+  const today = new Date().toISOString().slice(0, 10);
+  if (progress.lastVisit && progress.lastVisit !== today && Object.keys(progress.done).length) setTimeout(() => badges.earn("comeback"), 1500);
+  progress.lastVisit = today; saveProgress();
+}
 renderHeader();
 renderSidebar();
 editorCard.classList.add("loading");
