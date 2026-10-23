@@ -551,6 +551,10 @@ body { background: var(--bg); }
 .stage-badge.stage-practice { background: var(--green-soft); color: var(--green); }
 .stage-badge.stage-quiz { background: var(--blue); color: #fff; }
 .lesson-number { font-weight: 800; color: var(--ink-soft); font-size: 13px; }
+/* "✓ Completed" next to the stage badge when you come back to something finished */
+.done-badge { margin-left: auto; font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; background: var(--green-soft); color: var(--green); border: 1px solid #bfeedb; animation: pop-in-badge 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.done-badge[hidden] { display: none; }
+@keyframes pop-in-badge { from { transform: scale(0.6); opacity: 0; } }
 .lesson .chip { font-family: var(--mono); font-size: 13px; background: var(--blue-soft); color: var(--blue-dark); border: 1.5px solid var(--blue-line); border-radius: 8px; padding: 1px 6px; }
 .lesson .term { font-weight: 800; padding: 0 3px; border-radius: 4px; }
 .lesson .term-blue { color: #1d4ed8; background: #dbeafe; }

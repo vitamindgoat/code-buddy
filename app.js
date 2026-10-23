@@ -134,6 +134,12 @@ function renderHeader() {
   $("lesson-title").textContent = stage === "quiz" ? `${m.title} quiz` : l.title;
   $("lesson-intro").innerHTML = stage === "practice" ? practiceGoalHtml(l.practice) : stage === "quiz" ? `${m.quiz.length} questions. No help from the buddy on this one!` : richText(l.intro);
   $("lesson-pill").textContent = stage === "quiz" ? `Quiz · Module ${l.moduleIndex + 1}` : `${kind} ${l.number} · ${l.title}`;
+  // revisiting something finished: say so right in the header
+  const sc = progress.scores[m.id];
+  const badge = $("done-badge");
+  badge.hidden = !isDone(doneId());
+  badge.textContent = stage === "quiz" && sc ? `✓ Scored ${sc.score} / ${sc.total}` : "✓ Completed";
+  document.querySelector(".lesson").classList.toggle("is-done", isDone(doneId()));
 
   // the expected output lives in the checklist now; this box only notes
   // what the user will type when the program asks
@@ -276,6 +282,7 @@ function finishStage() {
   // (a finished quiz keeps its saved state so its score screen comes back on a revisit)
   if (stage === "lesson" && first) progress.lessonsFinished = (progress.lessonsFinished || 0) + 1;
   saveProgress();
+  renderHeader();
   renderHeader();
   renderSidebar();
   runTag.hidden = true; runBtn.classList.remove("pulse");
