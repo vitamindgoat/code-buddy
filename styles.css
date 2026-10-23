@@ -760,6 +760,14 @@ body.pg-open { overflow: hidden; }
 .pg-say-title { color: var(--blue-ink); font-size: 15px; }
 .pg-say code { font-family: var(--mono); font-size: 13px; background: var(--blue-soft); color: var(--blue-dark); border-radius: 6px; padding: 1px 5px; }
 
+/* ---------- Word tooltips (wordinfo.js) ---------- */
+.wordtip { position: fixed; z-index: 120; max-width: 300px; display: flex; flex-direction: column; gap: 5px; padding: 10px 12px; background: var(--card); border: 1.5px solid var(--blue-line); border-radius: 12px; box-shadow: 0 10px 28px rgba(6, 51, 126, 0.18); pointer-events: none; font-size: 14px; line-height: 1.4; color: var(--ink); }
+.wordtip[hidden] { display: none; }
+.wordtip.in { animation: tip-in 0.16s ease-out both; }
+@keyframes tip-in { from { opacity: 0; transform: translateY(-4px); } }
+.wordtip-word { align-self: flex-start; font-family: var(--mono); font-weight: 700; font-size: 13px; color: #fff; background: var(--blue); border-radius: 6px; padding: 1px 7px; }
+.wordtip-ex { font-family: var(--mono); font-size: 13px; color: var(--blue-dark); background: var(--blue-soft); border-radius: 6px; padding: 3px 7px; white-space: pre-wrap; }
+
 /* ---------- Daily challenge ---------- */
 .sb-daily { display: flex; align-items: center; gap: 10px; width: calc(100% - 24px); margin: 8px 12px 0; padding: 9px 12px; border-radius: 12px; background: var(--card); border: 1.5px solid var(--blue-line); font: inherit; text-align: left; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease; }
 .sb-daily:hover { border-color: var(--blue); background: var(--blue-soft); }

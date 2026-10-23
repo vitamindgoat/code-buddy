@@ -268,6 +268,7 @@ const daily = (() => {
         },
       });
       cm.getInputField().setAttribute("aria-label", "Daily challenge: write your Python here");
+      if (typeof wordinfo !== "undefined") wordinfo.attach(cm);
       cm.on("change", () => { try { localStorage.setItem(DRAFT, JSON.stringify({ date: cur.date, code: cm.getValue() })); } catch {} });
       if (typeof keybar !== "undefined") keybar.attach(cm, check);
     }

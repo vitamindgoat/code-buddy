@@ -62,6 +62,7 @@ const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
   },
 });
 editor.getInputField().setAttribute("aria-label", "Code editor: type your Python here");   // screen readers announce it
+wordinfo.attach(editor);   // hover (or tap) a Python word for a quick explanation
 
 // ---------- 2. Elements ----------
 

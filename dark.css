@@ -126,3 +126,6 @@
 :root[data-theme="dark"] .daily-result.good { border-color: #1f5a43; }
 :root[data-theme="dark"] .daily-result.bad { border-color: #6e2a33; }
 :root[data-theme="dark"] .daily-result.bad b { color: var(--red); }
+
+:root[data-theme="dark"] .wordtip { box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5); }
+:root[data-theme="dark"] .wordtip-word { background: #1f66c8; }

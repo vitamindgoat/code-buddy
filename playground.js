@@ -168,6 +168,7 @@ const playground = (() => {
       },
     });
     cm.getInputField().setAttribute("aria-label", "Playground editor: write any Python here");
+    if (typeof wordinfo !== "undefined") wordinfo.attach(cm);
     cm.on("change", () => { clearErr(); clearTimeout(saveTimer); saveTimer = setTimeout(saveDraft, 400); });
     $("pg-inputs").addEventListener("input", () => { clearTimeout(saveTimer); saveTimer = setTimeout(saveDraft, 400); });
     if (typeof keybar !== "undefined") keybar.attach(cm, run);   // phone key bar (app.js)

@@ -137,6 +137,7 @@ const quiz = (() => {
       },
     });
     codeEditor.getInputField().setAttribute("aria-label", "Quiz answer: type your Python here");
+    if (typeof wordinfo !== "undefined") wordinfo.attach(codeEditor);
     if (a && a.code !== undefined) codeEditor.setValue(a.code);
     else if (a && a.draft) codeEditor.setValue(a.draft);
     if (done) codeEditor.setOption("readOnly", true);
