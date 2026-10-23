@@ -528,7 +528,8 @@ body { background: var(--bg); }
 .sidebar.open { transform: none; }
 .sidebar-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line); }
 .sidebar-list { flex: 1; overflow-y: auto; padding: 12px; }
-.sidebar-foot { padding: 12px; border-top: 1px solid var(--line); display: flex; gap: 6px; justify-content: space-between; }
+.sidebar-foot { padding: 12px; border-top: 1px solid var(--line); display: flex; gap: 6px; justify-content: space-between; flex-wrap: wrap; }
+#cert-btn { flex: 1 1 100%; justify-content: center; background: var(--blue-soft); color: var(--blue-dark); }
 .sidebar-foot .btn { font-size: 13px; padding: 8px 10px; }
 .sb-module { margin-bottom: 14px; animation: rise 0.4s ease-out both; }
 .sb-module:nth-child(2) { animation-delay: 0.06s; } .sb-module:nth-child(3) { animation-delay: 0.12s; }
@@ -650,6 +651,29 @@ body { background: var(--bg); }
 .done-actions { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .btn-big { font-size: 17px; padding: 12px 28px; border-radius: 14px; box-shadow: 0 8px 20px rgba(30, 111, 217, 0.3); }
 .done-actions .btn-ghost { font-size: 13px; }
+
+/* ---------- Course complete + certificate ---------- */
+.finish { z-index: 85; }
+.finish-card { width: 560px; padding-top: 24px; }
+.finish-close { position: absolute; right: 10px; top: 10px; z-index: 2; width: 32px; height: 32px; border: none; border-radius: 50%; background: var(--blue-soft); color: var(--blue-dark); font-weight: 800; cursor: pointer; transition: background 0.15s ease, transform 0.15s ease; }
+.finish-close:hover { background: var(--blue-line); transform: rotate(90deg); }
+.finish-stats { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 2px 0 16px; }
+.finish-stat { background: var(--blue-soft); border: 1px solid var(--blue-line); border-radius: 12px; padding: 10px 6px 8px; animation: rise 0.4s ease-out both; }
+.finish-stat:nth-child(2) { animation-delay: 0.06s; } .finish-stat:nth-child(3) { animation-delay: 0.12s; } .finish-stat:nth-child(4) { animation-delay: 0.18s; }
+.finish-stat b { display: block; font-size: 24px; color: var(--blue-ink); line-height: 1.1; }
+.finish-stat span { font-size: 12px; font-weight: 800; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+.finish-locked { position: relative; margin: 0 0 14px; }
+.finish-locked .progress-bar { height: 10px; margin-bottom: 10px; }
+.finish-locked p { margin: 0; color: var(--ink-soft); font-weight: 700; font-size: 14px; }
+.finish-cert { position: relative; text-align: left; margin-bottom: 12px; }
+.finish-name { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.finish-name span { font-size: 12px; font-weight: 800; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+.finish-name input { font: 800 18px "Nunito", sans-serif; color: var(--blue-ink); border: 2px solid var(--blue-line); border-radius: 12px; padding: 9px 12px; background: #fff; outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+.finish-name input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(30, 111, 217, 0.15); }
+.finish-preview { border: 2px solid var(--blue-line); border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 10px 28px rgba(6, 51, 126, 0.18); animation: rise 0.5s ease-out both; }
+.finish-preview canvas { display: block; width: 100%; height: auto; }
+.finish-actions { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+#finish-back { font-size: 13px; position: relative; }
 
 /* ---------- Output lines slide in ---------- */
 .out-line { animation: rise 0.25s ease-out both; }
@@ -936,6 +960,8 @@ body { overflow-x: hidden; }
 
   /* dialogs */
   .done-card { padding: 22px 18px 20px; }
+  .finish-stats { grid-template-columns: repeat(2, 1fr); }
+  .finish-stat b { font-size: 20px; }
   .done-title { font-size: 26px; }
   .settings-layer { padding: 12px; align-items: flex-end; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
   .settings { width: 100%; max-height: calc(100% - 8px); }

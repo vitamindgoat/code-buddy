@@ -151,8 +151,8 @@ function renderHeader() {
 
   prevBtn.disabled = !prevTarget();
   const nt = nextTarget();
-  nextBtn.textContent = nt ? nt.label : "All done! 🎉";
-  nextBtn.disabled = !nt || !isDone(doneId());
+  nextBtn.textContent = nt ? nt.label : courseComplete() ? "All done! 🎉" : "Finish the rest first";
+  nextBtn.disabled = nt ? !isDone(doneId()) : !courseComplete();
 }
 
 // *term* -> colored span, `code` -> chip (for the lesson panel)
@@ -289,6 +289,34 @@ function open(target) {
 }
 
 // Something was finished (output matched, or quiz done)
+// Everything there is to finish: every lesson (readings included), a
+// practice for each coding lesson, and a quiz per module.
+const TOTAL_ITEMS = LESSONS.length + LESSONS.filter((l) => l.type !== "read").length + MODULES.length;
+const courseComplete = () => Object.keys(progress.done).length >= TOTAL_ITEMS;
+function courseStats() {
+  const ids = Object.keys(progress.done);
+  const quizzes = MODULES.filter((m) => progress.done[m.id + "-quiz"]);
+  const scores = quizzes.map((m) => progress.scores[m.id]).filter((s) => s && s.total);
+  const avg = scores.length ? Math.round((scores.reduce((a, s) => a + s.score / s.total, 0) / scores.length) * 100) : 0;
+  return {
+    done: Math.min(ids.length, TOTAL_ITEMS), total: TOTAL_ITEMS,
+    lessons: LESSONS.filter((l) => progress.done[l.id]).length,
+    practices: LESSONS.filter((l) => progress.done[l.id + "-practice"]).length,
+    quizzes: quizzes.length, avg,
+  };
+}
+function showFinish() {
+  closeSidebar(); hideDone();
+  finish.show({
+    complete: courseComplete(), stats: courseStats(),
+    name: settings.name || progress.certName || "",
+    onName: (n) => { progress.certName = n; saveProgress(); },
+    onBack: () => refocus(),
+  });
+  sfx.pop();
+}
+$("cert-btn").addEventListener("click", showFinish);
+
 function finishStage() {
   const first = !progress.done[doneId()];
   progress.done[doneId()] = true;
@@ -300,6 +328,13 @@ function finishStage() {
   renderHeader();
   renderSidebar();
   runTag.hidden = true; runBtn.classList.remove("pulse");
+  // the very last item: the whole-course celebration instead of the usual card
+  if (courseComplete() && !progress.celebrated) {
+    progress.celebrated = true; saveProgress();
+    fx.confetti(240); sfx.levelUp(); setTimeout(() => fx.confetti(160), 700);
+    showFinish();
+    return;
+  }
   if (stage === "quiz") { const t = nextTarget(); if (t) open(t); return; }   // the score screen was the celebration
   fx.confetti(); sfx.levelUp(); if (!isReading()) replayClass(outputCard, "success-flash");
   showDone();
@@ -385,7 +420,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !confirm
 $("confirm-yes").addEventListener("click", () => { confirmEl.hidden = true; resetAll(); });
 $("reset-btn-all").addEventListener("click", askReset);
 function resetAll() {
-  progress = { done: {}, work: {}, scores: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0 };
+  progress = { done: {}, work: {}, scores: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0, certName: progress.certName };
   saveProgress(); open({ lessonIndex: 0, stage: "lesson", fresh: true });
   buddy.say("# Fresh start\nEverything is reset. Let's begin again from the top!", "happy");
 }
@@ -746,7 +781,7 @@ function clearErrorLine() {
 runBtn.addEventListener("click", runCode);
 resetBtn.addEventListener("click", () => open({ lessonIndex, stage, fresh: true }));   // Start over: forget the saved code too
 prevBtn.addEventListener("click", () => { const t = prevTarget(); if (t) open(t); });
-nextBtn.addEventListener("click", () => { const t = nextTarget(); if (t) open(t); });
+nextBtn.addEventListener("click", () => { const t = nextTarget(); if (t) open(t); else if (courseComplete()) showFinish(); });
 
 function fillVoices() {
   const list = voice.voices();

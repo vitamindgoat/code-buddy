@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="87" />
+  <meta name="build" content="88" />
   <title>CodeBuddy – Learn to code with a friend</title>
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=87" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=87" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=88" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=88" />
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,8 +21,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=87" />
-  <link rel="stylesheet" href="buddy.css?v=87" />
+  <link rel="stylesheet" href="styles.css?v=88" />
+  <link rel="stylesheet" href="buddy.css?v=88" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -50,6 +50,7 @@
     </div>
     <nav id="sidebar-list" class="sidebar-list"></nav>
     <div class="sidebar-foot">
+      <button id="cert-btn" class="btn btn-ghost" type="button" title="Your progress and certificate">🎓 <span>Certificate</span></button>
       <button id="redo-tour-btn" class="btn btn-ghost" type="button">❔ Redo tutorial</button>
       <button id="reset-btn-all" class="btn btn-ghost" type="button">↺ Reset progress</button>
     </div>
@@ -166,6 +167,33 @@
     </div>
   </div>
 
+  <!-- Course complete: the big celebration + certificate (finish.js). Also
+       the progress report behind the sidebar's "Certificate" button. -->
+  <div id="finish" class="complete finish" hidden role="dialog" aria-label="Course progress">
+    <div class="done-card finish-card card">
+      <button id="finish-close" class="finish-close" type="button" aria-label="Close">✕</button>
+      <div class="done-rays"></div>
+      <div id="finish-buddy" class="done-buddy"></div>
+      <div id="finish-kicker" class="done-kicker">Course complete</div>
+      <h2 id="finish-title" class="done-title">You finished CodeBuddy!</h2>
+      <p id="finish-sub" class="done-sub"></p>
+      <div id="finish-stats" class="finish-stats"></div>
+      <div id="finish-locked" class="finish-locked" hidden>
+        <div class="progress-bar"><div id="finish-pct" class="progress-fill"></div></div>
+        <p>Your certificate unlocks when the last item is done. Keep going!</p>
+      </div>
+      <div id="finish-cert" class="finish-cert" hidden>
+        <label class="finish-name"><span>Name on the certificate</span><input id="finish-name" type="text" maxlength="40" placeholder="Your name" autocomplete="name" spellcheck="false"></label>
+        <div class="finish-preview"><canvas id="cert-canvas" width="1600" height="1131" aria-label="Your certificate"></canvas></div>
+        <div class="finish-actions">
+          <button id="cert-download" class="btn btn-primary" type="button">⤓ Download PNG</button>
+          <button id="cert-share" class="btn btn-ghost" type="button" hidden>Share…</button>
+        </div>
+      </div>
+      <button id="finish-back" class="btn btn-ghost" type="button">Back to lessons</button>
+    </div>
+  </div>
+
   <!-- "Lesson complete!" card: celebrates, then hands you the next step -->
   <div id="done" class="complete" hidden>
     <div class="done-card card">
@@ -271,15 +299,16 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=87"></script>
-  <script src="fx.js?v=87"></script>
-  <script src="lessons.js?v=87"></script>
-  <script src="buddy.js?v=87"></script>
-  <script src="tutor.js?v=87"></script>
-  <script src="scratch.js?v=87"></script>
-  <script src="quiz.js?v=87"></script>
-  <script src="read.js?v=87"></script>
-  <script src="tour.js?v=87"></script>
-  <script src="app.js?v=87"></script>
+  <script src="sfx.js?v=88"></script>
+  <script src="fx.js?v=88"></script>
+  <script src="lessons.js?v=88"></script>
+  <script src="buddy.js?v=88"></script>
+  <script src="tutor.js?v=88"></script>
+  <script src="scratch.js?v=88"></script>
+  <script src="quiz.js?v=88"></script>
+  <script src="read.js?v=88"></script>
+  <script src="finish.js?v=88"></script>
+  <script src="tour.js?v=88"></script>
+  <script src="app.js?v=88"></script>
 </body>
 </html>
