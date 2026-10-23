@@ -1008,30 +1008,61 @@ body.kb-open .layout { padding-bottom: 72px; }
   position: fixed; z-index: 78; display: flex; flex-direction: column;
   background: #fff; border: 1.5px solid var(--blue-line); border-radius: 16px;
   box-shadow: 0 16px 48px rgba(6, 51, 126, 0.25); overflow: hidden;
-  animation: scratch-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  animation: scratch-in 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  transform-origin: bottom right;
 }
 .scratch[hidden] { display: none; }
-@keyframes scratch-in { from { opacity: 0; transform: translateY(10px) scale(0.97); } }
-.scratch-head { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; background: var(--blue-soft); border-bottom: 1px solid var(--blue-line); cursor: grab; user-select: none; touch-action: none; }
+.scratch.closing { animation: scratch-out 0.2s ease-in both; pointer-events: none; }
+.scratch.minimizing { animation: scratch-min 0.28s cubic-bezier(0.4, 0, 0.8, 0.4) both; pointer-events: none; }
+@keyframes scratch-in { from { opacity: 0; transform: translateY(16px) scale(0.92); } }
+@keyframes scratch-out { to { opacity: 0; transform: translateY(12px) scale(0.95); } }
+@keyframes scratch-min { to { opacity: 0; transform: translate(0, 40vh) scale(0.2); } }
+.scratch.max { left: 12px !important; top: 12px !important; right: 12px; bottom: 12px; width: auto !important; height: auto !important; border-radius: 16px; transform-origin: center; }
+.scratch-head { display: flex; align-items: center; gap: 10px; padding: 7px 8px 7px 14px; background: var(--blue-soft); border-bottom: 1px solid var(--blue-line); cursor: grab; user-select: none; touch-action: none; }
 .scratch-head:active { cursor: grabbing; }
-.scratch-title { font-weight: 800; color: var(--blue-ink); font-size: 14px; flex: 1; }
+.scratch.max .scratch-head, .scratch.sheet .scratch-head { cursor: default; }
+.scratch-title { font-weight: 800; color: var(--blue-ink); font-size: 14px; flex: 1; white-space: nowrap; }
 .scratch-tabs { display: flex; gap: 4px; background: #fff; border-radius: 9px; padding: 3px; border: 1px solid var(--blue-line); }
-.scratch-tabs button, .scratch-tools button, .scratch-close { font: 800 12px "Nunito", sans-serif; border: none; background: transparent; color: var(--ink-soft); border-radius: 7px; padding: 5px 10px; cursor: pointer; }
+.scratch-tabs button, .scratch-tools button, .scratch-winbtns button { font: 800 12px "Nunito", sans-serif; border: none; background: transparent; color: var(--ink-soft); border-radius: 7px; padding: 5px 9px; cursor: pointer; transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease; }
 .scratch-tabs button.on { background: var(--blue); color: #fff; }
-.scratch-close { font-size: 14px; width: 30px; height: 30px; padding: 0; }
-.scratch-close:hover { background: #fff; color: var(--blue-dark); }
-.scratch-tools { display: flex; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); }
-.scratch-tools button { border: 1px solid var(--line); background: #fff; }
-.scratch-tools button.on { background: var(--blue-soft); border-color: var(--blue-mid); color: var(--blue-dark); }
-.scratch-tools .scratch-clear { margin-left: auto; }
+.scratch-winbtns { display: flex; gap: 2px; }
+.scratch-winbtns button { width: 28px; height: 28px; padding: 0; font-size: 14px; }
+.scratch-winbtns button:hover { background: #fff; color: var(--blue-dark); }
+.scratch-tools { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--line); background: #fbfdff; }
+.scratch-group { display: flex; gap: 3px; align-items: center; padding: 2px; border-radius: 9px; background: #fff; border: 1px solid var(--line); }
+.scratch-tools button { height: 28px; min-width: 30px; padding: 0 7px; font-size: 14px; }
+.scratch-tools button:hover:not(:disabled) { background: var(--blue-soft); color: var(--blue-dark); }
+.scratch-tools button:active:not(:disabled) { transform: scale(0.94); }
+.scratch-tools button.on { background: var(--blue); color: #fff; }
+.scratch-tools button:disabled { opacity: 0.35; cursor: default; }
+.scratch-colors button { width: 24px; min-width: 24px; height: 24px; border-radius: 50%; padding: 0; background: var(--c) !important; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); }
+.scratch-colors button.on { box-shadow: 0 0 0 2.5px var(--blue-mid); transform: scale(1.1); }
+.scratch-sizes button i { display: block; width: var(--d); height: var(--d); border-radius: 50%; background: currentColor; margin: 0 auto; }
+.scratch-sizes button.on i { background: #fff; }
+.scratch-zoom-val { font-family: var(--mono) !important; font-size: 11px !important; min-width: 44px; }
+.scratch-right { margin-left: auto; }
+.scratch-clear.armed { background: var(--red) !important; color: #fff !important; }
 .scratch[data-tab="notes"] .scratch-tools { display: none; }
 .scratch-body { flex: 1; min-height: 0; position: relative; }
-.scratch-canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; background-image: radial-gradient(var(--line) 1px, transparent 1px); background-size: 18px 18px; }
+.scratch-canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; background: #fff; }
+.scratch-canvas.hand { cursor: grab; }
+.scratch-canvas.grabbing { cursor: grabbing; }
+.scratch[data-tool="eraser"] .scratch-canvas { cursor: cell; }
+.scratch-hint { position: absolute; left: 10px; bottom: 8px; font-size: 11px; font-weight: 700; color: var(--ink-soft); opacity: 0.7; pointer-events: none; background: rgba(255,255,255,0.8); border-radius: 6px; padding: 2px 6px; }
 .scratch-notes { display: none; width: 100%; height: 100%; border: none; resize: none; padding: 12px 14px; font: 600 15px "Nunito", sans-serif; color: var(--ink); line-height: 1.5; background: #fff; outline: none; }
-.scratch[data-tab="notes"] .scratch-canvas { display: none; }
+.scratch[data-tab="notes"] .scratch-canvas, .scratch[data-tab="notes"] .scratch-hint { display: none; }
 .scratch[data-tab="notes"] .scratch-notes { display: block; }
 .scratch-grip { position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; cursor: nwse-resize; touch-action: none; background: linear-gradient(135deg, transparent 50%, var(--blue-line) 50%, var(--blue-line) 60%, transparent 60%, transparent 75%, var(--blue-line) 75%, var(--blue-line) 85%, transparent 85%); border-bottom-right-radius: 16px; }
-/* phones: a bottom sheet, no dragging or resizing */
-.scratch.sheet { left: 0; right: 0; bottom: 0; top: auto; width: auto; height: 56vh; border-radius: 16px 16px 0 0; padding-bottom: env(safe-area-inset-bottom); }
-.scratch.sheet .scratch-head { cursor: default; }
+.scratch.max .scratch-grip { display: none; }
+/* minimized: a pill in the corner */
+.scratch-pill { position: fixed; right: 16px; bottom: 16px; z-index: 78; font: 800 13px "Nunito", sans-serif; color: #fff; background: var(--blue); border: none; border-radius: 999px; padding: 10px 16px; box-shadow: 0 8px 20px rgba(30, 111, 217, 0.35); cursor: pointer; }
+.scratch-pill[hidden] { display: none; }
+.scratch-pill.in { animation: pill-in 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3) both; }
+@keyframes pill-in { from { opacity: 0; transform: translateY(10px) scale(0.8); } }
+/* phones: a bottom sheet; maximize makes it full screen */
+.scratch.sheet { left: 0; right: 0; bottom: 0; top: auto; width: auto; height: 58vh; border-radius: 16px 16px 0 0; padding-bottom: env(safe-area-inset-bottom); transform-origin: bottom center; }
+.scratch.sheet.max { top: 0 !important; left: 0 !important; right: 0; bottom: 0; height: auto; border-radius: 0; }
 .scratch.sheet .scratch-grip { display: none; }
+.scratch.sheet .scratch-tools { gap: 4px 6px; padding: 6px 8px; }
+.scratch.sheet .scratch-hint { display: none; }
+.scratch-pill.sheet { left: 16px; right: 16px; }

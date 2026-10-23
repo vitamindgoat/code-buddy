@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="81" />
+  <meta name="build" content="82" />
   <title>CodeBuddy – Learn to code with a friend</title>
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=81" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=81" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=82" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=82" />
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,8 +21,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=81" />
-  <link rel="stylesheet" href="buddy.css?v=81" />
+  <link rel="stylesheet" href="styles.css?v=82" />
+  <link rel="stylesheet" href="buddy.css?v=82" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -181,27 +181,62 @@
     </div>
   </div>
 
-  <!-- Quiz scratch pad: draw or type to work things out (scratch.js) -->
+  <!-- Quiz scratch pad: an infinite whiteboard in a window (scratch.js) -->
   <div id="scratch" class="scratch" hidden role="dialog" aria-label="Scratch pad" data-tab="draw">
     <div class="scratch-head">
       <span class="scratch-title">✎ Scratch pad</span>
-      <div class="scratch-tabs">
+      <div class="scratch-tabs" role="tablist">
         <button type="button" data-tab="draw" class="on">Draw</button>
         <button type="button" data-tab="notes">Notes</button>
       </div>
-      <button type="button" class="scratch-close" aria-label="Close">✕</button>
+      <div class="scratch-winbtns">
+        <button type="button" data-act="min" title="Minimize" aria-label="Minimize">–</button>
+        <button type="button" data-act="max" title="Maximize (double-click the bar)" aria-label="Maximize">⤢</button>
+        <button type="button" data-act="close" title="Close (Esc)" aria-label="Close">✕</button>
+      </div>
     </div>
     <div class="scratch-tools">
-      <button type="button" data-tool="pen" class="on">✏️ Pen</button>
-      <button type="button" data-tool="eraser">◻ Eraser</button>
-      <button type="button" class="scratch-clear">Clear</button>
+      <div class="scratch-group">
+        <button type="button" data-tool="pen" class="on" title="Pen (P)">✏️</button>
+        <button type="button" data-tool="highlighter" title="Highlighter (L)">🖍️</button>
+        <button type="button" data-tool="eraser" title="Eraser (E)">◻</button>
+        <button type="button" data-tool="hand" title="Move around (H, or hold Space)">✋</button>
+      </div>
+      <div class="scratch-group scratch-colors">
+        <button type="button" data-color="ink" class="on" style="--c:#135ab6" title="Blue"></button>
+        <button type="button" data-color="green" style="--c:#17a673" title="Green"></button>
+        <button type="button" data-color="red" style="--c:#e5484d" title="Red"></button>
+        <button type="button" data-color="dark" style="--c:#1d2433" title="Dark"></button>
+      </div>
+      <div class="scratch-group scratch-sizes">
+        <button type="button" data-size="s" title="Thin"><i style="--d:4px"></i></button>
+        <button type="button" data-size="m" class="on" title="Medium"><i style="--d:7px"></i></button>
+        <button type="button" data-size="l" title="Thick"><i style="--d:11px"></i></button>
+      </div>
+      <div class="scratch-group">
+        <button type="button" data-act="undo" title="Undo (Ctrl+Z)">↶</button>
+        <button type="button" data-act="redo" title="Redo (Ctrl+Y)">↷</button>
+      </div>
+      <div class="scratch-group scratch-zoom">
+        <button type="button" data-act="zoom-out" title="Zoom out (Ctrl −, or scroll)">−</button>
+        <button type="button" data-act="zoom-100" class="scratch-zoom-val" title="Reset zoom (Ctrl 0)">100%</button>
+        <button type="button" data-act="zoom-in" title="Zoom in (Ctrl +, or scroll)">+</button>
+        <button type="button" data-act="zoom-fit" title="Fit the drawing">⛶</button>
+      </div>
+      <div class="scratch-group scratch-right">
+        <button type="button" data-act="grid" class="on" title="Grid (G)">⁘</button>
+        <button type="button" data-act="export" title="Save as PNG">⤓</button>
+        <button type="button" data-act="clear" class="scratch-clear" title="Clear everything">Clear</button>
+      </div>
     </div>
     <div class="scratch-body">
       <canvas class="scratch-canvas"></canvas>
       <textarea class="scratch-notes" placeholder="Type your working here…" spellcheck="false"></textarea>
+      <div class="scratch-hint">scroll to zoom · drag with ✋ or Space to move · two fingers on a phone</div>
     </div>
     <div class="scratch-grip" aria-hidden="true"></div>
   </div>
+  <button id="scratch-pill" class="scratch-pill" type="button" hidden aria-label="Open the scratch pad">✎ Scratch pad</button>
 
   <!-- Phone key bar: sits above the on-screen keyboard while a code editor
        has focus, with the keys phone keyboards hide and cursor arrows -->
@@ -229,15 +264,15 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=81"></script>
-  <script src="fx.js?v=81"></script>
-  <script src="lessons.js?v=81"></script>
-  <script src="buddy.js?v=81"></script>
-  <script src="tutor.js?v=81"></script>
-  <script src="scratch.js?v=81"></script>
-  <script src="quiz.js?v=81"></script>
-  <script src="read.js?v=81"></script>
-  <script src="tour.js?v=81"></script>
-  <script src="app.js?v=81"></script>
+  <script src="sfx.js?v=82"></script>
+  <script src="fx.js?v=82"></script>
+  <script src="lessons.js?v=82"></script>
+  <script src="buddy.js?v=82"></script>
+  <script src="tutor.js?v=82"></script>
+  <script src="scratch.js?v=82"></script>
+  <script src="quiz.js?v=82"></script>
+  <script src="read.js?v=82"></script>
+  <script src="tour.js?v=82"></script>
+  <script src="app.js?v=82"></script>
 </body>
 </html>
