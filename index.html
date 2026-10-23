@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="103" />
+  <meta name="build" content="104" />
   <!-- Theme before first paint, so dark mode never flashes white -->
   <script>
     try {
@@ -30,8 +30,8 @@
   <meta name="twitter:title" content="CodeBuddy – Learn Python by typing every line" />
   <meta name="twitter:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on." />
   <meta name="twitter:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=103" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=103" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=104" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=104" />
   <!-- Installable app: icon, name and colors for "Add to Home Screen" -->
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -49,9 +49,9 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=103" />
-  <link rel="stylesheet" href="buddy.css?v=103" />
-  <link rel="stylesheet" href="dark.css?v=103" />
+  <link rel="stylesheet" href="styles.css?v=104" />
+  <link rel="stylesheet" href="buddy.css?v=104" />
+  <link rel="stylesheet" href="dark.css?v=104" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -65,6 +65,7 @@
     </div>
     <div class="topbar-right">
       <span class="pill" id="lesson-pill">Lesson 1</span>
+      <button id="play-btn" class="btn btn-ghost btn-icon-only" type="button" title="Playground: write any Python you like" aria-label="Playground">🧪 <span class="btn-text">Playground</span></button>
       <button id="settings-btn" class="btn btn-ghost btn-icon-only" type="button" title="Settings" aria-label="Settings">⚙ <span class="btn-text">Settings</span></button>
       <button id="tour-btn" class="btn btn-ghost btn-icon-only" type="button" title="Redo the tutorial" aria-label="Tutorial">❔ <span class="btn-text">Tutorial</span></button>
     </div>
@@ -80,8 +81,9 @@
     <div id="sb-streak" class="sb-streak"></div>
     <nav id="sidebar-list" class="sidebar-list"></nav>
     <div class="sidebar-foot">
+      <button id="sb-play-btn" class="btn btn-ghost" type="button" title="Write any Python you like">🧪 <span>Playground</span></button>
       <button id="cert-btn" class="btn btn-ghost" type="button" title="Your progress and certificate">🎓 <span>Certificate</span></button>
-      <button id="trophies-btn" class="btn btn-ghost" type="button" title="Badges you've earned">🏆 <span>Trophies</span> <span class="sb-count" data-trophy-count>0 / 14</span></button>
+      <button id="trophies-btn" class="btn btn-ghost" type="button" title="Badges you've earned">🏆 <span>Trophies</span> <span class="sb-count" data-trophy-count>0 / 15</span></button>
       <button id="redo-tour-btn" class="btn btn-ghost" type="button">❔ Redo tutorial</button>
       <button id="reset-btn-all" class="btn btn-ghost" type="button">↺ Reset progress</button>
     </div>
@@ -233,6 +235,43 @@
     </form>
   </div>
 
+  <!-- Playground: free coding with Buddy's error help (playground.js) -->
+  <section id="playground" class="playground" hidden aria-label="Playground">
+    <div class="pg-head">
+      <div class="pg-title"><span aria-hidden="true">🧪</span> Playground</div>
+      <input id="pg-name" class="pg-name" type="text" maxlength="40" value="Untitled" aria-label="Program name" spellcheck="false" />
+      <div class="pg-head-actions">
+        <button id="pg-new" class="btn btn-ghost" type="button">＋ New</button>
+        <button id="pg-save" class="btn btn-ghost" type="button">Save</button>
+        <button id="pg-run" class="btn btn-primary" type="button"><span class="btn-icon">▶</span> Run</button>
+        <button id="pg-close" class="finish-close pg-close" type="button" aria-label="Close the Playground">✕</button>
+      </div>
+    </div>
+    <div class="pg-body">
+      <aside class="pg-side">
+        <h3>My programs</h3>
+        <ul id="pg-mine" class="pg-list"></ul>
+        <h3>Examples</h3>
+        <ul id="pg-examples" class="pg-list"></ul>
+      </aside>
+      <div class="pg-main">
+        <div class="card pg-editor-card">
+          <textarea id="pg-code"></textarea>
+        </div>
+        <label class="pg-inputs-row"><span>Answers for <code>input()</code>, one per line</span>
+          <textarea id="pg-inputs" class="pg-inputs" rows="2" spellcheck="false" placeholder="Leave empty if your program doesn't use input()"></textarea></label>
+        <div class="card pg-out-card" id="pg-out-card">
+          <div class="card-header"><span class="card-label">Output</span><span id="pg-status" class="status"></span></div>
+          <div id="pg-output" class="output"><div class="output-hint">Press Run to see what your code does.</div></div>
+        </div>
+      </div>
+      <div class="pg-help">
+        <div id="pg-buddy" class="pg-buddy"></div>
+        <div id="pg-say" class="pg-say" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- Keyboard shortcuts: press ? anywhere outside the editor -->
   <div id="keys" class="complete" hidden role="dialog" aria-label="Keyboard shortcuts">
     <div class="done-card card keys-card">
@@ -301,7 +340,7 @@
         </div>
       </div>
       <div class="finish-foot">
-        <button id="finish-trophies" class="btn btn-ghost" type="button">🏆 Trophies <span data-trophy-count>0 / 14</span></button>
+        <button id="finish-trophies" class="btn btn-ghost" type="button">🏆 Trophies <span data-trophy-count>0 / 15</span></button>
         <button id="finish-back" class="btn btn-ghost" type="button">Back to lessons</button>
       </div>
     </div>
@@ -425,17 +464,18 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=103"></script>
-  <script src="fx.js?v=103"></script>
-  <script src="lessons.js?v=103"></script>
-  <script src="buddy.js?v=103"></script>
-  <script src="tutor.js?v=103"></script>
-  <script src="scratch.js?v=103"></script>
-  <script src="quiz.js?v=103"></script>
-  <script src="read.js?v=103"></script>
-  <script src="finish.js?v=103"></script>
-  <script src="badges.js?v=103"></script>
-  <script src="tour.js?v=103"></script>
-  <script src="app.js?v=103"></script>
+  <script src="sfx.js?v=104"></script>
+  <script src="fx.js?v=104"></script>
+  <script src="lessons.js?v=104"></script>
+  <script src="buddy.js?v=104"></script>
+  <script src="tutor.js?v=104"></script>
+  <script src="scratch.js?v=104"></script>
+  <script src="quiz.js?v=104"></script>
+  <script src="read.js?v=104"></script>
+  <script src="finish.js?v=104"></script>
+  <script src="badges.js?v=104"></script>
+  <script src="playground.js?v=104"></script>
+  <script src="tour.js?v=104"></script>
+  <script src="app.js?v=104"></script>
 </body>
 </html>

@@ -31,6 +31,7 @@ const badges = (() => {
     { id: "scratch",      icon: "✎",  name: "Scribbler",        hint: "Open the scratch pad during a quiz." },
     { id: "comeback",     icon: "🔁", name: "Back again",       hint: "Come back on another day to keep going." },
     { id: "fixer",        icon: "🪄", name: "Quick fix",        hint: "Fix a typo with the autocorrect bubble." },
+    { id: "playground",   icon: "🧪", name: "Tinkerer",         hint: "Run your own program in the Playground." },
     { id: "bug-squash",   icon: "🐛", name: "Bug squasher",     hint: "Fix a program that crashed on purpose." },
   ];
   let earned = {}, save = () => {};

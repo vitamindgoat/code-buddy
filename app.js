@@ -348,6 +348,9 @@ function showFinish() {
   sfx.pop();
 }
 $("cert-btn").addEventListener("click", showFinish);
+const openPlayground = () => { closeSidebar(); voice.stop(); if (buddy.talking) buddy.finishTyping(true); scratch.hide(); playground.open(); };
+$("play-btn").addEventListener("click", openPlayground);
+$("sb-play-btn").addEventListener("click", openPlayground);
 
 // ---------- Keyboard shortcuts overlay ("?") ----------
 const keysEl = $("keys");
