@@ -200,6 +200,7 @@ const playground = (() => {
   }
 
   $("pg-run").addEventListener("click", run);
+  $("pg-step").addEventListener("click", () => viz.open(cm.getValue(), $("pg-inputs").value.split("\n").filter((l, i, a) => l !== "" || i < a.length - 1)));
   $("pg-save").addEventListener("click", save);
   $("pg-new").addEventListener("click", fresh);
   $("pg-close").addEventListener("click", close);

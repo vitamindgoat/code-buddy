@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="105" />
+  <meta name="build" content="106" />
   <!-- Theme before first paint, so dark mode never flashes white -->
   <script>
     try {
@@ -30,8 +30,8 @@
   <meta name="twitter:title" content="CodeBuddy – Learn Python by typing every line" />
   <meta name="twitter:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on." />
   <meta name="twitter:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=105" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=105" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=106" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=106" />
   <!-- Installable app: icon, name and colors for "Add to Home Screen" -->
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -49,9 +49,9 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=105" />
-  <link rel="stylesheet" href="buddy.css?v=105" />
-  <link rel="stylesheet" href="dark.css?v=105" />
+  <link rel="stylesheet" href="styles.css?v=106" />
+  <link rel="stylesheet" href="buddy.css?v=106" />
+  <link rel="stylesheet" href="dark.css?v=106" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -83,7 +83,7 @@
     <div class="sidebar-foot">
       <button id="sb-play-btn" class="btn btn-ghost" type="button" title="Write any Python you like">🧪 <span>Playground</span></button>
       <button id="cert-btn" class="btn btn-ghost" type="button" title="Your progress and certificate">🎓 <span>Certificate</span></button>
-      <button id="trophies-btn" class="btn btn-ghost" type="button" title="Badges you've earned">🏆 <span>Trophies</span> <span class="sb-count" data-trophy-count>0 / 15</span></button>
+      <button id="trophies-btn" class="btn btn-ghost" type="button" title="Badges you've earned">🏆 <span>Trophies</span> <span class="sb-count" data-trophy-count>0 / 16</span></button>
       <button id="redo-tour-btn" class="btn btn-ghost" type="button">❔ Redo tutorial</button>
       <button id="reset-btn-all" class="btn btn-ghost" type="button">↺ Reset progress</button>
     </div>
@@ -123,6 +123,7 @@
           <span class="card-label">Your code</span>
           <div class="actions">
             <button id="reset-btn" class="btn btn-ghost" type="button" title="Start over"><span class="btn-text">Start over</span><span class="btn-text-short" aria-hidden="true">↺</span></button>
+            <button id="step-btn" class="btn btn-ghost" type="button" title="Step through: watch your code run one line at a time" aria-label="Step through"><span aria-hidden="true">👣</span> <span class="btn-text">Step through</span></button>
             <span id="run-tag" class="callout run-tag" hidden>Now run it</span>
             <button id="run-btn" class="btn btn-primary" type="button" disabled>
               <span class="btn-icon">▶</span> Run
@@ -243,6 +244,7 @@
       <div class="pg-head-actions">
         <button id="pg-new" class="btn btn-ghost" type="button">＋ New</button>
         <button id="pg-save" class="btn btn-ghost" type="button">Save</button>
+        <button id="pg-step" class="btn btn-ghost" type="button" title="Watch it run one line at a time"><span aria-hidden="true">👣</span> <span class="btn-text">Step through</span></button>
         <button id="pg-run" class="btn btn-primary" type="button"><span class="btn-icon">▶</span> Run</button>
         <button id="pg-close" class="finish-close pg-close" type="button" aria-label="Close the Playground">✕</button>
       </div>
@@ -271,6 +273,34 @@
       </div>
     </div>
   </section>
+
+  <!-- Code visualizer: step through a program line by line (viz.js) -->
+  <div id="viz" class="complete viz" hidden role="dialog" aria-labelledby="viz-title">
+    <div class="card viz-card">
+      <div class="viz-head">
+        <div><div class="done-kicker">👣 Step through</div><h2 id="viz-title" class="viz-title">Watch it run</h2></div>
+        <span id="viz-count" class="viz-count"></span>
+        <button id="viz-close" class="finish-close viz-close" type="button" aria-label="Close">✕</button>
+      </div>
+      <p id="viz-caption" class="viz-caption" aria-live="polite"></p>
+      <div class="viz-grid">
+        <div class="viz-panel viz-code-panel"><div class="viz-label">Code</div><div id="viz-code" class="viz-code"></div></div>
+        <div class="viz-side">
+          <div class="viz-panel"><div class="viz-label">Variables <span id="viz-scope" class="viz-scope"></span></div>
+            <table class="viz-vars"><tbody id="viz-vars"></tbody></table></div>
+          <div class="viz-panel"><div class="viz-label">Output so far</div><pre id="viz-out" class="viz-out"></pre></div>
+        </div>
+      </div>
+      <div class="viz-controls">
+        <button id="viz-first" class="btn btn-ghost" type="button" aria-label="Back to the start">⏮</button>
+        <button id="viz-prev" class="btn btn-ghost" type="button">◀ Back</button>
+        <button id="viz-play" class="btn btn-ghost" type="button">▶ Play</button>
+        <button id="viz-next" class="btn btn-primary" type="button">Next ▶</button>
+        <button id="viz-last" class="btn btn-ghost" type="button" aria-label="Jump to the end">⏭</button>
+        <input id="viz-slider" class="viz-slider" type="range" min="0" max="0" value="0" aria-label="Step" />
+      </div>
+    </div>
+  </div>
 
   <!-- Keyboard shortcuts: press ? anywhere outside the editor -->
   <div id="keys" class="complete" hidden role="dialog" aria-label="Keyboard shortcuts">
@@ -340,7 +370,7 @@
         </div>
       </div>
       <div class="finish-foot">
-        <button id="finish-trophies" class="btn btn-ghost" type="button">🏆 Trophies <span data-trophy-count>0 / 15</span></button>
+        <button id="finish-trophies" class="btn btn-ghost" type="button">🏆 Trophies <span data-trophy-count>0 / 16</span></button>
         <button id="finish-back" class="btn btn-ghost" type="button">Back to lessons</button>
       </div>
     </div>
@@ -464,18 +494,19 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=105"></script>
-  <script src="fx.js?v=105"></script>
-  <script src="lessons.js?v=105"></script>
-  <script src="buddy.js?v=105"></script>
-  <script src="tutor.js?v=105"></script>
-  <script src="scratch.js?v=105"></script>
-  <script src="quiz.js?v=105"></script>
-  <script src="read.js?v=105"></script>
-  <script src="finish.js?v=105"></script>
-  <script src="badges.js?v=105"></script>
-  <script src="playground.js?v=105"></script>
-  <script src="tour.js?v=105"></script>
-  <script src="app.js?v=105"></script>
+  <script src="sfx.js?v=106"></script>
+  <script src="fx.js?v=106"></script>
+  <script src="lessons.js?v=106"></script>
+  <script src="buddy.js?v=106"></script>
+  <script src="tutor.js?v=106"></script>
+  <script src="scratch.js?v=106"></script>
+  <script src="quiz.js?v=106"></script>
+  <script src="read.js?v=106"></script>
+  <script src="finish.js?v=106"></script>
+  <script src="badges.js?v=106"></script>
+  <script src="playground.js?v=106"></script>
+  <script src="viz.js?v=106"></script>
+  <script src="tour.js?v=106"></script>
+  <script src="app.js?v=106"></script>
 </body>
 </html>

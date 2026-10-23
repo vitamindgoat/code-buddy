@@ -116,3 +116,8 @@
 :root[data-theme="dark"] .output .err { color: var(--red); }
 :root[data-theme="dark"] .status.ok { color: var(--green); }
 :root[data-theme="dark"] .btn-primary:hover:not(:disabled) { background: #2468cc; }
+
+@keyframes viz-flash-dark { from { background: #4a3d10; } }
+:root[data-theme="dark"] .viz-vars tr.changed td, :root[data-theme="dark"] .viz-vars tr.changed th, :root[data-theme="dark"] .viz-vars tr.new td, :root[data-theme="dark"] .viz-vars tr.new th { animation-name: viz-flash-dark; }
+:root[data-theme="dark"] .viz-vars tr.new th::after { color: var(--green); }
+:root[data-theme="dark"] .viz-caption .viz-bad, :root[data-theme="dark"] .viz-line.err .viz-mark { color: var(--red); }

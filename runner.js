@@ -50,7 +50,8 @@ const ready = (async () => {
 self.onmessage = async (event) => {
   await ready; // never run before Python has finished loading
 
-  const { code, inputs = [] } = event.data;
+  const { code, inputs = [], mode } = event.data;
+  if (mode === "trace") { trace(code, inputs); return; }
 
   // input() can't pause for typing inside a worker, so the lesson says what
   // "the user types" and we feed those answers in, echoing them the way a
@@ -78,6 +79,85 @@ builtins.input = _cb_input
     send("exception", friendlyError(err.message), { line: errorLine(err.message) });
   }
 };
+
+// ---------- 2b. Step-through: record every line as it runs ----------
+// For the code visualizer. Python's sys.settrace calls us before each line
+// of the learner's code runs; we save that line number, a copy of every
+// variable (as short text) and everything printed so far. The page then
+// plays the recording back one step at a time. A step limit keeps infinite
+// loops from running forever.
+const TRACE_PY = `
+import sys, json, builtins, types
+
+def _cb_trace(_cb_src, _cb_answers, _cb_limit=500):
+    steps, out = [], []
+    class _Out:
+        def write(self, s): out.append(s)
+        def flush(self): pass
+    answers = list(_cb_answers)
+    def _inp(prompt=""):
+        value = answers.pop(0) if answers else ""
+        out.append(str(prompt) + value + "\\n")
+        return value
+    def show(v):
+        try: r = repr(v)
+        except Exception: r = "?"
+        return r if len(r) <= 60 else r[:57] + "..."
+    def snap(frame, g):
+        d = frame.f_locals if frame.f_code.co_name != "<module>" else g
+        res = []
+        for k, v in list(d.items()):
+            if k.startswith("_") or isinstance(v, (types.ModuleType, types.FunctionType, type)) or k in ("input",):
+                continue
+            res.append([k, show(v), type(v).__name__])
+        return res
+    class _Limit(Exception): pass
+    g = {"__name__": "__main__", "input": _inp}
+    def tr(frame, event, arg):
+        if frame.f_code.co_filename != "<step>":
+            return None
+        if event == "line":
+            if len(steps) >= _cb_limit:
+                raise _Limit()
+            steps.append({"line": frame.f_lineno, "vars": snap(frame, g), "out": "".join(out), "fn": frame.f_code.co_name})
+        return tr
+    error, error_line, limited = None, None, False
+    old_out = sys.stdout
+    try:
+        code = compile(_cb_src, "<step>", "exec")
+        sys.stdout = _Out()
+        sys.settrace(tr)
+        try:
+            exec(code, g)
+        finally:
+            sys.settrace(None)
+            sys.stdout = old_out
+    except _Limit:
+        limited = True
+    except SyntaxError as e:
+        error, error_line = f"SyntaxError: {e.msg}", e.lineno
+    except Exception as e:
+        error = f"{type(e).__name__}: {e}"
+        tb = e.__traceback__
+        while tb is not None:
+            if tb.tb_frame.f_code.co_filename == "<step>":
+                error_line = tb.tb_lineno
+            tb = tb.tb_next
+    steps.append({"line": None, "vars": [[k, show(v), type(v).__name__] for k, v in g.items() if not k.startswith("_") and not isinstance(v, (types.ModuleType, types.FunctionType, type)) and k != "input"], "out": "".join(out), "fn": "<module>"})
+    return json.dumps({"steps": steps, "error": error, "errorLine": error_line, "limited": limited})
+`;
+let traceReady = false;
+function trace(code, inputs) {
+  try {
+    if (!traceReady) { pyodide.runPython(TRACE_PY); traceReady = true; }
+    const fn = pyodide.globals.get("_cb_trace");
+    const json = fn(code, pyodide.toPy(inputs));
+    fn.destroy();
+    send("trace", json);
+  } catch (err) {
+    send("trace", JSON.stringify({ steps: [], error: friendlyError(String(err.message || err)), errorLine: null, limited: false }));
+  }
+}
 
 // ---------- 3. Make Python's error messages readable ----------
 

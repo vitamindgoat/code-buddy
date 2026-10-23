@@ -758,6 +758,48 @@ body.pg-open { overflow: hidden; }
 .pg-say-title { color: var(--blue-ink); font-size: 15px; }
 .pg-say code { font-family: var(--mono); font-size: 13px; background: var(--blue-soft); color: var(--blue-dark); border-radius: 6px; padding: 1px 5px; }
 
+/* ---------- Code visualizer ---------- */
+.viz { z-index: 88; }
+.viz-card { width: min(980px, 100%); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; max-height: calc(100vh - 32px); }
+.complete.show .viz-card { animation: done-in 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.15) both; }
+.viz-head { display: flex; align-items: center; gap: 12px; }
+.viz-title { margin: 6px 0 0; font-size: 22px; color: var(--blue-ink); }
+.viz-count { margin-left: auto; font-weight: 800; font-size: 13px; color: var(--ink-soft); }
+.viz-head .viz-close { position: static; }
+.viz-caption { margin: 0; min-height: 44px; padding: 10px 14px; border-radius: 12px; background: var(--blue-soft); border: 1px solid var(--blue-line); font-size: 15px; line-height: 1.5; color: var(--ink); }
+.viz-caption b { color: var(--blue-ink); }
+.viz-caption .viz-bad { color: #c62f35; }
+.viz-caption code, .viz-vars code { font-family: var(--mono); font-size: 13px; background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 0 5px; color: var(--blue-dark); }
+.viz-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 12px; min-height: 0; flex: 1; }
+.viz-side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.viz-panel { border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); padding: 10px 0 8px; min-height: 0; display: flex; flex-direction: column; }
+.viz-label { padding: 0 12px 6px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.viz-scope { text-transform: none; letter-spacing: 0; color: var(--blue); margin-left: 4px; }
+.viz-code { overflow: auto; max-height: 46vh; font-family: var(--mono); font-size: 14px; line-height: 1.7; }
+.viz-line { display: flex; align-items: baseline; padding-right: 12px; white-space: pre; transition: background 0.2s ease; }
+.viz-mark { flex: none; width: 22px; text-align: center; color: var(--blue); font-weight: 800; font-family: "Nunito", sans-serif; }
+.viz-num { flex: none; width: 26px; text-align: right; margin-right: 12px; color: var(--ink-soft); }
+.viz-src { color: var(--ink); }
+.viz-line.cur { background: var(--blue-soft); box-shadow: inset 3px 0 0 var(--blue); }
+.viz-line.prev { background: var(--card-2); }
+.viz-line.prev .viz-mark { color: var(--ink-soft); }
+.viz-line.err { background: var(--red-soft); box-shadow: inset 3px 0 0 var(--red); }
+.viz-line.err .viz-mark { color: #c62f35; }
+.viz-vars { width: 100%; border-collapse: collapse; font-size: 14px; }
+.viz-vars th, .viz-vars td { padding: 5px 12px; text-align: left; border-top: 1px solid var(--line); }
+.viz-vars th { font-family: var(--mono); font-weight: 700; color: var(--ink); width: 30%; }
+.viz-vars tr.changed td, .viz-vars tr.changed th, .viz-vars tr.new td, .viz-vars tr.new th { animation: viz-flash 1s ease-out; }
+.viz-vars tr.changed th::after { content: " ✎"; color: var(--blue); }
+.viz-vars tr.new th::after { content: " new"; font-family: "Nunito", sans-serif; font-size: 11px; font-weight: 800; color: #0b7a52; }
+@keyframes viz-flash { from { background: #fff3bf; } }
+.viz-type { font-size: 12px; font-weight: 800; color: var(--ink-soft); }
+.viz-none { color: var(--ink-soft); font-style: italic; }
+.viz-out { margin: 0; padding: 4px 12px; font-family: var(--mono); font-size: 14px; line-height: 1.6; white-space: pre-wrap; color: var(--ink); overflow: auto; max-height: 20vh; }
+.viz-out.empty::before { content: "Nothing printed yet"; color: var(--ink-soft); font-family: "Nunito", sans-serif; font-style: italic; }
+.viz-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.viz-slider { flex: 1; min-width: 120px; accent-color: var(--blue); }
+#step-btn { font-weight: 800; }
+
 /* ---------- Keyboard shortcuts ---------- */
 .keys-card { width: 640px; text-align: left; }
 .keys-card .done-kicker, .keys-title { display: table; margin-left: auto; margin-right: auto; }
@@ -1109,6 +1151,12 @@ body { overflow-x: hidden; }
   .finish-stats { grid-template-columns: repeat(2, 1fr); }
   .trophies-grid { grid-template-columns: repeat(2, 1fr); }
   .keys-cols { grid-template-columns: 1fr; gap: 12px; }
+  .viz-card { padding: 14px; max-height: none; }
+  .viz-grid { grid-template-columns: 1fr; }
+  .viz-code { max-height: 34vh; font-size: 13px; }
+  .viz-controls .btn { padding: 8px 10px; }
+  .viz-slider { flex-basis: 100%; order: 9; }
+  #step-btn .btn-text, #pg-step .btn-text { display: none; }
   .playground { overflow-y: auto; }
   .pg-head { flex-wrap: wrap; padding: 8px 12px; gap: 8px; position: sticky; top: 0; z-index: 2; }
   .pg-name { order: 3; flex: 1 1 100%; max-width: none; }

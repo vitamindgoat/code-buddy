@@ -348,6 +348,13 @@ function showFinish() {
   sfx.pop();
 }
 $("cert-btn").addEventListener("click", showFinish);
+// Step through: watch the code in the editor run one line at a time (viz.js)
+$("step-btn").addEventListener("click", () => {
+  if (!editor.getValue().trim()) { buddy.say("# Nothing to step through yet\nType some code first, then press Step through to watch it run line by line.", "pointing"); return; }
+  buddy.finishTyping(); voice.stop();
+  const inputs = stage === "practice" ? (lesson().practice.inputs || []) : (lesson().inputs || []);
+  viz.open(editor.getValue(), inputs);
+});
 const openPlayground = () => { closeSidebar(); voice.stop(); if (buddy.talking) buddy.finishTyping(true); scratch.hide(); playground.open(); };
 $("play-btn").addEventListener("click", openPlayground);
 $("sb-play-btn").addEventListener("click", openPlayground);
@@ -814,6 +821,7 @@ function startWorker() {
       return;
     }
     if (!active) return;
+    if (type === "trace") { try { active.finish(JSON.parse(text)); } catch { active.finish({ steps: [], error: "Couldn't step through this program." }); } return; }
     if (type === "log") { active.lines.push(text); active.onLog && active.onLog(text, false); }
     else if (type === "error") { active.onLog && active.onLog(text, true); }
     else if (type === "exception") { active.finish({ ok: false, error: text, line, output: active.lines.join("\n") }); }
@@ -842,6 +850,22 @@ const sandbox = {
         startWorker();
         finish({ ok: false, timeout: true, error: "Stopped: your code ran for too long. Is there a loop that never ends?", output: job.lines.join("\n") });
       }, TIME_LIMIT_MS);
+    });
+  },
+  // Step-through recording for the code visualizer (runner.js trace()).
+  // Resolves { steps, error, errorLine, limited }.
+  trace(code, inputs = []) {
+    return new Promise((resolve) => {
+      if (!pythonReady || active) return resolve({ steps: [], error: "Python is busy", busy: true });
+      const job = { lines: [], onLog: null, finish: null, timer: null };
+      job.finish = (result) => { clearTimeout(job.timer); active = null; resolve(result); };
+      active = job;
+      worker.postMessage({ code, inputs, mode: "trace" });
+      job.timer = setTimeout(() => {
+        const finish = job.finish;
+        worker.terminate(); startWorker();
+        finish({ steps: [], error: "Stopped: this took too long to step through.", timeout: true });
+      }, TIME_LIMIT_MS * 2);
     });
   },
   get ready() { return pythonReady && !active; },
