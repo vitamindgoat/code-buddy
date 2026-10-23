@@ -130,6 +130,7 @@ function renderHeader() {
   const totalItems = LESSONS.length * 2 + MODULES.length;
   const doneCount = Object.keys(progress.done).length;
   $("progress-label").textContent = `Module ${l.moduleIndex + 1} · ${m.title}`;
+  $("progress-pct").textContent = `${Math.round((Math.min(doneCount, totalItems) / totalItems) * 100)}%`;
   $("progress-fill").style.width = `${Math.min(100, (doneCount / totalItems) * 100)}%`;
   const kind = stage === "lesson" ? (isReading() ? "Reading" : "Lesson") : stage === "practice" ? "Practice" : "Quiz";
   $("stage-badge").textContent = kind;
@@ -305,10 +306,40 @@ function courseStats() {
     quizzes: quizzes.length, avg,
   };
 }
+// ---------- Day streak ----------
+// progress.days = sorted list of local dates (YYYY-MM-DD) on which something
+// got finished. The streak counts back from today (or yesterday, so it
+// doesn't read 0 first thing in the morning).
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+function markDay() {
+  const days = progress.days || (progress.days = []);
+  const t = dayKey();
+  if (days[days.length - 1] !== t) { days.push(t); if (days.length > 400) days.splice(0, days.length - 400); }
+}
+function streakInfo() {
+  const set = new Set(progress.days || []);
+  const back = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return dayKey(d); };
+  let start = set.has(back(0)) ? 0 : set.has(back(1)) ? 1 : -1, cur = 0;
+  if (start >= 0) while (set.has(back(start + cur))) cur++;
+  let best = 0, run = 0, prev = null;
+  for (const d of [...set].sort()) {
+    const dt = new Date(d + "T12:00:00");
+    run = prev && Math.round((dt - prev) / 864e5) === 1 ? run + 1 : 1;
+    best = Math.max(best, run); prev = dt;
+  }
+  return { cur, best: Math.max(best, cur), today: set.has(back(0)) };
+}
+function renderStreak() {
+  const { cur, best, today } = streakInfo();
+  const el = $("sb-streak");
+  el.innerHTML = `<span class="streak-fire ${today ? "lit" : ""}">🔥</span><b>${cur}</b><span>day streak</span><em>best ${best}</em>`;
+  el.title = today ? "You did something today. Nice!" : cur ? "Finish something today to keep it going." : "Finish something to start a streak.";
+}
+
 function showFinish() {
   closeSidebar(); hideDone();
   finish.show({
-    complete: courseComplete(), stats: courseStats(),
+    complete: courseComplete(), stats: { ...courseStats(), streak: streakInfo() },
     name: settings.name || progress.certName || "",
     onName: (n) => { progress.certName = n; saveProgress(); },
     onBack: () => refocus(),
@@ -324,6 +355,7 @@ $("finish-trophies").addEventListener("click", () => badges.show());
 function finishStage() {
   const first = !progress.done[doneId()];
   progress.done[doneId()] = true;
+  markDay();
   if (stage === "lesson" || stage === "practice") { clearTimeout(codeSaveTimer); saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked, finished: true }); }
   // (a finished quiz keeps its saved state so its score screen comes back on a revisit)
   if (stage === "lesson" && first) progress.lessonsFinished = (progress.lessonsFinished || 0) + 1;
@@ -390,9 +422,16 @@ function replayClass(el, cls) {
 const sidebar = $("sidebar"), backdrop = $("sidebar-backdrop");
 function renderSidebar() {
   const list = $("sidebar-list");
-  list.innerHTML = MODULES.map((m, mi) => `
+  renderStreak();
+  const modCount = (m) => {
+    let d = 0, t = 1;
+    for (const l of m.lessons) { t += l.type === "read" ? 1 : 2; d += (progress.done[l.id] ? 1 : 0) + (l.type !== "read" && progress.done[l.id + "-practice"] ? 1 : 0); }
+    return [d + (progress.done[m.id + "-quiz"] ? 1 : 0), t];
+  };
+  list.innerHTML = MODULES.map((m, mi) => { const [md, mt] = modCount(m); const sc = progress.scores[m.id]; return `
     <div class="sb-module">
-      <div class="sb-module-title"><span class="sb-num">${mi + 1}</span><span class="sb-mtitle">${m.title}</span><span class="sb-blurb">${m.blurb}</span></div>
+      <div class="sb-module-title"><span class="sb-num ${md === mt ? "full" : ""}">${md === mt ? "✓" : mi + 1}</span><span class="sb-mtitle">${m.title}</span><span class="sb-mcount">${md}/${mt}</span><span class="sb-blurb">${m.blurb}</span>
+        <span class="sb-mbar"><i style="width:${Math.round((md / mt) * 100)}%"></i></span></div>
       ${m.lessons.map((l, li) => {
         const idx = LESSONS.findIndex((x) => x.id === l.id);
         const cur = idx === lessonIndex && stage !== "quiz";
@@ -407,8 +446,8 @@ function renderSidebar() {
       }).join("")}
       <button class="sb-lesson sb-quiz ${lessonIndex === LESSONS.findIndex((x) => x.id === m.lessons[m.lessons.length - 1].id) && stage === "quiz" ? "current" : ""}" data-quiz="${mi}" type="button">
         <span class="sb-lnum">★</span><span class="sb-ltitle">Module ${mi + 1} quiz</span>
-        <span class="sb-marks"><span class="sb-mark ${isDone(m.id + "-quiz") ? "on" : ""}">Q</span></span></button>
-    </div>`).join("");
+        <span class="sb-marks">${sc && isDone(m.id + "-quiz") ? `<span class="sb-score ${sc.score === sc.total ? "perfect" : ""}">${sc.score}/${sc.total}</span>` : ""}<span class="sb-mark ${isDone(m.id + "-quiz") ? "on" : ""}">Q</span></span></button>
+    </div>`; }).join("");
   list.querySelectorAll(".sb-lesson[data-idx]").forEach((b) => b.addEventListener("click", () => open({ lessonIndex: +b.dataset.idx, stage: "lesson" })));
   list.querySelectorAll(".sb-lesson[data-quiz]").forEach((b) => b.addEventListener("click", () => {
     const m = MODULES[+b.dataset.quiz];

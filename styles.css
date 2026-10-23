@@ -536,6 +536,22 @@ body { background: var(--bg); }
 .sb-module-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-weight: 800; color: var(--blue-ink); padding: 8px 8px 6px; }
 .sb-num { flex: none; }
 .sb-mtitle { flex: 1; min-width: 0; }
+.sb-streak { display: flex; align-items: center; gap: 6px; margin: 12px 12px 0; padding: 9px 12px; border-radius: 12px; background: linear-gradient(90deg, #fff4e6, #fff); border: 1.5px solid #ffd8a8; font-weight: 800; color: #9a4a00; font-size: 14px; }
+.sb-streak b { font-size: 18px; color: #d9480f; }
+.sb-streak em { margin-left: auto; font-style: normal; font-size: 12px; color: #b07a4a; }
+.streak-fire { font-size: 18px; filter: grayscale(1); opacity: 0.6; transition: filter 0.3s ease, opacity 0.3s ease; }
+.streak-fire.lit { filter: none; opacity: 1; animation: flicker 1.6s ease-in-out infinite; }
+@keyframes flicker { 0%, 100% { transform: scale(1) rotate(-3deg); } 50% { transform: scale(1.12) rotate(3deg); } }
+.sb-mcount { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--ink-soft); }
+.sb-mbar { flex-basis: 100%; margin-left: 32px; height: 5px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.sb-mbar i { display: block; height: 100%; border-radius: 99px; background: var(--green); transition: width 0.5s ease; }
+.sb-num.full { background: var(--green); }
+.sb-score { font-size: 12px; font-weight: 800; color: var(--blue-dark); background: var(--blue-soft); border-radius: 6px; padding: 1px 6px; margin-right: 4px; }
+.sb-score.perfect { color: #fff; background: var(--green); }
+.progress-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.progress-pct { font-size: 12px; font-weight: 800; color: var(--blue); flex: none; }
+.finish-streak { position: relative; grid-column: 1 / -1; font-weight: 800; color: #9a4a00; background: #fff4e6; border: 1.5px solid #ffd8a8; border-radius: 12px; padding: 8px; }
+.finish-streak b { color: #d9480f; font-size: 18px; } .finish-streak span { color: #b07a4a; font-size: 13px; }
 .sb-num { width: 24px; height: 24px; border-radius: 50%; background: var(--blue); color: #fff; display: grid; place-items: center; font-size: 13px; }
 .sb-blurb { flex-basis: 100%; font-size: 12px; font-weight: 600; color: var(--ink-soft); padding-left: 32px; }
 .sb-lesson {

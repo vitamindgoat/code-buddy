@@ -133,7 +133,8 @@ const finish = (() => {
     $("finish-sub").textContent = o.complete
       ? "Every lesson, every practice, every quiz. That is real Python you wrote."
       : `${st.total - st.done} to go. Finish everything to unlock your certificate.`;
-    $("finish-stats").innerHTML = stat(st.lessons, "lessons") + stat(st.practices, "practices") + stat(st.quizzes, "quizzes") + stat(st.quizzes ? `${st.avg}%` : "–", "quiz average");
+    $("finish-stats").innerHTML = stat(st.lessons, "lessons") + stat(st.practices, "practices") + stat(st.quizzes, "quizzes") + stat(st.quizzes ? `${st.avg}%` : "–", "quiz average")
+      + (st.streak ? `<div class="finish-streak">🔥 <b>${st.streak.cur}</b> day streak <span>· best ${st.streak.best}</span></div>` : "");
     $("finish-cert").hidden = !o.complete;
     $("finish-locked").hidden = o.complete;
     $("finish-pct").style.width = `${Math.round((st.done / st.total) * 100)}%`;

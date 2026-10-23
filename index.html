@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="90" />
+  <meta name="build" content="91" />
   <title>CodeBuddy – Learn to code with a friend</title>
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=90" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=90" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=91" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=91" />
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,8 +21,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=90" />
-  <link rel="stylesheet" href="buddy.css?v=90" />
+  <link rel="stylesheet" href="styles.css?v=91" />
+  <link rel="stylesheet" href="buddy.css?v=91" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -48,6 +48,7 @@
       <span class="brand-name">Modules</span>
       <button id="sidebar-close" class="btn btn-ghost btn-icon-only" type="button" aria-label="Close menu">✕</button>
     </div>
+    <div id="sb-streak" class="sb-streak"></div>
     <nav id="sidebar-list" class="sidebar-list"></nav>
     <div class="sidebar-foot">
       <button id="cert-btn" class="btn btn-ghost" type="button" title="Your progress and certificate">🎓 <span>Certificate</span></button>
@@ -62,7 +63,7 @@
     <!-- LEFT: the lesson -->
     <section class="card lesson">
       <div class="progress">
-        <span id="progress-label">Module 1</span>
+        <span class="progress-top"><span id="progress-label">Module 1</span><span id="progress-pct" class="progress-pct">0%</span></span>
         <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
       </div>
       <div class="stage-row">
@@ -332,17 +333,17 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=90"></script>
-  <script src="fx.js?v=90"></script>
-  <script src="lessons.js?v=90"></script>
-  <script src="buddy.js?v=90"></script>
-  <script src="tutor.js?v=90"></script>
-  <script src="scratch.js?v=90"></script>
-  <script src="quiz.js?v=90"></script>
-  <script src="read.js?v=90"></script>
-  <script src="finish.js?v=90"></script>
-  <script src="badges.js?v=90"></script>
-  <script src="tour.js?v=90"></script>
-  <script src="app.js?v=90"></script>
+  <script src="sfx.js?v=91"></script>
+  <script src="fx.js?v=91"></script>
+  <script src="lessons.js?v=91"></script>
+  <script src="buddy.js?v=91"></script>
+  <script src="tutor.js?v=91"></script>
+  <script src="scratch.js?v=91"></script>
+  <script src="quiz.js?v=91"></script>
+  <script src="read.js?v=91"></script>
+  <script src="finish.js?v=91"></script>
+  <script src="badges.js?v=91"></script>
+  <script src="tour.js?v=91"></script>
+  <script src="app.js?v=91"></script>
 </body>
 </html>
