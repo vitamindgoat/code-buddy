@@ -547,11 +547,76 @@ function renderSidebar() {
         <span class="sb-marks">${sc && isDone(m.id + "-quiz") ? `<span class="sb-score ${sc.score === sc.total ? "perfect" : ""}">${sc.score}/${sc.total}</span>` : ""}<span class="sb-mark ${isDone(m.id + "-quiz") ? "on" : ""}">Q</span></span></button>
     </div>`; }).join("");
   list.querySelectorAll(".sb-lesson[data-idx]").forEach((b) => b.addEventListener("click", () => open({ lessonIndex: +b.dataset.idx, stage: "lesson" })));
+  if ($("sb-search").value.trim()) applySearch();
   list.querySelectorAll(".sb-lesson[data-quiz]").forEach((b) => b.addEventListener("click", () => {
     const m = MODULES[+b.dataset.quiz];
     open({ lessonIndex: LESSONS.findIndex((x) => x.id === m.lessons[m.lessons.length - 1].id), stage: "quiz" });
   }));
 }
+// ---------- Lesson search (sidebar) ----------
+// Each lesson is searchable by its title and by what's inside it: the
+// intro, the code you type, the practice and the reading cards.
+const searchText = (l) => [l.title, l.intro, l.why, l.done, ...(l.steps || []).map((s) => s.code), l.practice && l.practice.task,
+  ...(l.cards || []).flatMap((c) => [c.title, c.text])].filter(Boolean).join(" \n ").toLowerCase();
+const SEARCH_INDEX = LESSONS.map(searchText);
+// the readable version (original case, no ** or ` markers) for snippets
+const SEARCH_RAW = LESSONS.map((l) => [l.intro, l.why, ...(l.cards || []).map((c) => c.text), l.practice && l.practice.task, l.done].filter(Boolean).join(" ").replace(/[*`]/g, "").replace(/\s+/g, " "));
+function contextSnippet(i, words) {
+  const raw = SEARCH_RAW[i], low = raw.toLowerCase();
+  const at = low.indexOf(words[0]); if (at < 0) return "";
+  let a = Math.max(0, at - 28); if (a > 0) a = raw.indexOf(" ", a) + 1;
+  let b = Math.min(raw.length, at + words[0].length + 40); const sp = raw.lastIndexOf(" ", b); if (b < raw.length && sp > at) b = sp;
+  return (a > 0 ? "…" : "") + markMatches(raw.slice(a, b), words) + (b < raw.length ? "…" : "");
+}
+const escHtml = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function markMatches(text, words) {
+  let html = escHtml(text);
+  for (const w of words) html = html.replace(new RegExp(`(${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})(?![^<]*>)`, "gi"), "<mark>$1</mark>");
+  return html;
+}
+function applySearch() {
+  const q = $("sb-search").value.trim().toLowerCase();
+  const words = q.split(/\s+/).filter(Boolean);
+  const list = $("sidebar-list");
+  let shown = 0;
+  list.querySelectorAll(".sb-lesson").forEach((b) => {
+    const t = b.querySelector(".sb-ltitle");
+    if (!t.dataset.plain) t.dataset.plain = t.textContent;
+    let hit = true, snippet = "";
+    if (words.length) {
+      if (b.dataset.idx !== undefined) {
+        const hay = SEARCH_INDEX[+b.dataset.idx];
+        hit = words.every((w) => hay.includes(w));
+        if (hit && !words.every((w) => t.dataset.plain.toLowerCase().includes(w))) {
+          const l = LESSONS[+b.dataset.idx];
+          const line = (l.steps || []).map((s) => s.code.trim()).find((c) => words.some((w) => c.toLowerCase().includes(w)));
+          snippet = line ? `<code>${markMatches(line, words)}</code>` : contextSnippet(+b.dataset.idx, words) || "matches inside this lesson";
+        }
+      } else {
+        const m = MODULES[+b.dataset.quiz];
+        hit = words.every((w) => `quiz test ${m.title.toLowerCase()} module ${+b.dataset.quiz + 1}`.includes(w));
+      }
+    }
+    b.hidden = !hit; if (hit) shown++;
+    // the snippet lives inside the title column, so the L / P marks stay put on the right
+    t.innerHTML = (words.length && hit ? markMatches(t.dataset.plain, words) : escHtml(t.dataset.plain)) + (snippet ? `<span class="sb-snippet">${snippet}</span>` : "");
+  });
+  list.querySelectorAll(".sb-module").forEach((m) => { m.hidden = words.length > 0 && !m.querySelector(".sb-lesson:not([hidden])"); });
+  list.classList.toggle("searching", words.length > 0);
+  const empty = $("sb-search-empty");
+  empty.hidden = !(words.length && !shown);
+  if (!empty.hidden) empty.textContent = `No lessons match "${$("sb-search").value.trim()}". Try a shorter word, like loop or print.`;
+}
+$("sb-search").addEventListener("input", applySearch);
+$("sb-search").addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && e.target.value) { e.stopPropagation(); e.target.value = ""; applySearch(); }
+  if (e.key === "Enter") {   // a lesson whose TITLE matches beats one that only mentions it
+    const shown = [...$("sidebar-list").querySelectorAll(".sb-lesson:not([hidden])")];
+    const best = shown.find((b) => !b.querySelector(".sb-snippet")) || shown[0];   // no snippet = the title itself matched
+    if (best) best.click();
+  }
+});
+
 function openSidebar() { sidebar.classList.add("open"); sidebar.setAttribute("aria-hidden", "false"); sidebar.inert = false; backdrop.hidden = false; sfx.pop(); }
 function closeSidebar() { sidebar.classList.remove("open"); sidebar.setAttribute("aria-hidden", "true"); sidebar.inert = true; backdrop.hidden = true; }   // inert: a closed sidebar is not reachable with Tab
 $("menu-btn").addEventListener("click", () => (sidebar.classList.contains("open") ? closeSidebar() : openSidebar()));

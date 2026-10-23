@@ -337,3 +337,7 @@
 .tok-comment { color: #6b7280; font-style: italic; }
 .tok-name    { color: #0f766e; }
 .speech .chip { color: #1d2433; }   /* chip text takes token colors */
+
+/* read-along: the word Buddy is saying right now */
+.speech .ch.said { background: var(--blue-line); border-radius: 3px; box-shadow: 0 0 0 1px var(--blue-line); transition: background 0.12s ease; }
+:root[data-theme="dark"] .speech .ch.said { background: #2b4f86; box-shadow: 0 0 0 1px #2b4f86; }

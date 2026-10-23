@@ -110,6 +110,7 @@ const buddy = (() => {
     lastSay = [message, state];
     clearTimeout(typingTimer);
     chars = []; spokenIndex = []; revealed = 0; spoken = "";
+    saidEls = []; gotWordEvents = false; speechEl.classList.remove("speaking");
     target = 0; carry = 0; lastFrame = 0; cancelAnimationFrame(smoothRaf); smoothRaf = 0;
     speechEl.innerHTML = "";
     speechEl.classList.add("typing");
@@ -185,10 +186,11 @@ const buddy = (() => {
         revealTo(from); startPacing(from, to);
       },
       onChunkEnd: (from, to) => { learnSpeed(to - from, performance.now() - pacedStart); revealTo(to); },
-      onWord: (charIndex) => { revealTo(charIndex + 18); startPacing(charIndex + 18, pacedLimit); },
-      onEnd: () => finishTyping(false),
+      onWord: (charIndex) => { gotWordEvents = true; revealTo(charIndex + 18); startPacing(charIndex + 18, pacedLimit); requestAnimationFrame(() => markSaidSpoken(charIndex)); },
+      onEnd: () => { speechEl.classList.remove("speaking"); clearSaid(); finishTyping(false); },
     });
     if (started) {
+      speechEl.classList.add("speaking");
       // Some voices (Chrome's Google ones) never send word events, so we
       // also pace the reveal at roughly speaking speed, sentence by
       // sentence: each sentence's start event re-anchors the cursor and the
@@ -231,13 +233,41 @@ const buddy = (() => {
     const measured = (ms * voice.rate) / spokenChars;
     msPerChar = Math.max(40, Math.min(140, msPerChar * 0.5 + measured * 0.5));
   }
+  // ---------- read-along: light up the word being spoken ----------
+  // Voices that send word events tell us exactly where they are (onWord).
+  // Others don't, so we follow our own estimate of the voice position
+  // (the same pacing that drives the typewriter, minus its lookahead).
+  let saidEls = [], gotWordEvents = false;
+  const WORDCH = /[\p{L}\p{N}'’_]/u;
+  function clearSaid() { for (const e of saidEls) e.classList.remove("said"); saidEls = []; }
+  function markSaidSpoken(spokenPos) {
+    let n = 0;
+    while (n < chars.length && spokenIndex[n] < spokenPos) n++;
+    while (n < chars.length && !WORDCH.test(chars[n].textContent)) n++;   // skip spaces and punctuation
+    if (n >= chars.length || !chars[n].classList.contains("on")) return;  // never highlight text that isn't shown yet
+    if (saidEls[0] && saidEls.includes(chars[n])) return;
+    let a = n, b = n;
+    while (a > 0 && WORDCH.test(chars[a - 1].textContent)) a--;
+    while (b < chars.length && WORDCH.test(chars[b].textContent)) b++;
+    clearSaid();
+    saidEls = chars.slice(a, b);
+    for (const e of saidEls) e.classList.add("said");
+  }
+
   function paced() {
-    if (revealed >= chars.length) return;        // wait for the voice to end
+    if (revealed >= chars.length) { if (!gotWordEvents && voice.on) markSaidSpoken(pacedBase + ((performance.now() - pacedStart) * voice.rate) / msPerChar); typingTimer = setTimeout(pacedTail, 40); return; }
+    if (!gotWordEvents && voice.on && voice.busy && !typingBlind) markSaidSpoken(Math.min(pacedBase + ((performance.now() - pacedStart) * voice.rate) / msPerChar, pacedLimit));
     const pos = pacedBase + ((performance.now() - pacedStart) * voice.rate) / msPerChar + LOOKAHEAD;
     // never run past the sentence the voice is on: the next sentence's
     // start event moves the limit forward
     revealTo(Math.min(pos, pacedLimit));
     typingTimer = setTimeout(paced, 40);
+  }
+
+  function pacedTail() {
+    if (!voice.on || !voice.busy || gotWordEvents || !speechEl.classList.contains("speaking")) { clearSaid(); return; }
+    markSaidSpoken(Math.min(pacedBase + ((performance.now() - pacedStart) * voice.rate) / msPerChar, pacedLimit));
+    typingTimer = setTimeout(pacedTail, 40);
   }
 
   // Letters never pop in as a block. revealTo only moves the TARGET; a
@@ -428,6 +458,7 @@ const buddy = (() => {
       setTarget(chars.length);    // the voice is done: type out whatever is left, quickly
     }
     speechEl.classList.remove("typing");
+    if (skipped) { speechEl.classList.remove("speaking"); clearSaid(); }
     if (skipped) voice.stop();
     doneHandlers.forEach((f) => f());
     // done talking: a one-shot pose can relax now
@@ -618,5 +649,5 @@ const voice = (() => {
     try { localStorage.setItem("codebuddy.voice", name); } catch {}
   }
 
-  return { speak, stop, toggle, choose, voices, chunk, setRate, get rate() { return rate; }, get on() { return on; }, get chosen() { return chosen; } };
+  return { speak, stop, toggle, choose, voices, chunk, setRate, get rate() { return rate; }, get on() { return on; }, get chosen() { return chosen; }, get busy() { return !!current; } };
 })();

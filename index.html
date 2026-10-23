@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="110" />
+  <meta name="build" content="111" />
   <!-- Theme before first paint, so dark mode never flashes white -->
   <script>
     try {
@@ -30,8 +30,8 @@
   <meta name="twitter:title" content="CodeBuddy – Learn Python by typing every line" />
   <meta name="twitter:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on." />
   <meta name="twitter:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=110" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=110" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=111" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=111" />
   <!-- Installable app: icon, name and colors for "Add to Home Screen" -->
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -49,9 +49,9 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=110" />
-  <link rel="stylesheet" href="buddy.css?v=110" />
-  <link rel="stylesheet" href="dark.css?v=110" />
+  <link rel="stylesheet" href="styles.css?v=111" />
+  <link rel="stylesheet" href="buddy.css?v=111" />
+  <link rel="stylesheet" href="dark.css?v=111" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -80,6 +80,8 @@
     </div>
     <div id="sb-streak" class="sb-streak"></div>
     <button id="sb-daily" class="sb-daily" type="button"></button>
+    <div class="sb-search"><span aria-hidden="true">🔍</span><input id="sb-search" type="search" placeholder="Search lessons (try: loop, input, binary)" aria-label="Search lessons" autocomplete="off" spellcheck="false" /></div>
+    <p id="sb-search-empty" class="sb-search-empty" hidden></p>
     <nav id="sidebar-list" class="sidebar-list"></nav>
     <div class="sidebar-foot">
       <button id="sb-play-btn" class="btn btn-ghost" type="button" title="Write any Python you like">🧪 <span>Playground</span></button>
@@ -533,22 +535,22 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=110"></script>
-  <script src="fx.js?v=110"></script>
-  <script src="wordinfo.js?v=110"></script>
-  <script src="lessons.js?v=110"></script>
-  <script src="buddy.js?v=110"></script>
-  <script src="tutor.js?v=110"></script>
-  <script src="scratch.js?v=110"></script>
-  <script src="quiz.js?v=110"></script>
-  <script src="read.js?v=110"></script>
-  <script src="finish.js?v=110"></script>
-  <script src="badges.js?v=110"></script>
-  <script src="playground.js?v=110"></script>
-  <script src="viz.js?v=110"></script>
-  <script src="daily.js?v=110"></script>
-  <script src="backup.js?v=110"></script>
-  <script src="tour.js?v=110"></script>
-  <script src="app.js?v=110"></script>
+  <script src="sfx.js?v=111"></script>
+  <script src="fx.js?v=111"></script>
+  <script src="wordinfo.js?v=111"></script>
+  <script src="lessons.js?v=111"></script>
+  <script src="buddy.js?v=111"></script>
+  <script src="tutor.js?v=111"></script>
+  <script src="scratch.js?v=111"></script>
+  <script src="quiz.js?v=111"></script>
+  <script src="read.js?v=111"></script>
+  <script src="finish.js?v=111"></script>
+  <script src="badges.js?v=111"></script>
+  <script src="playground.js?v=111"></script>
+  <script src="viz.js?v=111"></script>
+  <script src="daily.js?v=111"></script>
+  <script src="backup.js?v=111"></script>
+  <script src="tour.js?v=111"></script>
+  <script src="app.js?v=111"></script>
 </body>
 </html>
