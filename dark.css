@@ -3,8 +3,8 @@
    Everything in the app reads its colors from the tokens in styles.css,
    so dark mode is mostly new token values. Below them are the few spots
    that used fixed colors (syntax highlighting, colored terms, the streak
-   chip, warning banners). The certificate and share cards are drawn on a
-   canvas and stay light on purpose, like a real printed certificate.
+   chip, warning banners). The quiz share card is drawn on a canvas and
+   stays light on purpose.
 
    Turned on by <html data-theme="dark"> (app.js sets it from Settings:
    Auto follows the device, or pick Light / Dark).
@@ -73,13 +73,10 @@
 :root[data-theme="dark"] .term-red    { color: #ff9ea2; background: #44191f; }
 
 /* warm chips and banners */
-:root[data-theme="dark"] .sb-streak { background: linear-gradient(90deg, #3a240f, var(--card)); border-color: #6b4317; color: #ffcf9a; }
-:root[data-theme="dark"] .sb-streak b, :root[data-theme="dark"] .finish-streak b { color: #ff9a4d; }
-:root[data-theme="dark"] .sb-streak em, :root[data-theme="dark"] .finish-streak span { color: #d2a77a; }
-:root[data-theme="dark"] .finish-streak { background: #3a240f; border-color: #6b4317; color: #ffcf9a; }
+:root[data-theme="dark"] .sb-streak { color: #ffcf9a; }
 :root[data-theme="dark"] .py-banner[data-kind="fail"] { background: #3b1a20; border-color: #6e2a33; }
 :root[data-theme="dark"] .py-banner[data-kind="fail"] b { color: #ff9ea2; }
-:root[data-theme="dark"] .trophy:not(.on) { background: #0f1828; border-color: var(--line); }
+:root[data-theme="dark"] .trophy:not(.on) { background: #0f1828; }
 @keyframes error-flash-dark { 0% { background: #5a2028; } 100% { background: var(--red-soft); } }
 :root[data-theme="dark"] .error-line { animation-name: error-flash-dark; }
 
@@ -101,7 +98,6 @@
 :root[data-theme="dark"] .btn-big,
 :root[data-theme="dark"] .vis-bit.on .vis-digit,
 :root[data-theme="dark"] .scratch-pill { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45); }
-:root[data-theme="dark"] .finish-preview { box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45); }
 :root[data-theme="dark"] .settings input[type="range"]::-webkit-slider-thumb { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5); }
 :root[data-theme="dark"] .steps li.current,
 :root[data-theme="dark"] .quiz-dot.on { box-shadow: 0 0 0 2px var(--blue-line); }
@@ -110,22 +106,13 @@
 /* white text on blue chips needs a deeper blue than the dark-mode accent */
 :root[data-theme="dark"] .stage-quiz, :root[data-theme="dark"] .quiz-dot.on, :root[data-theme="dark"] .steps li.run-step, :root[data-theme="dark"] .callout, :root[data-theme="dark"] .vis-bit.on .vis-digit, :root[data-theme="dark"] .keybar .keybar-run, :root[data-theme="dark"] .scratch-tabs button.on, :root[data-theme="dark"] .sb-num:not(.full), :root[data-theme="dark"] .scratch-tools button.on, :root[data-theme="dark"] .scratch-pill { background: #1f66c8; }
 :root[data-theme="dark"] .status.bad { color: var(--red); }
-:root[data-theme="dark"] #sb-play-btn { color: var(--green); }
 
 :root[data-theme="dark"] .ghost { color: #8a96ad; }
 :root[data-theme="dark"] .output .err { color: var(--red); }
 :root[data-theme="dark"] .status.ok { color: var(--green); }
 :root[data-theme="dark"] .btn-primary:hover:not(:disabled) { background: #2468cc; }
 
-@keyframes viz-flash-dark { from { background: #24406b; } }
-:root[data-theme="dark"] .viz-vars tr.changed td, :root[data-theme="dark"] .viz-vars tr.changed th, :root[data-theme="dark"] .viz-vars tr.new td, :root[data-theme="dark"] .viz-vars tr.new th { animation-name: viz-flash-dark; }
-:root[data-theme="dark"] .viz-vars tr.new th::after { color: var(--green); }
-:root[data-theme="dark"] .viz-caption .viz-bad, :root[data-theme="dark"] .viz-line.err .viz-mark { color: var(--red); }
 
-:root[data-theme="dark"] .sb-daily-state.solved, :root[data-theme="dark"] .daily-status.solved, :root[data-theme="dark"] .daily-result.good b { color: var(--green); }
-:root[data-theme="dark"] .daily-result.good { border-color: #1f5a43; }
-:root[data-theme="dark"] .daily-result.bad { border-color: #6e2a33; }
-:root[data-theme="dark"] .daily-result.bad b { color: var(--red); }
 
 :root[data-theme="dark"] .wordtip { box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5); }
 :root[data-theme="dark"] .wordtip-word { background: #1f66c8; }
@@ -139,3 +126,5 @@
     --green: #17a673; --green-soft: #e4f7ef; --red: #e5484d; --red-soft: #fdecec;
   }
 }
+
+:root[data-theme="dark"] .stage-badge.stage-practice, :root[data-theme="dark"] .done-badge { color: var(--green); }

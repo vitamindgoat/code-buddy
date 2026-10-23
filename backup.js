@@ -100,12 +100,11 @@ const backup = (() => {
         <div><b>${d.stats.quizzes}</b><span>quizzes</span></div>
         <div><b>${d.stats.quizzes ? d.stats.avg + "%" : "–"}</b><span>quiz average</span></div>
         <div><b>${d.streak.best}</b><span>best streak (days)</span></div>
-        <div><b>${d.dailyCount}</b><span>daily challenges</span></div>
       </div>
       ${mods}
       <section class="rep-mod"><h3>Badges <span>${d.badges.length} of ${d.badgeTotal}</span></h3>
         <p class="rep-badges">${d.badges.length ? d.badges.map((b) => `<span>${b.icon} ${esc(b.name)}</span>`).join("") : "None yet."}</p></section>
-      <p class="rep-foot">${d.complete ? "Course complete. Certificate earned." : `${d.stats.total - d.stats.done} items to go until the certificate.`} Days active: ${d.daysActive}. Made with CodeBuddy, a free learn-to-code app.</p>`;
+      <p class="rep-foot">${d.complete ? "Course complete!" : `${d.stats.total - d.stats.done} items left in the course.`} Days active: ${d.daysActive}. Made with CodeBuddy, a free learn-to-code app.</p>`;
     const root = $("report");
     root.hidden = false; root.classList.remove("show"); void root.offsetWidth; root.classList.add("show");
     document.body.classList.add("printing-report");

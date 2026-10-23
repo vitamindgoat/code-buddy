@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="113" />
+  <meta name="build" content="115" />
   <!-- Theme before first paint, so dark mode never flashes white -->
   <script>
     try {
@@ -30,8 +30,8 @@
   <meta name="twitter:title" content="CodeBuddy – Learn Python by typing every line" />
   <meta name="twitter:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on." />
   <meta name="twitter:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=113" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=113" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=115" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=115" />
   <!-- Installable app: icon, name and colors for "Add to Home Screen" -->
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -49,9 +49,9 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=113" />
-  <link rel="stylesheet" href="buddy.css?v=113" />
-  <link rel="stylesheet" href="dark.css?v=113" />
+  <link rel="stylesheet" href="styles.css?v=115" />
+  <link rel="stylesheet" href="buddy.css?v=115" />
+  <link rel="stylesheet" href="dark.css?v=115" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -65,7 +65,6 @@
     </div>
     <div class="topbar-right">
       <span class="pill" id="lesson-pill">Lesson 1</span>
-      <button id="play-btn" class="btn btn-ghost btn-icon-only" type="button" title="Playground: write any Python you like" aria-label="Playground">🧪 <span class="btn-text">Playground</span></button>
       <button id="settings-btn" class="btn btn-ghost btn-icon-only" type="button" title="Settings" aria-label="Settings">⚙ <span class="btn-text">Settings</span></button>
       <button id="tour-btn" class="btn btn-ghost btn-icon-only" type="button" title="Redo the tutorial" aria-label="Tutorial">❔ <span class="btn-text">Tutorial</span></button>
     </div>
@@ -79,16 +78,13 @@
       <button id="sidebar-close" class="btn btn-ghost btn-icon-only" type="button" aria-label="Close menu">✕</button>
     </div>
     <div id="sb-streak" class="sb-streak"></div>
-    <button id="sb-daily" class="sb-daily" type="button"></button>
     <div class="sb-search"><span aria-hidden="true">🔍</span><input id="sb-search" type="search" placeholder="Search lessons (try: loop, input, binary)" aria-label="Search lessons" autocomplete="off" spellcheck="false" /></div>
     <p id="sb-search-empty" class="sb-search-empty" hidden></p>
     <nav id="sidebar-list" class="sidebar-list"></nav>
     <div class="sidebar-foot">
-      <button id="sb-play-btn" class="btn btn-ghost" type="button" title="Write any Python you like">🧪 <span>Playground</span></button>
-      <button id="cert-btn" class="btn btn-ghost" type="button" title="Your progress and certificate">🎓 <span>Certificate</span></button>
-      <button id="trophies-btn" class="btn btn-ghost" type="button" title="Badges you've earned">🏆 <span>Trophies</span> <span class="sb-count" data-trophy-count>0 / 18</span></button>
-      <button id="redo-tour-btn" class="btn btn-ghost" type="button">❔ Redo tutorial</button>
-      <button id="reset-btn-all" class="btn btn-ghost" type="button">↺ Reset progress</button>
+      <button id="trophies-btn" class="btn btn-ghost" type="button" title="Badges you've earned"><span>Badges</span> <span class="sb-count" data-trophy-count>0 / 15</span></button>
+      <button id="redo-tour-btn" class="btn btn-ghost" type="button">Redo tutorial</button>
+      <button id="reset-btn-all" class="btn btn-ghost" type="button">Reset progress</button>
     </div>
   </aside>
 
@@ -126,7 +122,6 @@
           <span class="card-label">Your code</span>
           <div class="actions">
             <button id="reset-btn" class="btn btn-ghost" type="button" title="Start over"><span class="btn-text">Start over</span><span class="btn-text-short" aria-hidden="true">↺</span></button>
-            <button id="step-btn" class="btn btn-ghost" type="button" title="Step through: watch your code run one line at a time" aria-label="Step through"><span aria-hidden="true">👣</span> <span class="btn-text">Step through</span></button>
             <span id="run-tag" class="callout run-tag" hidden>Now run it</span>
             <button id="run-btn" class="btn btn-primary" type="button" disabled>
               <span class="btn-icon">▶</span> Run
@@ -192,14 +187,14 @@
       <label class="set-row"><span>Sound effects</span><input id="set-sound" type="checkbox" /></label>
       <label class="set-row"><span>Animations</span><input id="set-motion" type="checkbox" /></label>
       <div class="set-actions">
-        <button id="set-test" class="btn btn-ghost" type="button">🗣 Test speed</button>
-        <button id="set-install" class="btn btn-ghost" type="button" hidden>📲 Install app</button>
-        <button id="set-keys" class="btn btn-ghost" type="button">⌨ Shortcuts</button>
-        <button id="set-tour" class="btn btn-ghost" type="button">❔ Redo tutorial</button>
-        <button id="set-report" class="btn btn-ghost" type="button">📄 Progress report</button>
-        <button id="set-backup" class="btn btn-ghost" type="button">⬇ Back up progress</button>
-        <button id="set-restore" class="btn btn-ghost" type="button">⬆ Restore a backup</button>
-        <button id="set-reset" class="btn btn-ghost" type="button">↺ Reset progress</button>
+        <button id="set-test" class="btn btn-ghost" type="button">Test speed</button>
+        <button id="set-install" class="btn btn-ghost" type="button" hidden>Install app</button>
+        <button id="set-keys" class="btn btn-ghost" type="button">Shortcuts</button>
+        <button id="set-tour" class="btn btn-ghost" type="button">Redo tutorial</button>
+        <button id="set-report" class="btn btn-ghost" type="button">Progress report</button>
+        <button id="set-backup" class="btn btn-ghost" type="button">Back up progress</button>
+        <button id="set-restore" class="btn btn-ghost" type="button">Restore a backup</button>
+        <button id="set-reset" class="btn btn-ghost" type="button">Reset progress</button>
       </div>
     </div>
   </div>
@@ -233,7 +228,7 @@
       <div class="done-rays"></div>
       <div id="name-buddy" class="done-buddy"></div>
       <h2 class="done-title name-title">What should I call you?</h2>
-      <p class="done-sub">I'll use it when I cheer you on, and it goes on your certificate at the end. You can change it in Settings.</p>
+      <p class="done-sub">I'll use it when I cheer you on. You can change it in Settings.</p>
       <input id="name-input" class="name-input" type="text" maxlength="40" placeholder="Your name" autocomplete="given-name" spellcheck="false" />
       <div class="done-actions">
         <button id="name-go" class="btn btn-primary btn-big" type="submit">Let's go ▶</button>
@@ -242,110 +237,24 @@
     </form>
   </div>
 
-  <!-- Playground: free coding with Buddy's error help (playground.js) -->
-  <section id="playground" class="playground" hidden aria-label="Playground">
-    <div class="pg-head">
-      <div class="pg-title"><span aria-hidden="true">🧪</span> Playground</div>
-      <input id="pg-name" class="pg-name" type="text" maxlength="40" value="Untitled" aria-label="Program name" spellcheck="false" />
-      <div class="pg-head-actions">
-        <button id="pg-new" class="btn btn-ghost" type="button">＋ New</button>
-        <button id="pg-save" class="btn btn-ghost" type="button">Save</button>
-        <button id="pg-step" class="btn btn-ghost" type="button" title="Watch it run one line at a time"><span aria-hidden="true">👣</span> <span class="btn-text">Step through</span></button>
-        <button id="pg-run" class="btn btn-primary" type="button"><span class="btn-icon">▶</span> Run</button>
-        <button id="pg-close" class="finish-close pg-close" type="button" aria-label="Close the Playground">✕</button>
-      </div>
-    </div>
-    <div class="pg-body">
-      <div class="pg-side">
-        <h2 class="pg-side-h">My programs</h2>
-        <ul id="pg-mine" class="pg-list"></ul>
-        <h2 class="pg-side-h">Examples</h2>
-        <ul id="pg-examples" class="pg-list"></ul>
-      </div>
-      <div class="pg-main">
-        <div class="card pg-editor-card">
-          <textarea id="pg-code"></textarea>
-        </div>
-        <label class="pg-inputs-row"><span>Answers for <code>input()</code>, one per line</span>
-          <textarea id="pg-inputs" class="pg-inputs" rows="2" spellcheck="false" placeholder="Leave empty if your program doesn't use input()"></textarea></label>
-        <div class="card pg-out-card" id="pg-out-card">
-          <div class="card-header"><span class="card-label">Output</span><span id="pg-status" class="status"></span></div>
-          <div id="pg-output" class="output"><div class="output-hint">Press Run to see what your code does.</div></div>
-        </div>
-      </div>
-      <div class="pg-help">
-        <div id="pg-buddy" class="pg-buddy"></div>
-        <div id="pg-say" class="pg-say" aria-live="polite"></div>
-      </div>
-    </div>
-  </section>
 
   <!-- Printable progress report (backup.js) -->
   <div id="report" class="complete report" hidden role="dialog" aria-label="Progress report">
     <div class="report-wrap">
       <div class="report-toolbar">
-        <button id="report-print" class="btn btn-primary" type="button">🖨 Print or save as PDF</button>
+        <button id="report-print" class="btn btn-primary" type="button">Print or save as PDF</button>
         <button id="report-close" class="btn btn-ghost" type="button">Close</button>
       </div>
       <article id="report-body" class="card report-card"></article>
     </div>
   </div>
 
-  <!-- Daily challenge: one puzzle a day (daily.js) -->
-  <div id="daily" class="complete daily" hidden role="dialog" aria-labelledby="daily-title">
-    <div class="card daily-card">
-      <div class="viz-head">
-        <div><div id="daily-kicker" class="done-kicker">📅 Daily challenge</div><h2 id="daily-title" class="viz-title"></h2></div>
-        <span id="daily-status" class="daily-status"></span>
-        <button id="daily-close" class="finish-close viz-close" type="button" aria-label="Close">✕</button>
-      </div>
-      <p id="daily-task" class="daily-task"></p>
-      <p id="daily-inputs" class="daily-inputs" hidden></p>
-      <div class="daily-expect"><div class="viz-label">Your program should print</div><pre id="daily-expected"></pre></div>
-      <div class="daily-editor"><textarea id="daily-code"></textarea></div>
-      <div class="daily-actions">
-        <button id="daily-check" class="btn btn-primary" type="button">✓ Check</button>
-        <button id="daily-hint" class="btn btn-ghost" type="button">💡 Hint</button>
-        <button id="daily-solution" class="btn btn-ghost" type="button" hidden>👀 Show a solution</button>
-      </div>
-      <p id="daily-hint-text" class="daily-hint" hidden></p>
-      <div id="daily-result" class="daily-result" hidden aria-live="polite"></div>
-    </div>
-  </div>
 
-  <!-- Code visualizer: step through a program line by line (viz.js) -->
-  <div id="viz" class="complete viz" hidden role="dialog" aria-labelledby="viz-title">
-    <div class="card viz-card">
-      <div class="viz-head">
-        <div><div class="done-kicker">👣 Step through</div><h2 id="viz-title" class="viz-title">Watch it run</h2></div>
-        <span id="viz-count" class="viz-count"></span>
-        <button id="viz-close" class="finish-close viz-close" type="button" aria-label="Close">✕</button>
-      </div>
-      <p id="viz-caption" class="viz-caption" aria-live="polite"></p>
-      <div class="viz-grid">
-        <div class="viz-panel viz-code-panel"><div class="viz-label">Code</div><div id="viz-code" class="viz-code"></div></div>
-        <div class="viz-side">
-          <div class="viz-panel"><div class="viz-label">Variables <span id="viz-scope" class="viz-scope"></span></div>
-            <table class="viz-vars"><tbody id="viz-vars"></tbody></table></div>
-          <div class="viz-panel"><div class="viz-label">Output so far</div><pre id="viz-out" class="viz-out"></pre></div>
-        </div>
-      </div>
-      <div class="viz-controls">
-        <button id="viz-first" class="btn btn-ghost" type="button" aria-label="Back to the start">⏮</button>
-        <button id="viz-prev" class="btn btn-ghost" type="button">◀ Back</button>
-        <button id="viz-play" class="btn btn-ghost" type="button">▶ Play</button>
-        <button id="viz-next" class="btn btn-primary" type="button">Next ▶</button>
-        <button id="viz-last" class="btn btn-ghost" type="button" aria-label="Jump to the end">⏭</button>
-        <input id="viz-slider" class="viz-slider" type="range" min="0" max="0" value="0" aria-label="Step" />
-      </div>
-    </div>
-  </div>
 
   <!-- Keyboard shortcuts: press ? anywhere outside the editor -->
   <div id="keys" class="complete" hidden role="dialog" aria-label="Keyboard shortcuts">
     <div class="done-card card keys-card">
-      <button id="keys-close" class="finish-close" type="button" aria-label="Close">✕</button>
-      <div class="done-kicker">Keyboard</div>
+      <button id="keys-close" class="dialog-close" type="button" aria-label="Close">✕</button>
       <h2 class="done-title keys-title">Shortcuts</h2>
       <div class="keys-cols">
         <section><h3>Coding</h3>
@@ -385,42 +294,10 @@
     </div>
   </div>
 
-  <!-- Course complete: the big celebration + certificate (finish.js). Also
-       the progress report behind the sidebar's "Certificate" button. -->
-  <div id="finish" class="complete finish" hidden role="dialog" aria-label="Course progress">
-    <div class="done-card finish-card card">
-      <button id="finish-close" class="finish-close" type="button" aria-label="Close">✕</button>
-      <div class="done-rays"></div>
-      <div id="finish-buddy" class="done-buddy"></div>
-      <div id="finish-kicker" class="done-kicker">Course complete</div>
-      <h2 id="finish-title" class="done-title">You finished CodeBuddy!</h2>
-      <p id="finish-sub" class="done-sub"></p>
-      <div id="finish-stats" class="finish-stats"></div>
-      <div id="finish-locked" class="finish-locked" hidden>
-        <div class="progress-bar"><div id="finish-pct" class="progress-fill"></div></div>
-        <p>Your certificate unlocks when the last item is done. Keep going!</p>
-      </div>
-      <div id="finish-cert" class="finish-cert" hidden>
-        <label class="finish-name"><span>Name on the certificate</span><input id="finish-name" type="text" maxlength="40" placeholder="Your name" autocomplete="name" spellcheck="false"></label>
-        <div class="finish-preview"><canvas id="cert-canvas" width="1600" height="1131" aria-label="Your certificate"></canvas></div>
-        <div class="finish-actions">
-          <button id="cert-download" class="btn btn-primary" type="button">⤓ Download PNG</button>
-          <button id="cert-share" class="btn btn-ghost" type="button" hidden>Share…</button>
-        </div>
-      </div>
-      <div class="finish-foot">
-        <button id="finish-report" class="btn btn-ghost" type="button">📄 Report</button>
-        <button id="finish-trophies" class="btn btn-ghost" type="button">🏆 Trophies <span data-trophy-count>0 / 18</span></button>
-        <button id="finish-back" class="btn btn-ghost" type="button">Back to lessons</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Trophies: every badge, earned or locked (badges.js) -->
   <div id="trophies" class="complete trophies" hidden role="dialog" aria-label="Trophies">
     <div class="done-card trophies-card card">
-      <button id="trophies-close" class="finish-close" type="button" aria-label="Close">✕</button>
-      <div class="done-kicker">Trophies</div>
+      <button id="trophies-close" class="dialog-close" type="button" aria-label="Close">✕</button>
       <h2 class="done-title trophies-title">Your badges</h2>
       <p id="trophies-sub" class="done-sub"></p>
       <div id="trophies-grid" class="trophies-grid"></div>
@@ -439,7 +316,6 @@
       <p id="done-sub" class="done-sub"></p>
       <div class="done-actions">
         <button id="done-next" class="btn btn-primary btn-big" type="button">Practice ▶</button>
-        <button id="done-play" class="btn btn-ghost done-play" type="button" hidden>🧪 Make it random in the Playground</button>
         <button id="done-stay" class="btn btn-ghost" type="button">Stay here</button>
       </div>
     </div>
@@ -535,22 +411,19 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=113"></script>
-  <script src="fx.js?v=113"></script>
-  <script src="wordinfo.js?v=113"></script>
-  <script src="lessons.js?v=113"></script>
-  <script src="buddy.js?v=113"></script>
-  <script src="tutor.js?v=113"></script>
-  <script src="scratch.js?v=113"></script>
-  <script src="quiz.js?v=113"></script>
-  <script src="read.js?v=113"></script>
-  <script src="finish.js?v=113"></script>
-  <script src="badges.js?v=113"></script>
-  <script src="playground.js?v=113"></script>
-  <script src="viz.js?v=113"></script>
-  <script src="daily.js?v=113"></script>
-  <script src="backup.js?v=113"></script>
-  <script src="tour.js?v=113"></script>
-  <script src="app.js?v=113"></script>
+  <script src="sfx.js?v=115"></script>
+  <script src="fx.js?v=115"></script>
+  <script src="wordinfo.js?v=115"></script>
+  <script src="lessons.js?v=115"></script>
+  <script src="buddy.js?v=115"></script>
+  <script src="tutor.js?v=115"></script>
+  <script src="scratch.js?v=115"></script>
+  <script src="quiz.js?v=115"></script>
+  <script src="read.js?v=115"></script>
+  <script src="finish.js?v=115"></script>
+  <script src="badges.js?v=115"></script>
+  <script src="backup.js?v=115"></script>
+  <script src="tour.js?v=115"></script>
+  <script src="app.js?v=115"></script>
 </body>
 </html>

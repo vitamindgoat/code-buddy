@@ -971,12 +971,7 @@ const MODULES = [
         ],
         checkpoints: [{"after": 5, "output": "Guess 1-10: 3\nGuess 1-10: 9\nGuess 1-10: 7"}, {"after": 10, "output": "Guess 1-10: 3\nToo low!\nGuess 1-10: 9\nToo high!\nGuess 1-10: 7\nYou got it in 3 tries!"}],
         expectedOutput: "Guess 1-10: 3\nToo low!\nGuess 1-10: 9\nToo high!\nGuess 1-10: 7\nYou got it in 3 tries!",
-        done: "You built a real game! Open it in the Playground to make the secret random and play it for real.",
-        playground: {
-          name: "Guess the number",
-          inputs: "5\n8\n7\n6\n4\n9\n3\n10\n2\n1",
-          code: 'import random\n\nsecret = random.randint(1, 10)\nguess = 0\ntries = 0\nwhile guess != secret:\n    guess = int(input("Guess 1-10: "))\n    tries = tries + 1\n    if guess < secret:\n        print("Too low!")\n    elif guess > secret:\n        print("Too high!")\nprint(f"You got it in {tries} tries!")\n',
-        },
+        done: "You built a real game! Real guessing games use import random and random.randint(1, 10) so the secret is different every time.",
         practice: {
           task: "Build a password checker. Keep asking \"Password? \" until the user types python. After each wrong try, print \"Wrong, try again.\" At the end, print \"Welcome in! It took 3 tries.\" using a tries counter and an f-string.",
           inputs: ["cat", "Python", "python"],

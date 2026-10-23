@@ -18,7 +18,7 @@ const SAVE_KEY = "codebuddy.progress";
 // Backspace in the spaces at the start of a line removes a whole indent
 // level (4 spaces), like real code editors do. So "press Backspace once to
 // un-indent" means exactly one press. Anywhere else it's a normal Backspace.
-// (Shared by the Playground and quiz editors too.)
+// (Shared by the quiz editor too.)
 function smartBackspace(cm) {
   if (cm.somethingSelected()) return CodeMirror.Pass;
   const cur = cm.getCursor(), before = cm.getLine(cur.line).slice(0, cur.ch);
@@ -166,8 +166,8 @@ function renderHeader() {
 
   prevBtn.disabled = !prevTarget();
   const nt = nextTarget();
-  nextBtn.textContent = nt ? nt.label : courseComplete() ? "All done! 🎉" : "Finish the rest first";
-  nextBtn.disabled = nt ? !isDone(doneId()) : !courseComplete();
+  nextBtn.textContent = nt ? nt.label : "All done! 🎉";
+  nextBtn.disabled = !nt || !isDone(doneId());
 }
 
 // *term* -> colored span, `code` -> chip (for the lesson panel)
@@ -343,22 +343,6 @@ function streakInfo() {
   }
   return { cur, best: Math.max(best, cur), today: set.has(back(0)) };
 }
-// ---------- Daily challenge (daily.js) ----------
-progress.daily = progress.daily || {};
-daily.init({
-  isSolved: (date) => !!progress.daily[date],
-  onSolved: (date) => {
-    progress.daily[date] = true; markDay(); saveProgress(); renderSidebar();
-    if (Object.keys(progress.daily).length >= 3) badges.earn("daily");
-  },
-});
-function renderDaily() {
-  const t = daily.today(), solved = !!(progress.daily || {})[t.date];
-  $("sb-daily").innerHTML = `<span class="sb-daily-icon" aria-hidden="true">📅</span><span class="sb-daily-text"><span>Today's challenge</span><b></b></span><span class="sb-daily-state ${solved ? "solved" : ""}">${solved ? "✓ Solved" : "Try it ▶"}</span>`;
-  $("sb-daily").querySelector("b").textContent = t.challenge.title;
-}
-$("sb-daily").addEventListener("click", () => { closeSidebar(); voice.stop(); daily.open(); });
-
 function renderStreak() {
   const { cur, best, today } = streakInfo();
   const el = $("sb-streak");
@@ -366,19 +350,7 @@ function renderStreak() {
   el.title = today ? "You did something today. Nice!" : cur ? "Finish something today to keep it going." : "Finish something to start a streak.";
 }
 
-function showFinish() {
-  closeSidebar(); hideDone();
-  finish.show({
-    complete: courseComplete(), stats: { ...courseStats(), streak: streakInfo() },
-    name: settings.name || progress.certName || "",
-    onName: (n) => { progress.certName = n; saveProgress(); },
-    onBack: () => refocus(),
-  });
-  sfx.pop();
-}
-$("cert-btn").addEventListener("click", showFinish);
-
-// ---------- Backup / restore / progress report (backup.js) ----------
+// ---------- Backup / restore / progress report// ---------- Backup / restore / progress report (backup.js) ----------
 function flash(msg) {   // a short notice in the toast spot
   const el = document.createElement("div");
   el.className = "toast toast-note"; el.setAttribute("role", "status");
@@ -394,7 +366,7 @@ backup.init({
     const st = courseStats(), earned = progress.badges || {};
     return {
       name: settings.name || progress.certName || "", stats: st, streak: streakInfo(), complete: courseComplete(),
-      dailyCount: Object.keys(progress.daily || {}).length, daysActive: (progress.days || []).length,
+      daysActive: (progress.days || []).length,
       badges: badges.LIST.filter((b) => earned[b.id]), badgeTotal: badges.LIST.length,
       modules: MODULES.map((m, mi) => {
         const ls = m.lessons.map((l) => { const L = LESSONS.find((x) => x.id === l.id); return { number: L.number, title: l.title, reading: l.type === "read", done: !!progress.done[l.id], practice: !!progress.done[l.id + "-practice"] }; });
@@ -408,18 +380,8 @@ backup.init({
 $("set-backup").addEventListener("click", () => backup.download());
 $("set-restore").addEventListener("click", () => backup.restore());
 $("set-report").addEventListener("click", () => { closeSettings(); backup.report(); });
-$("finish-report").addEventListener("click", () => backup.report());
-// Step through: watch the code in the editor run one line at a time (viz.js)
-$("step-btn").addEventListener("click", () => {
-  if (!editor.getValue().trim()) { buddy.say("# Nothing to step through yet\nType some code first, then press Step through to watch it run line by line.", "pointing"); return; }
-  buddy.finishTyping(); voice.stop();
-  const inputs = stage === "practice" ? (lesson().practice.inputs || []) : (lesson().inputs || []);
-  viz.open(editor.getValue(), inputs);
-});
-const openPlayground = () => { closeSidebar(); voice.stop(); if (buddy.talking) buddy.finishTyping(true); scratch.hide(); playground.open(); };
-$("play-btn").addEventListener("click", openPlayground);
-$("sb-play-btn").addEventListener("click", openPlayground);
 
+// ---------- Keyboard shortcuts overlay
 // ---------- Keyboard shortcuts overlay ("?") ----------
 const keysEl = $("keys");
 function showKeys() {
@@ -440,7 +402,6 @@ document.addEventListener("keydown", (e) => {
   e.preventDefault(); showKeys();
 });
 $("trophies-btn").addEventListener("click", () => { closeSidebar(); badges.show(); });
-$("finish-trophies").addEventListener("click", () => badges.show());
 // opening the scratch pad (from a quiz) is a badge of its own
 { const t = scratch.toggle; scratch.toggle = (k) => { badges.earn("scratch"); return t(k); }; }
 
@@ -467,12 +428,12 @@ function finishStage() {
   renderHeader();
   renderSidebar();
   runTag.hidden = true; runBtn.classList.remove("pulse");
-  // the very last item: the whole-course celebration instead of the usual card
-  if (courseComplete() && !progress.celebrated) {
+  // the very last item of the whole course: a bigger cheer
+  const courseJustDone = courseComplete() && !progress.celebrated;
+  if (courseJustDone) {
     progress.celebrated = true; saveProgress();
-    fx.confetti(220, "cannons"); sfx.fanfare(); setTimeout(() => fx.confetti(200, "stars"), 900);
-    showFinish();
-    return;
+    fx.confetti(220, "cannons"); sfx.fanfare();
+    if (stage === "quiz") buddy.say(`# You finished the whole course${nm()}!\nEvery lesson, every practice, every quiz. That's real Python you wrote.`, "celebrate");
   }
   if (stage === "quiz") { const t = nextTarget(); if (t) open(t); return; }   // the score screen was the celebration
   fx.confetti(); sfx.levelUp(); if (!isReading()) replayClass(outputCard, "success-flash");
@@ -487,16 +448,12 @@ function showDone() {
   const what = stage === "practice" ? "Practice" : isReading() ? "Reading" : "Lesson";
   $("done-kicker").textContent = `${what} ${lesson().number} · ${lesson().title}`;
   $("done-title").textContent = stage === "practice" ? `You solved it${nm()}!` : isReading() ? "Reading complete!" : `Lesson complete${nm()}!`;
-  $("done-sub").textContent = !t ? "That was the last one. You finished everything!"
+  $("done-sub").textContent = !t ? (courseComplete() ? "That was the last one. You finished the whole course!" : "That's the last lesson. Check the sidebar for anything you skipped.")
     : t.stage === "practice" ? "Up next: a practice. Same idea, but you write it without my help."
     : t.stage === "quiz" ? "Up next: the module quiz. Everything in it was covered in the lessons."
     : `Up next: ${LESSONS[t.lessonIndex].number} · ${LESSONS[t.lessonIndex].title}`;
   $("done-next").textContent = t ? t.label : "Back to the start";
   $("done-next").onclick = () => { hideDone(); open(t || { lessonIndex: 0, stage: "lesson" }); };
-  // the final project: one more button, to play the game for real
-  const pgx = stage === "lesson" && lesson().playground;
-  $("done-play").hidden = !pgx;
-  if (pgx) $("done-play").onclick = () => { hideDone(); voice.stop(); playground.openWith({ ...pgx, note: "Now the secret is random (that's what import random and random.randint do). Press Run, and change the guesses in the answers box to play again." }); };
   buddy.mount($("done-buddy"), "celebrate");
   doneEl.hidden = false;
   replayClass(doneEl, "show");
@@ -520,7 +477,6 @@ const sidebar = $("sidebar"), backdrop = $("sidebar-backdrop");
 function renderSidebar() {
   const list = $("sidebar-list");
   renderStreak();
-  renderDaily();
   const modCount = (m) => {
     let d = 0, t = 1;
     for (const l of m.lessons) { t += l.type === "read" ? 1 : 2; d += (progress.done[l.id] ? 1 : 0) + (l.type !== "read" && progress.done[l.id + "-practice"] ? 1 : 0); }
@@ -644,7 +600,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !confirm
 $("confirm-yes").addEventListener("click", () => { confirmEl.hidden = true; const f = confirmAction; confirmAction = null; if (f) f(); });
 $("reset-btn-all").addEventListener("click", askReset);
 function resetAll() {
-  progress = { done: {}, work: {}, scores: {}, daily: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0, certName: progress.certName };
+  progress = { done: {}, work: {}, scores: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0, certName: progress.certName };
   saveProgress(); open({ lessonIndex: 0, stage: "lesson", fresh: true });
   buddy.say("# Fresh start\nEverything is reset. Let's begin again from the top!", "happy");
 }
@@ -961,7 +917,6 @@ function startWorker() {
       return;
     }
     if (!active) return;
-    if (type === "trace") { try { active.finish(JSON.parse(text)); } catch { active.finish({ steps: [], error: "Couldn't step through this program." }); } return; }
     if (type === "log") { active.lines.push(text); active.onLog && active.onLog(text, false); }
     else if (type === "error") { active.onLog && active.onLog(text, true); }
     else if (type === "exception") { active.finish({ ok: false, error: text, line, output: active.lines.join("\n") }); }
@@ -990,22 +945,6 @@ const sandbox = {
         startWorker();
         finish({ ok: false, timeout: true, error: "Stopped: your code ran for too long. Is there a loop that never ends?", output: job.lines.join("\n") });
       }, TIME_LIMIT_MS);
-    });
-  },
-  // Step-through recording for the code visualizer (runner.js trace()).
-  // Resolves { steps, error, errorLine, limited }.
-  trace(code, inputs = []) {
-    return new Promise((resolve) => {
-      if (!pythonReady || active) return resolve({ steps: [], error: "Python is busy", busy: true });
-      const job = { lines: [], onLog: null, finish: null, timer: null };
-      job.finish = (result) => { clearTimeout(job.timer); active = null; resolve(result); };
-      active = job;
-      worker.postMessage({ code, inputs, mode: "trace" });
-      job.timer = setTimeout(() => {
-        const finish = job.finish;
-        worker.terminate(); startWorker();
-        finish({ steps: [], error: "Stopped: this took too long to step through.", timeout: true });
-      }, TIME_LIMIT_MS * 2);
     });
   },
   get ready() { return pythonReady && !active; },
@@ -1100,7 +1039,7 @@ function clearErrorLine() {
 runBtn.addEventListener("click", runCode);
 resetBtn.addEventListener("click", () => open({ lessonIndex, stage, fresh: true }));   // Start over: forget the saved code too
 prevBtn.addEventListener("click", () => { const t = prevTarget(); if (t) open(t); });
-nextBtn.addEventListener("click", () => { const t = nextTarget(); if (t) open(t); else if (courseComplete()) showFinish(); });
+nextBtn.addEventListener("click", () => { const t = nextTarget(); if (t) open(t); });
 
 function fillVoices() {
   const list = voice.voices();

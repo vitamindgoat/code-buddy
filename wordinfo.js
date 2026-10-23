@@ -2,8 +2,7 @@
    wordinfo.js — "what does this word mean?" tooltips in the editors
    Hover over a Python word (desktop) or tap it (phone) and a small card
    explains it in plain words, with a tiny example. Works in every editor:
-   lessons, practice, the Playground, the daily challenge and quiz code
-   questions. Words inside strings and comments are left alone.
+   lessons, practice and quiz code questions. Words inside strings and comments are left alone.
 
      wordinfo.attach(cm)   turn it on for a CodeMirror editor
    ============================================================ */
