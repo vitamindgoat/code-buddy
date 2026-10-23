@@ -189,7 +189,7 @@
 .speech {
   position: relative;
   max-width: 230px;
-  background: #fff;
+  background: var(--card);
   color: var(--blue-ink);
   border: 2px solid var(--blue-line);
   box-shadow: 0 4px 14px rgba(19, 90, 182, 0.12);
@@ -208,7 +208,7 @@
   top: 50%;
   width: 12px;
   height: 12px;
-  background: #fff;
+  background: var(--card);
   border-right: 2px solid var(--blue-line);
   border-top: 2px solid var(--blue-line);
   transform: translateY(-50%) rotate(45deg);
@@ -275,7 +275,7 @@
   position: absolute; right: -6px; bottom: -8px; z-index: 2;
   width: 26px; height: 26px; border-radius: 50%; padding: 0;
   font: 800 15px/1 "Nunito", sans-serif; color: var(--blue-dark);
-  background: #fff; border: 1.5px solid var(--blue-line); box-shadow: 0 3px 8px rgba(19, 90, 182, 0.15);
+  background: var(--card); border: 1.5px solid var(--blue-line); box-shadow: 0 3px 8px rgba(19, 90, 182, 0.15);
   cursor: pointer; pointer-events: auto; display: grid; place-items: center;
   transition: opacity 0.2s ease, transform 0.15s ease, background 0.15s ease;
 }
@@ -314,7 +314,7 @@
 /* Section labels get a color by kind */
 .speech-label.label-ok   { color: var(--green); }
 /* Keyboard keys the learner has to press */
-.speech kbd.key { display: inline-block; font: inherit; font-size: 12px; font-weight: 800; color: var(--blue-ink); background: #fff; border: 1.5px solid var(--blue-line); border-bottom-width: 3px; border-radius: 6px; padding: 0 7px; margin: 0 1px; line-height: 1.5; vertical-align: baseline; }
+.speech kbd.key { display: inline-block; font: inherit; font-size: 12px; font-weight: 800; color: var(--blue-ink); background: var(--card); border: 1.5px solid var(--blue-line); border-bottom-width: 3px; border-radius: 6px; padding: 0 7px; margin: 0 1px; line-height: 1.5; vertical-align: baseline; }
 .speech-label.label-warn { color: var(--red); }
 .speech-label.label-type { color: var(--blue-dark); }
 .speech-label.label-win  { color: var(--green); }

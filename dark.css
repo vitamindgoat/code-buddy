@@ -1,0 +1,98 @@
+/* ============================================================
+   dark.css — the dark theme
+   Everything in the app reads its colors from the tokens in styles.css,
+   so dark mode is mostly new token values. Below them are the few spots
+   that used fixed colors (syntax highlighting, colored terms, the streak
+   chip, warning banners). The certificate and share cards are drawn on a
+   canvas and stay light on purpose, like a real printed certificate.
+
+   Turned on by <html data-theme="dark"> (app.js sets it from Settings:
+   Auto follows the device, or pick Light / Dark).
+   ============================================================ */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --blue: #3d8cf0;
+  --blue-dark: #8ec5ff;
+  --blue-ink: #dcecff;
+  --blue-mid: #5aa9f5;
+  --blue-soft: #172a4a;
+  --blue-line: #2b4672;
+  --ink: #e6edf7;
+  --ink-soft: #9fadc2;
+  --line: #22314a;
+  --bg: #0b1220;
+  --card: #111b2e;
+  --card-2: #15213a;
+  --green: #34c98f;
+  --green-soft: #113528;
+  --red: #ff6b70;
+  --red-soft: #3b1a20;
+  --shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* buttons keep white text on a slightly deeper blue */
+:root[data-theme="dark"] .btn-primary { background: #2a74d6; }
+:root[data-theme="dark"] .btn-primary:hover { background: #3d8cf0; }
+:root[data-theme="dark"] .btn-primary:disabled { background: #22406b; color: #9fb7d8; }
+:root[data-theme="dark"] .vis-code-out { background: #060b16; }
+:root[data-theme="dark"] .vis-code-out.mystery { background: #1b3157; }
+
+/* background blobs behind the layout */
+:root[data-theme="dark"] .bg-blob-a { background: #10264a; }
+:root[data-theme="dark"] .bg-blob-b { background: #0d2240; }
+
+/* editor */
+:root[data-theme="dark"] .CodeMirror { background: var(--card); color: var(--ink); }
+:root[data-theme="dark"] .CodeMirror-cursor { border-left-color: var(--blue-ink); }
+:root[data-theme="dark"] .CodeMirror-linenumber { color: #6b7a92; }
+:root[data-theme="dark"] .CodeMirror-selected { background: #23406e !important; }
+:root[data-theme="dark"] .CodeMirror-focused .CodeMirror-selected { background: #2a4b80 !important; }
+:root[data-theme="dark"] .cm-s-default .cm-keyword,
+:root[data-theme="dark"] .cm-s-default .cm-atom,
+:root[data-theme="dark"] .tok-kw { color: #d0a6ff; }
+:root[data-theme="dark"] .cm-s-default .cm-builtin,
+:root[data-theme="dark"] .tok-fn { color: #7ab8ff; }
+:root[data-theme="dark"] .cm-s-default .cm-string,
+:root[data-theme="dark"] .cm-s-default .cm-string-2,
+:root[data-theme="dark"] .tok-str { color: #6fdc9f; }
+:root[data-theme="dark"] .cm-s-default .cm-number,
+:root[data-theme="dark"] .tok-num { color: #ffab70; }
+:root[data-theme="dark"] .cm-s-default .cm-comment,
+:root[data-theme="dark"] .tok-comment { color: #8a97ad; }
+:root[data-theme="dark"] .tok-name { color: #5fe0cf; }
+:root[data-theme="dark"] .speech .chip { color: var(--ink); }
+
+/* colored terms in lessons and the buddy's bubble */
+:root[data-theme="dark"] .term-purple { color: #b4b8ff; background: #232a5c; }
+:root[data-theme="dark"] .term-teal   { color: #6fe3d3; background: #0f3a36; }
+:root[data-theme="dark"] .term-pink   { color: #dcb2ff; background: #35204f; }
+:root[data-theme="dark"] .term-green  { color: #7fe3a8; background: #12382a; }
+:root[data-theme="dark"] .term-orange,
+:root[data-theme="dark"] .term-blue,
+:root[data-theme="dark"] .lesson .term-blue { color: #9ccbff; background: #183257; }
+:root[data-theme="dark"] .term-red    { color: #ff9ea2; background: #44191f; }
+
+/* warm chips and banners */
+:root[data-theme="dark"] .sb-streak { background: linear-gradient(90deg, #3a240f, var(--card)); border-color: #6b4317; color: #ffcf9a; }
+:root[data-theme="dark"] .sb-streak b, :root[data-theme="dark"] .finish-streak b { color: #ff9a4d; }
+:root[data-theme="dark"] .sb-streak em, :root[data-theme="dark"] .finish-streak span { color: #d2a77a; }
+:root[data-theme="dark"] .finish-streak { background: #3a240f; border-color: #6b4317; color: #ffcf9a; }
+:root[data-theme="dark"] .py-banner[data-kind="fail"] { background: #3b1a20; border-color: #6e2a33; }
+:root[data-theme="dark"] .py-banner[data-kind="fail"] b { color: #ff9ea2; }
+:root[data-theme="dark"] .trophy:not(.on) { background: #0f1828; border-color: var(--line); }
+@keyframes error-flash-dark { 0% { background: #5a2028; } 100% { background: var(--red-soft); } }
+:root[data-theme="dark"] .error-line { animation-name: error-flash-dark; }
+
+/* the scratch pad stays white paper (its dark-blue and black inks, and the
+   PNG it saves, need a light page); only the window chrome goes dark */
+:root[data-theme="dark"] .scratch-canvas, :root[data-theme="dark"] .scratch-notes { background: #fff; color: #1d2433; }
+:root[data-theme="dark"] .scratch-hint { color: #5b6475; }
+:root[data-theme="dark"] .scratch { box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5); }
+:root[data-theme="dark"] .scratch-colors button { border-color: var(--card); box-shadow: 0 0 0 1.5px #5b6b85; }
+
+/* overlays: a deeper dim behind dialogs */
+:root[data-theme="dark"] .complete,
+:root[data-theme="dark"] .sidebar-backdrop { background: rgba(0, 4, 12, 0.6); }
+:root[data-theme="dark"] .toast { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5); }
+:root[data-theme="dark"] kbd { background: var(--card-2); }
