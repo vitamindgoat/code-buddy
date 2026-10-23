@@ -32,6 +32,7 @@ const badges = (() => {
     { id: "comeback",     icon: "🔁", name: "Back again",       hint: "Come back on another day to keep going." },
     { id: "fixer",        icon: "🪄", name: "Quick fix",        hint: "Fix a typo with the autocorrect bubble." },
     { id: "playground",   icon: "🧪", name: "Tinkerer",         hint: "Run your own program in the Playground." },
+    { id: "daily",        icon: "📅", name: "Daily coder",      hint: "Solve 3 daily challenges." },
     { id: "final",        icon: "🎮", name: "Game maker",       hint: "Finish the final project: build the guessing game." },
     { id: "stepper",      icon: "👣", name: "Step by step",     hint: "Watch a program run line by line with Step through." },
     { id: "bug-squash",   icon: "🐛", name: "Bug squasher",     hint: "Fix a program that crashed on purpose." },

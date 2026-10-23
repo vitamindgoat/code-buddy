@@ -760,6 +760,37 @@ body.pg-open { overflow: hidden; }
 .pg-say-title { color: var(--blue-ink); font-size: 15px; }
 .pg-say code { font-family: var(--mono); font-size: 13px; background: var(--blue-soft); color: var(--blue-dark); border-radius: 6px; padding: 1px 5px; }
 
+/* ---------- Daily challenge ---------- */
+.sb-daily { display: flex; align-items: center; gap: 10px; width: calc(100% - 24px); margin: 8px 12px 0; padding: 9px 12px; border-radius: 12px; background: var(--card); border: 1.5px solid var(--blue-line); font: inherit; text-align: left; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease; }
+.sb-daily:hover { border-color: var(--blue); background: var(--blue-soft); }
+.sb-daily-icon { font-size: 20px; }
+.sb-daily-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.sb-daily-text span { font-size: 12px; font-weight: 800; color: var(--ink-soft); }
+.sb-daily-text b { color: var(--blue-ink); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-daily-state { flex: none; font-size: 12px; font-weight: 800; color: var(--blue-dark); }
+.sb-daily-state.solved { color: #0b7a52; }
+.daily { z-index: 87; }
+.daily-card { width: min(720px, 100%); padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.complete.show .daily-card { animation: done-in 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.15) both; }
+.daily-status { margin-left: auto; font-weight: 800; font-size: 13px; color: var(--ink-soft); }
+.daily-status.solved { color: #0b7a52; }
+.daily-task { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.5; color: var(--ink); }
+.daily-inputs { margin: 0; font-size: 14px; color: var(--ink-soft); }
+.daily-inputs code, .daily-result code { font-family: var(--mono); font-size: 13px; background: var(--blue-soft); color: var(--blue-dark); border-radius: 6px; padding: 1px 5px; }
+.daily-expect { border: 1.5px solid var(--blue-line); background: var(--blue-soft); border-radius: 12px; padding: 8px 0 4px; }
+.daily-expect pre { margin: 0; padding: 0 12px 6px; font-family: var(--mono); font-size: 14px; line-height: 1.5; color: var(--blue-ink); max-height: 160px; overflow: auto; }
+.daily-editor { border: 1.5px solid var(--line); border-radius: 12px; overflow: hidden; }
+.daily-editor .CodeMirror { height: 180px; font-family: var(--mono); font-size: var(--code-size, 15px); line-height: 1.6; padding: 6px 0; }
+.daily-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.daily-hint { margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--card-2); border: 1px dashed var(--blue-line); font-size: 14px; color: var(--ink); }
+.daily-result { padding: 10px 12px; border-radius: 12px; font-size: 14px; line-height: 1.5; border: 1.5px solid var(--line); animation: rise 0.3s ease-out both; }
+.daily-result pre { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--card); font-family: var(--mono); font-size: 13px; white-space: pre-wrap; max-height: 160px; overflow: auto; }
+.daily-result.good { background: var(--green-soft); border-color: #a8e6c9; }
+.daily-result.good b { color: #0b7a52; }
+.daily-result.bad { background: var(--red-soft); border-color: #f5c2c7; }
+.daily-result.bad b { color: #c62f35; }
+.daily-result.info { background: var(--blue-soft); border-color: var(--blue-line); }
+
 /* ---------- Code visualizer ---------- */
 .viz { z-index: 88; }
 .viz-card { width: min(980px, 100%); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; max-height: calc(100vh - 32px); }
@@ -1154,6 +1185,8 @@ body { overflow-x: hidden; }
   .trophies-grid { grid-template-columns: repeat(2, 1fr); }
   .keys-cols { grid-template-columns: 1fr; gap: 12px; }
   .viz-card { padding: 14px; max-height: none; }
+  .daily-card { padding: 14px; }
+  .daily-editor .CodeMirror { height: 200px; font-size: max(16px, var(--code-size, 15px)); }
   .viz-grid { grid-template-columns: 1fr; }
   .viz-code { max-height: 34vh; font-size: 13px; }
   .viz-controls .btn { padding: 8px 10px; }

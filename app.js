@@ -342,6 +342,22 @@ function streakInfo() {
   }
   return { cur, best: Math.max(best, cur), today: set.has(back(0)) };
 }
+// ---------- Daily challenge (daily.js) ----------
+progress.daily = progress.daily || {};
+daily.init({
+  isSolved: (date) => !!progress.daily[date],
+  onSolved: (date) => {
+    progress.daily[date] = true; markDay(); saveProgress(); renderSidebar();
+    if (Object.keys(progress.daily).length >= 3) badges.earn("daily");
+  },
+});
+function renderDaily() {
+  const t = daily.today(), solved = !!(progress.daily || {})[t.date];
+  $("sb-daily").innerHTML = `<span class="sb-daily-icon" aria-hidden="true">📅</span><span class="sb-daily-text"><span>Today's challenge</span><b></b></span><span class="sb-daily-state ${solved ? "solved" : ""}">${solved ? "✓ Solved" : "Try it ▶"}</span>`;
+  $("sb-daily").querySelector("b").textContent = t.challenge.title;
+}
+$("sb-daily").addEventListener("click", () => { closeSidebar(); voice.stop(); daily.open(); });
+
 function renderStreak() {
   const { cur, best, today } = streakInfo();
   const el = $("sb-streak");
@@ -471,6 +487,7 @@ const sidebar = $("sidebar"), backdrop = $("sidebar-backdrop");
 function renderSidebar() {
   const list = $("sidebar-list");
   renderStreak();
+  renderDaily();
   const modCount = (m) => {
     let d = 0, t = 1;
     for (const l of m.lessons) { t += l.type === "read" ? 1 : 2; d += (progress.done[l.id] ? 1 : 0) + (l.type !== "read" && progress.done[l.id + "-practice"] ? 1 : 0); }
@@ -521,7 +538,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !confirm
 $("confirm-yes").addEventListener("click", () => { confirmEl.hidden = true; resetAll(); });
 $("reset-btn-all").addEventListener("click", askReset);
 function resetAll() {
-  progress = { done: {}, work: {}, scores: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0, certName: progress.certName };
+  progress = { done: {}, work: {}, scores: {}, daily: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0, certName: progress.certName };
   saveProgress(); open({ lessonIndex: 0, stage: "lesson", fresh: true });
   buddy.say("# Fresh start\nEverything is reset. Let's begin again from the top!", "happy");
 }

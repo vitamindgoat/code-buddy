@@ -121,3 +121,8 @@
 :root[data-theme="dark"] .viz-vars tr.changed td, :root[data-theme="dark"] .viz-vars tr.changed th, :root[data-theme="dark"] .viz-vars tr.new td, :root[data-theme="dark"] .viz-vars tr.new th { animation-name: viz-flash-dark; }
 :root[data-theme="dark"] .viz-vars tr.new th::after { color: var(--green); }
 :root[data-theme="dark"] .viz-caption .viz-bad, :root[data-theme="dark"] .viz-line.err .viz-mark { color: var(--red); }
+
+:root[data-theme="dark"] .sb-daily-state.solved, :root[data-theme="dark"] .daily-status.solved, :root[data-theme="dark"] .daily-result.good b { color: var(--green); }
+:root[data-theme="dark"] .daily-result.good { border-color: #1f5a43; }
+:root[data-theme="dark"] .daily-result.bad { border-color: #6e2a33; }
+:root[data-theme="dark"] .daily-result.bad b { color: var(--red); }
