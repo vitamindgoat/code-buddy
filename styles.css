@@ -482,7 +482,7 @@ code {
 .tour-spot {
   position: fixed; z-index: 70;
   border-radius: 8px;
-  box-shadow: 0 0 0 9999px rgba(6, 51, 126, 0.55), 0 0 0 3px var(--blue-mid);
+  box-shadow: 0 0 0 9999px rgba(10, 25, 50, 0.55); outline: 3px solid var(--blue-mid);
   pointer-events: none;          /* the spotlighted thing stays clickable */
   opacity: 0;
   transition: left 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -1196,7 +1196,7 @@ body.kb-open .layout { padding-bottom: 72px; }
 .scratch-tools button.on { background: var(--blue); color: #fff; }
 .scratch-tools button:disabled { opacity: 0.35; cursor: default; }
 .scratch-colors button { width: 24px; min-width: 24px; height: 24px; border-radius: 50%; padding: 0; background: var(--c) !important; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); }
-.scratch-colors button.on { box-shadow: 0 0 0 2.5px var(--blue-mid); transform: scale(1.1); }
+.scratch-colors button.on { outline: 2.5px solid var(--blue-mid); outline-offset: 0; transform: scale(1.1); }
 .scratch-sizes button i { display: block; width: var(--d); height: var(--d); border-radius: 50%; background: currentColor; margin: 0 auto; }
 .scratch-sizes button.on i { background: var(--card); }
 .scratch-zoom-val { font-family: var(--mono) !important; font-size: 12px !important; min-width: 48px; }

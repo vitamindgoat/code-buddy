@@ -85,7 +85,7 @@
 :root[data-theme="dark"] .scratch-canvas, :root[data-theme="dark"] .scratch-notes { background: #fff; color: #1d2433; }
 :root[data-theme="dark"] .scratch-hint { color: #5b6475; }
 :root[data-theme="dark"] .scratch { box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5); }
-:root[data-theme="dark"] .scratch-colors button { border-color: var(--card); box-shadow: 0 0 0 1.5px #5b6b85; }
+:root[data-theme="dark"] .scratch-colors button { border-color: var(--card); outline: 1.5px solid #5b6b85; }
 
 /* overlays: a deeper dim behind dialogs */
 :root[data-theme="dark"] .complete,
@@ -129,3 +129,4 @@
 :root[data-theme="dark"] .stage-badge.stage-practice, :root[data-theme="dark"] .done-badge { color: var(--green); }
 :root[data-theme="dark"] .speech-label.label-ok, :root[data-theme="dark"] .speech-label.label-win { color: var(--green); }
 :root[data-theme="dark"] .sb-streak em { color: #e0b48a; }
+:root[data-theme="dark"] .scratch-colors button.on { outline: 2.5px solid var(--blue-mid); }
