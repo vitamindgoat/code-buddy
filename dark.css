@@ -33,7 +33,6 @@
 
 /* buttons keep white text on a slightly deeper blue */
 :root[data-theme="dark"] .btn-primary { background: #2a74d6; }
-:root[data-theme="dark"] .btn-primary:hover { background: #3d8cf0; }
 :root[data-theme="dark"] .btn-primary:disabled { background: #22406b; color: #9fb7d8; }
 :root[data-theme="dark"] .vis-code-out { background: #060b16; }
 :root[data-theme="dark"] .vis-code-out.mystery { background: #1b3157; }
@@ -111,3 +110,9 @@
 /* white text on blue chips needs a deeper blue than the dark-mode accent */
 :root[data-theme="dark"] .stage-quiz, :root[data-theme="dark"] .quiz-dot.on, :root[data-theme="dark"] .steps li.run-step, :root[data-theme="dark"] .callout, :root[data-theme="dark"] .vis-bit.on .vis-digit, :root[data-theme="dark"] .keybar .keybar-run, :root[data-theme="dark"] .scratch-tabs button.on, :root[data-theme="dark"] .sb-num:not(.full), :root[data-theme="dark"] .scratch-tools button.on, :root[data-theme="dark"] .scratch-pill { background: #1f66c8; }
 :root[data-theme="dark"] .status.bad { color: var(--red); }
+:root[data-theme="dark"] #sb-play-btn { color: var(--green); }
+
+:root[data-theme="dark"] .ghost { color: #8a96ad; }
+:root[data-theme="dark"] .output .err { color: var(--red); }
+:root[data-theme="dark"] .status.ok { color: var(--green); }
+:root[data-theme="dark"] .btn-primary:hover:not(:disabled) { background: #2468cc; }

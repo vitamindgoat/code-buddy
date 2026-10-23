@@ -177,10 +177,13 @@ const playground = (() => {
     else { cm.setValue(EXAMPLES[0].code); $("pg-inputs").value = EXAMPLES[0].inputs; $("pg-name").value = "Untitled"; }
     if (window.buddy) buddy.mount($("pg-buddy"), "happy");
   }
+  // the lesson page behind the Playground: unreachable (Tab, screen readers) while it's open
+  const setBehind = (on) => document.querySelectorAll("body > header.topbar, body > main.layout").forEach((el) => { el.inert = on; });
   let lastFocus = null;
   function open() {
     lastFocus = document.activeElement;
     root.hidden = false; document.body.classList.add("pg-open");
+    setBehind(true);
     root.classList.remove("show"); void root.offsetWidth; root.classList.add("show");
     ensureEditor();
     renderList();
@@ -192,6 +195,7 @@ const playground = (() => {
     if (root.hidden) return;
     saveDraft();
     root.hidden = true; document.body.classList.remove("pg-open");
+    setBehind(false);
     if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch {}
   }
 

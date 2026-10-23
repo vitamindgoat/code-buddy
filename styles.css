@@ -275,7 +275,7 @@ code {
 
 .output-hint { color: var(--ink-soft); font-family: "Nunito", sans-serif; }
 
-.output .err { color: var(--red); }
+.output .err { color: #c62f35; }
 
 /* Run status: a small readout with a colored dot, like an editor's status
    bar ("3 lines printed · 212 ms", "Error on line 2"), not a badge */
@@ -286,7 +286,7 @@ code {
 }
 .status:empty { display: none; }
 .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
-.status.ok { color: var(--green); }
+.status.ok { color: #0b7a52; }
 .status.bad { color: #c62f35; }   /* darker than --red so small text passes contrast */
 .status.running { color: var(--blue-dark); }
 .status.running::before { animation: status-blink 0.9s ease-in-out infinite; }
@@ -461,7 +461,7 @@ code {
 .ghost {
   position: absolute; z-index: 3; pointer-events: none;
   font-family: var(--mono); font-size: 15px; line-height: 1.6;
-  color: #a3adc2; white-space: pre;
+  color: #646e88; white-space: pre;   /* clearly gray next to typed code, still readable (4.5:1 on the active line) */
 }
 .ghost[hidden] { display: none; }
 .ghost:not([hidden]) { animation: ghost-in 0.25s ease-out; }
@@ -548,7 +548,7 @@ body { background: var(--bg); }
 .sidebar-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line); }
 .sidebar-list { flex: 1; overflow-y: auto; padding: 12px; }
 .sidebar-foot { padding: 12px; border-top: 1px solid var(--line); display: flex; gap: 6px; justify-content: space-between; flex-wrap: wrap; }
-#sb-play-btn { flex: 1 1 100%; justify-content: center; background: var(--green-soft); color: var(--green); font-weight: 800; }
+#sb-play-btn { flex: 1 1 100%; justify-content: center; background: var(--green-soft); color: #0b6644; font-weight: 800; }
 #cert-btn, #trophies-btn { flex: 1 1 46%; justify-content: center; background: var(--blue-soft); color: var(--blue-dark); }
 .sidebar-foot .btn { font-size: 13px; padding: 8px 10px; }
 .sb-module { margin-bottom: 14px; animation: rise 0.4s ease-out both; }
@@ -729,8 +729,8 @@ body.pg-open { overflow: hidden; }
 .pg-head .pg-close { position: static; margin-left: 4px; }
 .pg-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 220px minmax(0, 1fr) 280px; gap: 16px; padding: 16px; }
 .pg-side { overflow-y: auto; }
-.pg-side h3 { margin: 4px 4px 8px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
-.pg-side h3 + .pg-list { margin-bottom: 18px; }
+.pg-side .pg-side-h { margin: 4px 4px 8px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.pg-side .pg-side-h + .pg-list { margin-bottom: 18px; }
 .pg-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .pg-list li { display: flex; gap: 4px; }
 .pg-item { flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: center; gap: 6px; text-align: left; font: 700 14px "Nunito", sans-serif; color: var(--ink); background: var(--card); border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 10px; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease; }
