@@ -646,6 +646,8 @@ body { background: var(--bg); }
 .quiz-kicker { display: inline-block; margin-top: 6px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue-dark); background: var(--blue-soft); border: 1px solid var(--blue-line); border-radius: 999px; padding: 4px 12px; }
 .quiz-result-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .quiz-result-actions .btn-ghost { font-size: 13px; }
+.quiz-result-row { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+.quiz-share-note { min-height: 18px; font-size: 13px; font-weight: 700; color: var(--green); }
 
 /* ---------- "Complete!" card ---------- */
 .complete { position: fixed; inset: 0; z-index: 60; display: flex; align-items: safe center; justify-content: center; overflow-y: auto; padding: 16px; background: rgba(6, 51, 126, 0.32); animation: fade 0.25s ease; }

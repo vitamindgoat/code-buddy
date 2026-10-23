@@ -23,7 +23,8 @@ const quiz = (() => {
   // spread out. The set is saved (as bank indexes) so coming back mid-quiz
   // shows the same questions; a retake draws a set with none of the
   // questions from the previous attempt.
-  let bank = null, set = [], last = [], scratchKey = "";
+  let bank = null, set = [], last = [], scratchKey = "", moduleTitle = "";
+  const finish_ = () => window.finishScreen;   // finish.js loads after this file
   function pick(pool, n, avoid) {
     const fresh = shuffle(pool.filter((i) => !avoid.includes(i)));
     const extra = shuffle(pool.filter((i) => avoid.includes(i)));   // only if the bank runs short
@@ -45,6 +46,7 @@ const quiz = (() => {
   function start(module, done, sb, saved, save) {
     bank = module.quizBank;
     scratchKey = module.id;
+    moduleTitle = module.title;
     index = 0; score = 0; onDone = done; sandbox = sb; onSave = save;
     last = (saved && saved.last) || [];
     set = (saved && saved.set && saved.set.length) ? saved.set : draw(last);
@@ -237,13 +239,24 @@ const quiz = (() => {
         <p>${msg}</p>
         <div class="quiz-result-actions">
           <button class="btn btn-primary quiz-done" type="button">Continue ▶</button>
-          <button class="btn btn-ghost quiz-retake" type="button">↺ Retake quiz</button>
+          <div class="quiz-result-row">
+            <button class="btn btn-ghost quiz-share" type="button">⇪ Share score</button>
+            <button class="btn btn-ghost quiz-retake" type="button">↺ Retake quiz</button>
+          </div>
+          <div class="quiz-share-note" aria-live="polite"></div>
         </div>
       </div>`;
     buddy.mount(card.querySelector("#quiz-buddy"), pct >= 70 ? (again ? "happy" : "celebrate") : "thinking");
     if (pct >= 70 && !again) { fx.confetti(); sfx.levelUp(); }
     card.querySelector(".quiz-done").addEventListener("click", (e) => { e.currentTarget.disabled = true; onDone && onDone({ score, total: questions.length }); });
     card.querySelector(".quiz-retake").addEventListener("click", retake);
+    card.querySelector(".quiz-share").addEventListener("click", async (e) => {
+      const btn = e.currentTarget, note = card.querySelector(".quiz-share-note");
+      btn.disabled = true; sfx.click();
+      const r = await finish_().shareScore({ module: moduleTitle, score, total: questions.length, name: (typeof settings !== "undefined" && settings.name) || "" });
+      btn.disabled = false;
+      note.textContent = r === "downloaded+copied" ? "Saved the image and copied a message to paste with it." : r === "downloaded" ? "Saved the score card image." : r === "fail" ? "Couldn't make the image, sorry." : "";
+    });
     card.classList.remove("swap-in"); void card.offsetWidth; card.classList.add("swap-in");
   }
 
