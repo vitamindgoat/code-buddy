@@ -1157,6 +1157,23 @@ fetch(`assets/logo.svg?v=${BUILD}`).then((r) => r.text()).then((svg) => {
   });
 }).catch(() => {});
 
+// ---------- Installable app + offline (sw.js) ----------
+// Service workers only run on https (or localhost while developing).
+if ("serviceWorker" in navigator && (location.protocol === "https:" || ["localhost", "127.0.0.1"].includes(location.hostname))) {
+  window.addEventListener("load", () => navigator.serviceWorker.register(`sw.js?v=${BUILD}`).catch(() => {}));
+}
+// Browsers that support installing (Chrome, Edge, Android) hand us a prompt
+// we can show from Settings; Safari users use Share → Add to Home Screen.
+let installPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installPrompt = e; $("set-install").hidden = false; });
+window.addEventListener("appinstalled", () => { installPrompt = null; $("set-install").hidden = true; sfx.success(); });
+$("set-install").addEventListener("click", async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  try { await installPrompt.userChoice; } catch {}
+  installPrompt = null; $("set-install").hidden = true;
+});
+
 applySettings();
 badges.init({ get: () => progress.badges, save: (b) => { progress.badges = b; saveProgress(); } });
 // coming back on a later day, with something already done, earns "Back again"

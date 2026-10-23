@@ -1,0 +1,19 @@
+{
+  "name": "CodeBuddy: learn Python with a friend",
+  "short_name": "CodeBuddy",
+  "description": "Learn Python by typing every line, with a friendly buddy who explains each piece as you type.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3f9ff",
+  "theme_color": "#1e6fd9",
+  "categories": ["education"],
+  "icons": [
+    { "src": "assets/logo-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

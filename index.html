@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="100" />
+  <meta name="build" content="101" />
   <!-- Theme before first paint, so dark mode never flashes white -->
   <script>
     try {
@@ -30,8 +30,14 @@
   <meta name="twitter:title" content="CodeBuddy – Learn Python by typing every line" />
   <meta name="twitter:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on." />
   <meta name="twitter:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=100" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=100" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=101" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=101" />
+  <!-- Installable app: icon, name and colors for "Add to Home Screen" -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="CodeBuddy" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -43,9 +49,9 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=100" />
-  <link rel="stylesheet" href="buddy.css?v=100" />
-  <link rel="stylesheet" href="dark.css?v=100" />
+  <link rel="stylesheet" href="styles.css?v=101" />
+  <link rel="stylesheet" href="buddy.css?v=101" />
+  <link rel="stylesheet" href="dark.css?v=101" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -181,6 +187,7 @@
       <label class="set-row"><span>Animations</span><input id="set-motion" type="checkbox" /></label>
       <div class="set-actions">
         <button id="set-test" class="btn btn-ghost" type="button">🗣 Test speed</button>
+        <button id="set-install" class="btn btn-ghost" type="button" hidden>📲 Install app</button>
         <button id="set-keys" class="btn btn-ghost" type="button">⌨ Shortcuts</button>
         <button id="set-tour" class="btn btn-ghost" type="button">❔ Redo tutorial</button>
         <button id="set-reset" class="btn btn-ghost" type="button">↺ Reset progress</button>
@@ -418,17 +425,17 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=100"></script>
-  <script src="fx.js?v=100"></script>
-  <script src="lessons.js?v=100"></script>
-  <script src="buddy.js?v=100"></script>
-  <script src="tutor.js?v=100"></script>
-  <script src="scratch.js?v=100"></script>
-  <script src="quiz.js?v=100"></script>
-  <script src="read.js?v=100"></script>
-  <script src="finish.js?v=100"></script>
-  <script src="badges.js?v=100"></script>
-  <script src="tour.js?v=100"></script>
-  <script src="app.js?v=100"></script>
+  <script src="sfx.js?v=101"></script>
+  <script src="fx.js?v=101"></script>
+  <script src="lessons.js?v=101"></script>
+  <script src="buddy.js?v=101"></script>
+  <script src="tutor.js?v=101"></script>
+  <script src="scratch.js?v=101"></script>
+  <script src="quiz.js?v=101"></script>
+  <script src="read.js?v=101"></script>
+  <script src="finish.js?v=101"></script>
+  <script src="badges.js?v=101"></script>
+  <script src="tour.js?v=101"></script>
+  <script src="app.js?v=101"></script>
 </body>
 </html>
