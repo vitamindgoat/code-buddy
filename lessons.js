@@ -15,7 +15,7 @@
      "\n" = new line.  `code` = code chip.  "# Label" = section label.
      *term* = a highlighted vocabulary word (colored by category).
 
-   A module: { id, title, blurb, lessons: [...], quiz: [...] }
+   A module: { id, title, blurb, lessons: [...], quizBank: { draw, questions } }
 
    A READING lesson ({ type: "read" }): interactive cards you click
    through, with pictures and check questions. Teaches the ideas before
@@ -39,6 +39,8 @@
                               expectedOutput, hints: [h1, h2, h3] }
 
    A quiz question: { q, choices: [4], answer: index, explain }
+                 or { type: "code", q, expectedOutput, explain, inputs? }
+   quizBank.draw = { mc, code }: how many of each kind one attempt asks.
    ============================================================ */
 
 const MODULES = [
@@ -263,16 +265,6 @@ const MODULES = [
         { type: "code", q: "Print the result of False or True.", expectedOutput: "True", explain: "print(False or True): an OR gate only needs one True side." },
       ],
     },
-    quiz: [
-      { q: "What is an algorithm?", choices: ["A type of computer", "A list of steps in order", "A random guess", "A kind of bug"], answer: 1, explain: "An algorithm is a step-by-step list of instructions. Order matters." },
-      { q: "What is 5 written in binary?", choices: ["11", "101", "110", "1001"], answer: 1, explain: "101 = 4 + 0 + 1 = 5." },
-      { q: "Run-length encoding stores 00000000 as...", choices: ["Eight separate zeros", "\"0\" and the count 8", "A picture", "Nothing, it deletes it"], answer: 1, explain: "RLE stores the value once plus how many times it repeats." },
-      { q: "Data that is random and unpredictable has...", choices: ["Low entropy, compresses well", "High entropy, compresses badly", "No bits", "Lossless quality"], answer: 1, explain: "Compression needs patterns. Random data (high entropy) has none." },
-      { q: "What does `True and False` give you?", choices: ["True", "False", "Error", "Maybe"], answer: 1, explain: "AND needs both to be True." },
-      { q: "Lossy compression...", choices: ["Keeps every bit exactly", "Throws some detail away to save space", "Only works on text", "Makes files bigger"], answer: 1, explain: "Lossy (like JPEG) drops detail you won't notice. Lossless keeps everything." },
-      { type: "code", q: "Use bin() to print 13 in binary. (Python shows binary with 0b in front, that's expected.)", expectedOutput: "0b1101", explain: "print(bin(13)) gives 0b1101: 8 + 4 + 0 + 1." },
-      { type: "code", q: "Print the pattern \"10\" repeated 4 times on one line (like run-length encoding would store it).", expectedOutput: "10101010", explain: "print(\"10\" * 4): the * repeats a string." },
-    ],
   },
 
   /* ============================================================ */
@@ -988,18 +980,6 @@ const MODULES = [
         { type: "code", q: "Use a loop inside a loop to print a rectangle of stars: 3 rows, each with 5 stars. Use print(\"*\", end=\"\") for a star and print() to end a row.", expectedOutput: "*****\n*****\n*****", explain: "for row in range(3): for col in range(5): print(\"*\", end=\"\"), then print() after the inner loop." },
       ],
     },
-    quiz: [
-      { q: "What does 5 == 5 give?", choices: ["5", "True", "False", "Error"], answer: 1, explain: "== compares and gives a boolean. 5 equals 5, so True." },
-      { q: "What does `True or False` give you?", choices: ["True", "False", "Error", "Both"], answer: 0, explain: "OR needs just one True." },
-      { q: "What prints?  x = 7\nif x > 10:\n    print(\"A\")\nelse:\n    print(\"B\")", choices: ["A", "B", "A and B", "Nothing"], answer: 1, explain: "7 > 10 is False, so the else branch runs." },
-      { q: "How many times does  for i in range(4):  loop?", choices: ["3", "4", "5", "Forever"], answer: 1, explain: "range(4) is 0, 1, 2, 3: four values." },
-      { q: "What does break do?", choices: ["Pauses the loop", "Skips one round", "Ends the loop immediately", "Restarts the loop"], answer: 2, explain: "break exits the loop right away. continue skips one round." },
-      { q: "What prints?  n = 0\nwhile n < 3:\n    n = n + 1\nprint(n)", choices: ["0", "2", "3", "Loops forever"], answer: 2, explain: "n goes 1, 2, 3. At 3 the condition is False, and 3 prints." },
-      { q: "len(\"hey\") is...", choices: ["2", "3", "\"hey\"", "Error"], answer: 1, explain: "len counts characters: h, e, y." },
-      { type: "code", q: "Use a for loop to print the numbers 0, 1 and 2, each on its own line.", expectedOutput: "0\n1\n2", explain: "for i in range(3): then an indented print(i)." },
-      { type: "code", q: "With temp = 95, print \"Hot\" if temp is above 80, otherwise print \"Fine\".", expectedOutput: "Hot", explain: "if temp > 80: print(\"Hot\") else: print(\"Fine\"). 95 > 80, so Hot." },
-      { type: "code", q: "Use a while loop to print 5, 4, 3, 2, 1 (count down), each on its own line.", expectedOutput: "5\n4\n3\n2\n1", explain: "n = 5, while n > 0: print(n) and n = n - 1 inside the loop." },
-    ],
   },
 ];
 

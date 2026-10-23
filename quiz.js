@@ -9,24 +9,53 @@
    Instant feedback with an explanation, then a score card.
    No buddy help during a quiz.
 
-     quiz.start(module, onDone, sandbox)   onDone({ score, total })
+     quiz.start(module, onDone, sandbox, saved, save)   onDone({ score, total })
+   Questions come from module.quizBank (see lessons.js): a fresh draw per
+   attempt, and a retake never repeats the previous attempt's questions.
    ============================================================ */
 
 const quiz = (() => {
   const card = document.getElementById("quiz-card");
   let questions = [], index = 0, score = 0, onDone = null, answered = false, sandbox = null, codeEditor = null, onSave = null;
 
-  // saved = { index, score, finished } from a previous visit: pick up at that
-  // question, or show the score screen again if the quiz was finished
+  // Each attempt draws a fresh set from the module's bank: draw.mc choice
+  // questions and draw.code coding questions, mixed so the coding ones are
+  // spread out. The set is saved (as bank indexes) so coming back mid-quiz
+  // shows the same questions; a retake draws a set with none of the
+  // questions from the previous attempt.
+  let bank = null, set = [], last = [];
+  function pick(pool, n, avoid) {
+    const fresh = shuffle(pool.filter((i) => !avoid.includes(i)));
+    const extra = shuffle(pool.filter((i) => avoid.includes(i)));   // only if the bank runs short
+    return fresh.concat(extra).slice(0, n);
+  }
+  function draw(avoid) {
+    const mc = bank.questions.map((x, i) => (x.type === "code" ? null : i)).filter((i) => i !== null);
+    const code = bank.questions.map((x, i) => (x.type === "code" ? i : null)).filter((i) => i !== null);
+    const picked = pick(mc, bank.draw.mc, avoid);
+    const codes = pick(code, bank.draw.code, avoid);
+    // spread the coding questions through the list, never first
+    const gap = (picked.length + 1) / (codes.length + 1);
+    codes.forEach((c, k) => picked.splice(Math.min(picked.length, Math.round(gap * (k + 1)) + k), 0, c));
+    return picked;
+  }
+  function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+  // saved = { index, score, finished, set, last } from a previous visit
   function start(module, done, sb, saved, save) {
-    questions = module.quiz;
+    bank = module.quizBank;
     index = 0; score = 0; onDone = done; sandbox = sb; onSave = save;
-    if (saved && saved.index > 0) { index = Math.min(saved.index, questions.length); score = saved.score || 0; }
+    last = (saved && saved.last) || [];
+    set = (saved && saved.set && saved.set.length) ? saved.set : draw(last);
+    questions = set.map((i) => bank.questions[i]);
+    if (saved && saved.set && saved.set.length && saved.index > 0) { index = Math.min(saved.index, questions.length); score = saved.score || 0; }
+    else if (saved && saved.finished) { score = saved.score || 0; index = questions.length; }
     card.dataset.title = module.title;
     if (saved && saved.finished) return finish({ again: true });
+    saveState();
     index < questions.length ? render() : finish();
   }
-  function saveState(extra = {}) { onSave && onSave({ index, score, finished: false, ...extra }); }
+  function saveState(extra = {}) { onSave && onSave({ index, score, total: questions.length, set, last, finished: false, ...extra }); }
 
   // Fisher-Yates shuffle, with the correct answer's new position tracked
   function shuffled(q) {
@@ -165,6 +194,9 @@ const quiz = (() => {
   }
 
   function retake() {
+    last = set;                      // none of these again this time
+    set = draw(last);
+    questions = set.map((i) => bank.questions[i]);
     index = 0; score = 0;
     saveState();
     sfx.pop();

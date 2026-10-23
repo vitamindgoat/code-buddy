@@ -132,7 +132,7 @@ function renderHeader() {
   $("stage-badge").className = "stage-badge stage-" + (isReading() && stage === "lesson" ? "read" : stage);
   $("lesson-number").textContent = stage === "quiz" ? `Module ${l.moduleIndex + 1}` : l.number;
   $("lesson-title").textContent = stage === "quiz" ? `${m.title} quiz` : l.title;
-  $("lesson-intro").innerHTML = stage === "practice" ? practiceGoalHtml(l.practice) : stage === "quiz" ? `${m.quiz.length} questions. No help from the buddy on this one!` : richText(l.intro);
+  $("lesson-intro").innerHTML = stage === "practice" ? practiceGoalHtml(l.practice) : stage === "quiz" ? `${m.quizBank.draw.mc + m.quizBank.draw.code} questions, drawn fresh from a bank of ${m.quizBank.questions.length}. No help from the buddy on this one!` : richText(l.intro);
   $("lesson-pill").textContent = stage === "quiz" ? `Quiz · Module ${l.moduleIndex + 1}` : `${kind} ${l.number} · ${l.title}`;
   // revisiting something finished: say so right in the header
   const sc = progress.scores[m.id];
@@ -263,7 +263,7 @@ function open(target) {
     quiz.start(module_(), (r) => { progress.scores[module_().id] = r; finishStage(); }, sandbox, saved, (st) => {
       saveWork(st);
       // the score counts the moment the quiz ends, not only when Continue is pressed
-      if (st.finished) { progress.scores[module_().id] = { score: st.score, total: module_().quiz.length }; progress.done[module_().id + "-quiz"] = true; saveProgress(); renderSidebar(); renderHeader(); }
+      if (st.finished) { progress.scores[module_().id] = { score: st.score, total: st.total }; progress.done[module_().id + "-quiz"] = true; saveProgress(); renderSidebar(); renderHeader(); }
     });
   }
 
