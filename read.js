@@ -34,7 +34,7 @@ const read = (() => {
     const last = index === lesson.cards.length - 1;
     card.innerHTML = `
       <div class="read-head">
-        <span class="read-label">📖 Reading · ${escapeHtml(lesson.title)}</span>
+        <span class="read-label">Reading · ${escapeHtml(lesson.title)}</span>
         <div class="read-dots">${lesson.cards.map((_, i) => `<span class="${i < index ? "done" : i === index ? "on" : ""}"></span>`).join("")}</div>
       </div>
       <div class="read-body">
@@ -48,8 +48,8 @@ const read = (() => {
         </div>
       </div>
       <div class="read-foot">
-        <button class="btn btn-ghost read-prev" type="button" ${index === 0 ? "disabled" : ""}>◀ Back</button>
-        <button class="btn btn-primary read-next" type="button" ${c.checks ? "disabled" : ""}>${last ? "Finish ✓" : "Continue ▶"}</button>
+        <button class="btn btn-ghost read-prev" type="button" ${index === 0 ? "disabled" : ""}>Back</button>
+        <button class="btn btn-primary read-next" type="button" ${c.checks ? "disabled" : ""}>${last ? "Finish" : "Continue"}</button>
       </div>`;
 
     card.querySelector(".read-prev").addEventListener("click", () => { if (index > 0) { index--; card.dataset.dir = "prev"; render(); } });

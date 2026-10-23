@@ -60,7 +60,7 @@ const backup = (() => {
       const when = new Date(f.exported).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
       ctx.confirm({
         title: "Load this backup?",
-        sub: `It's from ${when} with ${done} finished item${done === 1 ? "" : "s"}. It replaces everything in this browser right now, including your saved programs.`,
+        sub: `It's from ${when} with ${done} finished item${done === 1 ? "" : "s"}. It replaces all the progress in this browser right now.`,
         yes: "Yes, load the backup", no: "Cancel",
         onYes: () => {
           try {
@@ -103,7 +103,7 @@ const backup = (() => {
       </div>
       ${mods}
       <section class="rep-mod"><h3>Badges <span>${d.badges.length} of ${d.badgeTotal}</span></h3>
-        <p class="rep-badges">${d.badges.length ? d.badges.map((b) => `<span>${b.icon} ${esc(b.name)}</span>`).join("") : "None yet."}</p></section>
+        <p class="rep-badges">${d.badges.length ? d.badges.map((b) => `<span>${icon(b.icon)} ${esc(b.name)}</span>`).join("") : "None yet."}</p></section>
       <p class="rep-foot">${d.complete ? "Course complete!" : `${d.stats.total - d.stats.done} items left in the course.`} Days active: ${d.daysActive}. Made with CodeBuddy, a free learn-to-code app.</p>`;
     const root = $("report");
     root.hidden = false; root.classList.remove("show"); void root.offsetWidth; root.classList.add("show");

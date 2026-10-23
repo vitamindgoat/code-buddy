@@ -18,21 +18,21 @@
 const badges = (() => {
   const $ = (id) => document.getElementById(id);
   const LIST = [
-    { id: "first-line",   icon: "⌨️", name: "First line",       hint: "Type your first full line of code." },
-    { id: "first-run",    icon: "▶️", name: "It runs!",         hint: "Run a program for the first time." },
-    { id: "first-lesson", icon: "📗", name: "Lesson one",       hint: "Finish your first coding lesson." },
-    { id: "no-hints",     icon: "🧠", name: "No hints needed",  hint: "Solve a practice without asking for a hint." },
-    { id: "first-quiz",   icon: "📝", name: "Quiz taker",       hint: "Finish a module quiz." },
-    { id: "perfect-quiz", icon: "💯", name: "Perfect score",    hint: "Get every question right on a quiz." },
-    { id: "module",       icon: "🏁", name: "Module master",    hint: "Finish every lesson, practice and quiz in a module." },
-    { id: "five",         icon: "🖐️", name: "High five",        hint: "Finish 5 lessons." },
-    { id: "ten",          icon: "🔟", name: "Double digits",    hint: "Finish 10 lessons." },
-    { id: "all",          icon: "🏆", name: "Graduate",         hint: "Finish the whole course." },
-    { id: "scratch",      icon: "✎",  name: "Scribbler",        hint: "Open the scratch pad during a quiz." },
-    { id: "comeback",     icon: "🔁", name: "Back again",       hint: "Come back on another day to keep going." },
-    { id: "fixer",        icon: "🪄", name: "Quick fix",        hint: "Fix a typo with the autocorrect bubble." },
-    { id: "final",        icon: "🎮", name: "Game maker",       hint: "Finish the final project: build the guessing game." },
-    { id: "bug-squash",   icon: "🐛", name: "Bug squasher",     hint: "Fix a program that crashed on purpose." },
+    { id: "first-line",   icon: "keyboard", name: "First line",       hint: "Type your first full line of code." },
+    { id: "first-run",    icon: "play_arrow", name: "It runs!",         hint: "Run a program for the first time." },
+    { id: "first-lesson", icon: "menu_book", name: "Lesson one",       hint: "Finish your first coding lesson." },
+    { id: "no-hints",     icon: "psychology", name: "No hints needed",  hint: "Solve a practice without asking for a hint." },
+    { id: "first-quiz",   icon: "edit_note", name: "Quiz taker",       hint: "Finish a module quiz." },
+    { id: "perfect-quiz", icon: "military_tech", name: "Perfect score",    hint: "Get every question right on a quiz." },
+    { id: "module",       icon: "flag", name: "Module master",    hint: "Finish every lesson, practice and quiz in a module." },
+    { id: "five",         icon: "counter_5", name: "High five",        hint: "Finish 5 lessons." },
+    { id: "ten",          icon: "filter_9_plus", name: "Double digits",    hint: "Finish 10 lessons." },
+    { id: "all",          icon: "trophy", name: "Graduate",         hint: "Finish the whole course." },
+    { id: "scratch",      icon: "edit", name: "Scribbler",        hint: "Open the scratch pad during a quiz." },
+    { id: "comeback",     icon: "repeat", name: "Back again",       hint: "Come back on another day to keep going." },
+    { id: "fixer",        icon: "wand_stars", name: "Quick fix",        hint: "Fix a typo with the autocorrect bubble." },
+    { id: "final",        icon: "sports_esports", name: "Game maker",       hint: "Finish the final project: build the guessing game." },
+    { id: "bug-squash",   icon: "bug_report", name: "Bug squasher",     hint: "Fix a program that crashed on purpose." },
   ];
   let earned = {}, save = () => {};
   const today = () => new Date().toISOString().slice(0, 10);
@@ -51,7 +51,7 @@ const badges = (() => {
     const el = document.createElement("div");
     el.className = "toast";
     el.setAttribute("role", "status");
-    el.innerHTML = `<span class="toast-icon">${b.icon}</span><span class="toast-text"><b>Badge earned</b><span>${b.name}</span></span>`;
+    el.innerHTML = `<span class="toast-icon">${icon(b.icon)}</span><span class="toast-text"><b>Badge earned</b><span>${b.name}</span></span>`;
     el.addEventListener("click", () => { el.classList.add("out"); });
     stack.appendChild(el);
     if (window.sfx) sfx.badge();
@@ -95,7 +95,7 @@ const badges = (() => {
       const on = earned[b.id];
       const when = on ? new Date(on + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "";
       return `<div class="trophy ${on ? "on" : ""}" style="--i:${i}" title="${b.hint}">
-        <span class="trophy-icon">${on ? b.icon : "🔒"}</span>
+        <span class="trophy-icon">${icon(on ? b.icon : "lock")}</span>
         <b>${b.name}</b>
         <span class="trophy-hint">${on ? `Earned ${when}` : b.hint}</span>
       </div>`;

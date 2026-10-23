@@ -82,7 +82,7 @@ const quiz = (() => {
     return `
       <div class="quiz-head">
         <span class="quiz-label">Quiz · ${card.dataset.title}</span>
-        <span class="quiz-head-right"><button type="button" class="btn btn-ghost quiz-scratch" title="Open the scratch pad">✎ Scratch pad</button><span class="quiz-count">${index + 1} / ${questions.length}</span></span>
+        <span class="quiz-head-right"><button type="button" class="btn btn-ghost quiz-scratch" title="Open the scratch pad">${icon("edit")}Scratch pad</button><span class="quiz-count">${index + 1} / ${questions.length}</span></span>
       </div>
       <div class="quiz-progress"><div style="width:${(answeredCount() / questions.length) * 100}%"></div></div>`;
   }
@@ -116,12 +116,12 @@ const quiz = (() => {
     const a = answers[index];
     const done = isAnswered(index);
     card.innerHTML = `${header()}
-      <div class="quiz-kind">💻 Coding question</div>
+      <div class="quiz-kind">Coding question</div>
       <h2 class="quiz-q">${escapeHtml(q.q).replace(/\n/g, "<br>")}</h2>
       ${q.inputs ? `<div class="quiz-inputs">The user types: <code>${escapeHtml(q.inputs.join(", "))}</code></div>` : ""}
       <div class="quiz-editor"><textarea id="quiz-code"></textarea></div>
       <div class="quiz-run-row">
-        <button class="btn btn-ghost quiz-run" type="button" ${done ? "disabled" : ""}>▶ Run</button>
+        <button class="btn btn-ghost quiz-run" type="button" ${done ? "disabled" : ""}>${icon("play_arrow")}Run</button>
         <button class="btn btn-primary quiz-submit" type="button" ${done ? "disabled" : ""}>Submit answer</button>
       </div>
       <pre class="quiz-output ${done && !a.ok ? "err" : ""}" ${done ? "" : "hidden"}>${done ? escapeHtml(a.output) : ""}</pre>
@@ -176,9 +176,9 @@ const quiz = (() => {
     const left = index > 0;
     const allDone = answeredCount() === questions.length;
     const lastQ = index === questions.length - 1;
-    const nextLabel = allDone ? (lastQ ? "See my score ▶" : "Next ▶") : lastQ ? "Next unanswered ▶" : "Next ▶";
+    const nextLabel = allDone ? (lastQ ? "See my score" : "Next") : lastQ ? "Next unanswered" : "Next";
     return `<div class="quiz-nav">${dots()}<div class="quiz-actions">
-      <button class="btn btn-ghost quiz-back" type="button" ${left ? "" : "hidden"}>◀ Back</button>
+      <button class="btn btn-ghost quiz-back" type="button" ${left ? "" : "hidden"}>Back</button>
       <button class="btn btn-primary quiz-next" type="button" ${done ? "" : "hidden"}>${nextLabel}</button>
     </div></div>`;
   }
@@ -246,10 +246,10 @@ const quiz = (() => {
         <div class="quiz-pct">${pct}%</div>
         <p>${msg}</p>
         <div class="quiz-result-actions">
-          <button class="btn btn-primary quiz-done" type="button">Continue ▶</button>
+          <button class="btn btn-primary quiz-done" type="button">Continue</button>
           <div class="quiz-result-row">
-            <button class="btn btn-ghost quiz-share" type="button">⇪ Share score</button>
-            <button class="btn btn-ghost quiz-retake" type="button">↺ Retake quiz</button>
+            <button class="btn btn-ghost quiz-share" type="button">${icon("share")}Share score</button>
+            <button class="btn btn-ghost quiz-retake" type="button">${icon("replay")}Retake quiz</button>
           </div>
           <div class="quiz-share-note" aria-live="polite"></div>
         </div>

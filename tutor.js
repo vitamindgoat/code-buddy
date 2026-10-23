@@ -500,10 +500,10 @@ const tutor = (() => {
         awaitingRun = false; cpIndex++;
         const lines = codeLines();
         ui.markLine(ui.getCursorLine());
-        say(`# Ran your code ✓\n${cp.say || "That's exactly what we expected."}\n${typeSection("Next line")}`, "happy");
+        say(`# Ran your code\n${cp.say || "That's exactly what we expected."}\n${typeSection("Next line")}`, "happy");
         armStuck(STUCK_AFTER_IDLE_MS);
       } else {
-        say(`# Ran your code ✓\nHmm, I expected it to print \`${cp.output.trim().split("\n").pop()}\`. Check the line against the steps on the left, then run it again.`, "thinking");
+        say(`# Ran your code\nHmm, I expected it to print \`${cp.output.trim().split("\n").pop()}\`. Check the line against the steps on the left, then run it again.`, "thinking");
       }
       return;
     }
@@ -512,16 +512,16 @@ const tutor = (() => {
       complete = true;
       ui.ghost(); ui.markWrong(); ui.stuckTag(false);
       const done = mode === "practice" ? "You solved it on your own!" : earlyFix ? "You fixed the bug before it even crashed. Nice catch!" : lesson.done;
-      say(`# Ran your code ✓\nYes! It worked. ${done}\n# What now?\nClick the *Next* button when you're ready to move on.`, "celebrate");
+      say(`# Ran your code\nYes! It worked. ${done}\n# What now?\nClick the *Next* button when you're ready to move on.`, "celebrate");
       ui.onComplete(mode);
     } else if (celebrated) {
-      say("# Ran your code ✓\nNice experiment! Change something else and run it again, or move on when you're ready.", "happy");
+      say("# Ran your code\nNice experiment! Change something else and run it again, or move on when you're ready.", "happy");
     } else if (mode === "practice") {
-      say(`# Ran your code ✓\nIt ran, but that's not the output we want yet.\n# Goal\n${goalText(lesson.practice)}\n# Stuck?\nClick me if you want a hint.`, "thinking");
+      say(`# Ran your code\nIt ran, but that's not the output we want yet.\n# Goal\n${goalText(lesson.practice)}\n# Stuck?\nClick me if you want a hint.`, "thinking");
     } else if (!complete) {
-      say(`# Ran your code ✓\nIt works so far, but we're not finished yet.\n${typeSection()}`, "happy");
+      say(`# Ran your code\nIt works so far, but we're not finished yet.\n${typeSection()}`, "happy");
     } else {
-      say("# Ran your code ✓\nHmm, it ran, but the output isn't what I expected. Compare your lines with the steps on the left.", "thinking");
+      say("# Ran your code\nHmm, it ran, but the output isn't what I expected. Compare your lines with the steps on the left.", "thinking");
     }
   }
 

@@ -128,3 +128,5 @@
 }
 
 :root[data-theme="dark"] .stage-badge.stage-practice, :root[data-theme="dark"] .done-badge { color: var(--green); }
+:root[data-theme="dark"] .speech-label.label-ok, :root[data-theme="dark"] .speech-label.label-win { color: var(--green); }
+:root[data-theme="dark"] .sb-streak em { color: #e0b48a; }

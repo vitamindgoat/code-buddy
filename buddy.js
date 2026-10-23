@@ -158,6 +158,12 @@ const buddy = (() => {
         if (isCode && !isLabel) spoken += " ";
         line.appendChild(el);
       });
+      // "✓ `code`" headers show a check icon instead of the text mark
+      if (isLabel && lineText.startsWith("✓") && window.icon) {
+        const tn = line.firstChild && line.firstChild.firstChild;
+        if (tn && tn.nodeType === 3) tn.textContent = tn.textContent.replace(/^✓\s*/, "");
+        line.insertAdjacentHTML("afterbegin", icon("check"));
+      }
       if (isLabel) spoken += spokenLabel(lineText);   // said out loud, not shown
       else spoken += " ";
       speechEl.appendChild(line);

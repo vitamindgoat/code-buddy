@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="115" />
+  <meta name="build" content="116" />
   <!-- Theme before first paint, so dark mode never flashes white -->
   <script>
     try {
@@ -30,8 +30,8 @@
   <meta name="twitter:title" content="CodeBuddy – Learn Python by typing every line" />
   <meta name="twitter:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on." />
   <meta name="twitter:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=115" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=115" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=116" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=116" />
   <!-- Installable app: icon, name and colors for "Add to Home Screen" -->
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -49,9 +49,9 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=115" />
-  <link rel="stylesheet" href="buddy.css?v=115" />
-  <link rel="stylesheet" href="dark.css?v=115" />
+  <link rel="stylesheet" href="styles.css?v=116" />
+  <link rel="stylesheet" href="buddy.css?v=116" />
+  <link rel="stylesheet" href="dark.css?v=116" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -59,14 +59,14 @@
 
   <header class="topbar">
     <div class="brand">
-      <button id="menu-btn" class="btn btn-ghost btn-icon-only menu-btn" type="button" title="All modules and lessons" aria-label="Open menu">☰</button>
+      <button id="menu-btn" class="btn btn-ghost btn-icon-only menu-btn" type="button" title="All modules and lessons" aria-label="Open menu"><span class="i" data-icon="menu"></span></button>
       <span class="brand-logo" id="brand-logo" aria-hidden="true"></span>
       <span class="brand-name">CodeBuddy</span>
     </div>
     <div class="topbar-right">
       <span class="pill" id="lesson-pill">Lesson 1</span>
-      <button id="settings-btn" class="btn btn-ghost btn-icon-only" type="button" title="Settings" aria-label="Settings">⚙ <span class="btn-text">Settings</span></button>
-      <button id="tour-btn" class="btn btn-ghost btn-icon-only" type="button" title="Redo the tutorial" aria-label="Tutorial">❔ <span class="btn-text">Tutorial</span></button>
+      <button id="settings-btn" class="btn btn-ghost btn-icon-only" type="button" title="Settings" aria-label="Settings"><span class="i" data-icon="settings"></span><span class="btn-text">Settings</span></button>
+      <button id="tour-btn" class="btn btn-ghost btn-icon-only" type="button" title="Redo the tutorial" aria-label="Tutorial"><span class="i" data-icon="help"></span><span class="btn-text">Tutorial</span></button>
     </div>
   </header>
 
@@ -75,10 +75,10 @@
   <aside id="sidebar" class="sidebar" aria-hidden="true" inert>
     <div class="sidebar-head">
       <span class="brand-name">Modules</span>
-      <button id="sidebar-close" class="btn btn-ghost btn-icon-only" type="button" aria-label="Close menu">✕</button>
+      <button id="sidebar-close" class="btn btn-ghost btn-icon-only" type="button" aria-label="Close menu"><span class="i" data-icon="close"></span></button>
     </div>
     <div id="sb-streak" class="sb-streak"></div>
-    <div class="sb-search"><span aria-hidden="true">🔍</span><input id="sb-search" type="search" placeholder="Search lessons (try: loop, input, binary)" aria-label="Search lessons" autocomplete="off" spellcheck="false" /></div>
+    <div class="sb-search"><span class="i" data-icon="search"></span><input id="sb-search" type="search" placeholder="Search lessons (try: loop, input, binary)" aria-label="Search lessons" autocomplete="off" spellcheck="false" /></div>
     <p id="sb-search-empty" class="sb-search-empty" hidden></p>
     <nav id="sidebar-list" class="sidebar-list"></nav>
     <div class="sidebar-foot">
@@ -99,7 +99,7 @@
       <div class="stage-row">
         <span id="stage-badge" class="stage-badge">Lesson</span>
         <span id="lesson-number" class="lesson-number">1.1</span>
-        <span id="done-badge" class="done-badge" hidden>✓ Completed</span>
+        <span id="done-badge" class="done-badge" hidden>Completed</span>
       </div>
       <h1 class="lesson-title" id="lesson-title"></h1>
       <p class="lesson-text" id="lesson-intro"></p>
@@ -109,8 +109,8 @@
         <pre id="practice-expected" class="practice-expected"></pre>
       </div>
       <div class="lesson-nav">
-        <button id="prev-btn" class="btn btn-ghost" type="button">◀ Back</button>
-        <button id="next-btn" class="btn btn-primary" type="button" disabled>Practice ▶</button>
+        <button id="prev-btn" class="btn btn-ghost" type="button">Back</button>
+        <button id="next-btn" class="btn btn-primary" type="button" disabled>Practice</button>
       </div>
       <div id="buddy-debug" class="buddy-debug" hidden></div>
     </section>
@@ -121,10 +121,10 @@
         <div class="card-header">
           <span class="card-label">Your code</span>
           <div class="actions">
-            <button id="reset-btn" class="btn btn-ghost" type="button" title="Start over"><span class="btn-text">Start over</span><span class="btn-text-short" aria-hidden="true">↺</span></button>
+            <button id="reset-btn" class="btn btn-ghost" type="button" title="Start over"><span class="btn-text">Start over</span><span class="btn-text-short" aria-hidden="true"><span class="i" data-icon="replay"></span></span></button>
             <span id="run-tag" class="callout run-tag" hidden>Now run it</span>
             <button id="run-btn" class="btn btn-primary" type="button" disabled>
-              <span class="btn-icon">▶</span> Run
+              <span class="btn-icon" data-icon="play_arrow"></span>Run
             </button>
           </div>
         </div>
@@ -132,7 +132,7 @@
         <div id="py-banner" class="py-banner" hidden role="status">
           <span class="py-dot" aria-hidden="true"></span>
           <span id="py-msg" class="py-msg"></span>
-          <button id="py-retry" class="btn btn-primary py-retry" type="button" hidden>↻ Retry</button>
+          <button id="py-retry" class="btn btn-primary py-retry" type="button" hidden>Retry</button>
         </div>
 
         <div class="editor-wrap">
@@ -144,7 +144,7 @@
           <div id="buddy-float" class="buddy-float">
             <div class="speech-col">
               <div class="speech" id="speech" title="Click to skip ahead"></div>
-              <button id="replay-btn" class="replay-btn" type="button" title="Say that again" aria-label="Say that again">↻</button>
+              <button id="replay-btn" class="replay-btn" type="button" title="Say that again" aria-label="Say that again"><span class="i" data-icon="replay"></span></button>
             </div>
             <div class="buddy-col">
               <div id="buddy" title="Click me for a hint"></div>
@@ -174,7 +174,7 @@
   <div id="settings-backdrop" class="sidebar-backdrop" hidden></div>
   <div id="settings-layer" class="settings-layer" hidden>
   <div id="settings" class="settings card" role="dialog" aria-label="Settings">
-    <div class="settings-head"><span class="brand-name">Settings</span><button id="settings-close" class="btn btn-ghost btn-icon-only" type="button" aria-label="Close">✕</button></div>
+    <div class="settings-head"><span class="brand-name">Settings</span><button id="settings-close" class="btn btn-ghost btn-icon-only" type="button" aria-label="Close"><span class="i" data-icon="close"></span></button></div>
     <div class="settings-body">
       <label class="set-row"><span>Your name</span><input id="set-name" type="text" maxlength="40" placeholder="Optional" autocomplete="given-name" spellcheck="false" /></label>
       <label class="set-row"><span>Theme</span><select id="set-theme"><option value="light">Light</option><option value="dark">Dark</option><option value="auto">Match my device</option></select></label>
@@ -209,14 +209,14 @@
       <h2 id="welcome-title" class="done-title welcome-title">Hi, I'm Buddy!</h2>
       <p class="done-sub">I'll teach you to code in Python, one line at a time.</p>
       <ul class="welcome-points">
-        <li><span aria-hidden="true">⌨️</span><span><b>You type every line.</b> Gray letters show what comes next.</span></li>
-        <li><span aria-hidden="true">💬</span><span><b>I explain each piece</b> as you type it, and catch typos.</span></li>
-        <li><span aria-hidden="true">▶️</span><span><b>Real Python</b> runs right here. Nothing to install.</span></li>
+        <li><span class="i" data-icon="keyboard"></span><span><b>You type every line.</b> Gray letters show what comes next.</span></li>
+        <li><span class="i" data-icon="chat"></span><span><b>I explain each piece</b> as you type it, and catch typos.</span></li>
+        <li><span class="i" data-icon="play_arrow"></span><span><b>Real Python</b> runs right here. Nothing to install.</span></li>
       </ul>
       <label class="welcome-name"><span>What should I call you? <em>(optional)</em></span>
         <input id="welcome-input" class="name-input" type="text" maxlength="40" placeholder="Your name" autocomplete="given-name" spellcheck="false" /></label>
       <div class="done-actions">
-        <button id="welcome-tour" class="btn btn-primary btn-big" type="submit">Show me around ▶</button>
+        <button id="welcome-tour" class="btn btn-primary btn-big" type="submit">Show me around</button>
         <button id="welcome-skip" class="btn btn-ghost" type="button">Skip the tour, let's code</button>
       </div>
     </form>
@@ -231,7 +231,7 @@
       <p class="done-sub">I'll use it when I cheer you on. You can change it in Settings.</p>
       <input id="name-input" class="name-input" type="text" maxlength="40" placeholder="Your name" autocomplete="given-name" spellcheck="false" />
       <div class="done-actions">
-        <button id="name-go" class="btn btn-primary btn-big" type="submit">Let's go ▶</button>
+        <button id="name-go" class="btn btn-primary btn-big" type="submit">Let's go</button>
         <button id="name-skip" class="btn btn-ghost" type="button">Skip for now</button>
       </div>
     </form>
@@ -254,7 +254,7 @@
   <!-- Keyboard shortcuts: press ? anywhere outside the editor -->
   <div id="keys" class="complete" hidden role="dialog" aria-label="Keyboard shortcuts">
     <div class="done-card card keys-card">
-      <button id="keys-close" class="dialog-close" type="button" aria-label="Close">✕</button>
+      <button id="keys-close" class="dialog-close" type="button" aria-label="Close"><span class="i" data-icon="close"></span></button>
       <h2 class="done-title keys-title">Shortcuts</h2>
       <div class="keys-cols">
         <section><h3>Coding</h3>
@@ -297,7 +297,7 @@
   <!-- Trophies: every badge, earned or locked (badges.js) -->
   <div id="trophies" class="complete trophies" hidden role="dialog" aria-label="Trophies">
     <div class="done-card trophies-card card">
-      <button id="trophies-close" class="dialog-close" type="button" aria-label="Close">✕</button>
+      <button id="trophies-close" class="dialog-close" type="button" aria-label="Close"><span class="i" data-icon="close"></span></button>
       <h2 class="done-title trophies-title">Your badges</h2>
       <p id="trophies-sub" class="done-sub"></p>
       <div id="trophies-grid" class="trophies-grid"></div>
@@ -315,7 +315,7 @@
       <h2 id="done-title" class="done-title">Lesson complete!</h2>
       <p id="done-sub" class="done-sub"></p>
       <div class="done-actions">
-        <button id="done-next" class="btn btn-primary btn-big" type="button">Practice ▶</button>
+        <button id="done-next" class="btn btn-primary btn-big" type="button">Practice</button>
         <button id="done-stay" class="btn btn-ghost" type="button">Stay here</button>
       </div>
     </div>
@@ -324,23 +324,23 @@
   <!-- Quiz scratch pad: an infinite whiteboard in a window (scratch.js) -->
   <div id="scratch" class="scratch" hidden role="dialog" aria-label="Scratch pad" data-tab="draw">
     <div class="scratch-head">
-      <span class="scratch-title">✎ Scratch pad</span>
+      <span class="scratch-title"><span class="i" data-icon="edit"></span>Scratch pad</span>
       <div class="scratch-tabs" role="tablist">
         <button type="button" data-tab="draw" class="on">Draw</button>
         <button type="button" data-tab="notes">Notes</button>
       </div>
       <div class="scratch-winbtns">
         <button type="button" data-act="min" title="Minimize" aria-label="Minimize">–</button>
-        <button type="button" data-act="max" title="Maximize (double-click the bar)" aria-label="Maximize">⤢</button>
-        <button type="button" data-act="close" title="Close (Esc)" aria-label="Close">✕</button>
+        <button type="button" data-act="max" title="Maximize (double-click the bar)" aria-label="Maximize"><span class="i" data-icon="open_in_full"></span></button>
+        <button type="button" data-act="close" title="Close (Esc)" aria-label="Close"><span class="i" data-icon="close"></span></button>
       </div>
     </div>
     <div class="scratch-tools">
       <div class="scratch-group">
-        <button type="button" data-tool="pen" class="on" title="Pen (P)">✏️</button>
-        <button type="button" data-tool="highlighter" title="Highlighter (L)">🖍️</button>
-        <button type="button" data-tool="eraser" title="Eraser (E)"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M4 17.5 13.5 8a2 2 0 0 1 2.8 0l3.7 3.7a2 2 0 0 1 0 2.8L15.3 19H9l-5-1.5Z" fill="#fff" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9.5 11.5 15.5 17.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 21h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-        <button type="button" data-tool="hand" title="Move around (H, or hold Space)">✋</button>
+        <button type="button" data-tool="pen" class="on" title="Pen (P)" aria-label="Pen"><span class="i" data-icon="edit"></span></button>
+        <button type="button" data-tool="highlighter" title="Highlighter (L)" aria-label="Highlighter"><span class="i" data-icon="ink_highlighter"></span></button>
+        <button type="button" data-tool="eraser" title="Eraser (E)" aria-label="Eraser"><span class="i" data-icon="ink_eraser"></span></button>
+        <button type="button" data-tool="hand" title="Move around (H, or hold Space)" aria-label="Move around"><span class="i" data-icon="back_hand"></span></button>
       </div>
       <div class="scratch-group scratch-colors">
         <button type="button" data-color="ink" class="on" style="--c:#135ab6" title="Blue"></button>
@@ -354,25 +354,25 @@
         <button type="button" data-size="l" title="Thick"><i style="--d:11px"></i></button>
       </div>
       <div class="scratch-group">
-        <button type="button" data-act="undo" title="Undo (Ctrl+Z)">↶</button>
-        <button type="button" data-act="redo" title="Redo (Ctrl+Y)">↷</button>
+        <button type="button" data-act="undo" title="Undo (Ctrl+Z)" aria-label="Undo"><span class="i" data-icon="undo"></span></button>
+        <button type="button" data-act="redo" title="Redo (Ctrl+Y)" aria-label="Redo"><span class="i" data-icon="redo"></span></button>
       </div>
       <div class="scratch-group scratch-zoom">
-        <button type="button" data-act="zoom-out" title="Zoom out (Ctrl −, or scroll)">−</button>
+        <button type="button" data-act="zoom-out" title="Zoom out (Ctrl −, or scroll)" aria-label="Zoom out"><span class="i" data-icon="remove"></span></button>
         <button type="button" data-act="zoom-100" class="scratch-zoom-val" title="Reset zoom (Ctrl 0)">100%</button>
-        <button type="button" data-act="zoom-in" title="Zoom in (Ctrl +, or scroll)">+</button>
-        <button type="button" data-act="zoom-fit" title="Fit the drawing">⛶</button>
+        <button type="button" data-act="zoom-in" title="Zoom in (Ctrl +, or scroll)" aria-label="Zoom in"><span class="i" data-icon="add"></span></button>
+        <button type="button" data-act="zoom-fit" title="Fit the drawing" aria-label="Fit the drawing"><span class="i" data-icon="fit_screen"></span></button>
       </div>
       <div class="scratch-group scratch-right">
-        <button type="button" data-act="grid" class="on" title="Grid (G)">⁘</button>
-        <button type="button" data-act="export" title="Save as PNG">⤓</button>
+        <button type="button" data-act="grid" class="on" title="Grid (G)" aria-label="Grid"><span class="i" data-icon="grid_on"></span></button>
+        <button type="button" data-act="export" title="Save as PNG" aria-label="Save as PNG"><span class="i" data-icon="download"></span></button>
         <button type="button" data-act="clear" class="scratch-clear" title="Clear everything">Clear</button>
       </div>
     </div>
     <div class="scratch-body">
       <canvas class="scratch-canvas"></canvas>
       <textarea class="scratch-notes" placeholder="Type your working here…" spellcheck="false"></textarea>
-      <div class="scratch-hint">scroll to zoom · drag with ✋ or Space to move · two fingers on a phone</div>
+      <div class="scratch-hint">scroll to zoom · drag with the hand tool or Space to move · two fingers on a phone</div>
     </div>
     <div class="scratch-edge" data-edge="n" aria-hidden="true"></div>
     <div class="scratch-edge" data-edge="s" aria-hidden="true"></div>
@@ -383,14 +383,14 @@
     <div class="scratch-edge" data-edge="sw" aria-hidden="true"></div>
     <div class="scratch-edge scratch-grip" data-edge="se" aria-hidden="true"></div>
   </div>
-  <button id="scratch-pill" class="scratch-pill" type="button" hidden aria-label="Open the scratch pad">✎ Scratch pad</button>
+  <button id="scratch-pill" class="scratch-pill" type="button" hidden aria-label="Open the scratch pad"><span class="i" data-icon="edit"></span>Scratch pad</button>
 
   <!-- Phone key bar: sits above the on-screen keyboard while a code editor
        has focus, with the keys phone keyboards hide and cursor arrows -->
   <div id="keybar" class="keybar" hidden aria-label="Code keys">
     <div class="keybar-keys">
-    <button type="button" data-cmd="left" aria-label="Cursor left">◀</button>
-    <button type="button" data-cmd="right" aria-label="Cursor right">▶</button>
+    <button type="button" data-cmd="left" aria-label="Cursor left"><span class="i" data-icon="arrow_back"></span></button>
+    <button type="button" data-cmd="right" aria-label="Cursor right"><span class="i" data-icon="arrow_forward"></span></button>
     <button type="button" data-cmd="tab" class="keybar-wide">Tab</button>
     <button type="button" data-ins="(">(</button>
     <button type="button" data-ins=")">)</button>
@@ -408,22 +408,23 @@
     <button type="button" data-ins="[">[</button>
     <button type="button" data-ins="]">]</button>
     </div>
-    <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
+    <button type="button" data-cmd="run" class="keybar-run"><span class="i" data-icon="play_arrow"></span>Run</button>
   </div>
 
-  <script src="sfx.js?v=115"></script>
-  <script src="fx.js?v=115"></script>
-  <script src="wordinfo.js?v=115"></script>
-  <script src="lessons.js?v=115"></script>
-  <script src="buddy.js?v=115"></script>
-  <script src="tutor.js?v=115"></script>
-  <script src="scratch.js?v=115"></script>
-  <script src="quiz.js?v=115"></script>
-  <script src="read.js?v=115"></script>
-  <script src="finish.js?v=115"></script>
-  <script src="badges.js?v=115"></script>
-  <script src="backup.js?v=115"></script>
-  <script src="tour.js?v=115"></script>
-  <script src="app.js?v=115"></script>
+  <script src="icons.js?v=116"></script>
+  <script src="sfx.js?v=116"></script>
+  <script src="fx.js?v=116"></script>
+  <script src="wordinfo.js?v=116"></script>
+  <script src="lessons.js?v=116"></script>
+  <script src="buddy.js?v=116"></script>
+  <script src="tutor.js?v=116"></script>
+  <script src="scratch.js?v=116"></script>
+  <script src="quiz.js?v=116"></script>
+  <script src="read.js?v=116"></script>
+  <script src="finish.js?v=116"></script>
+  <script src="badges.js?v=116"></script>
+  <script src="backup.js?v=116"></script>
+  <script src="tour.js?v=116"></script>
+  <script src="app.js?v=116"></script>
 </body>
 </html>

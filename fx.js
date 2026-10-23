@@ -103,7 +103,7 @@ const fx = (() => {
   // A floating emoji that drifts up and fades (the buddy's reactions)
   function reaction(x, y, symbol) {
     const el = document.createElement("span");
-    el.className = "fx-react"; el.textContent = symbol;
+    el.className = "fx-react"; el.innerHTML = window.icon ? icon(symbol) : "";
     el.style.left = `${x}px`; el.style.top = `${y}px`;
     el.style.setProperty("--dx", `${rand(-30, 30)}px`);
     document.body.appendChild(el);

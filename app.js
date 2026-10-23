@@ -120,13 +120,13 @@ const isReading = (l = lesson()) => l.type === "read";
 // Reading lesson -> next lesson (or the quiz). Quiz -> next module.
 function nextTarget() {
   const afterLesson = () => {
-    if (isLastInModule()) return { lessonIndex, stage: "quiz", label: "Module quiz ▶" };
+    if (isLastInModule()) return { lessonIndex, stage: "quiz", label: "Module quiz" };
     const n = LESSONS[lessonIndex + 1];
-    return { lessonIndex: lessonIndex + 1, stage: "lesson", label: isReading(n) ? "Next: reading ▶" : "Next lesson ▶" };
+    return { lessonIndex: lessonIndex + 1, stage: "lesson", label: isReading(n) ? "Next: reading" : "Next lesson" };
   };
-  if (stage === "lesson") return isReading() ? afterLesson() : { lessonIndex, stage: "practice", label: "Practice ▶" };
+  if (stage === "lesson") return isReading() ? afterLesson() : { lessonIndex, stage: "practice", label: "Practice" };
   if (stage === "practice") return afterLesson();
-  if (lessonIndex + 1 < LESSONS.length) return { lessonIndex: lessonIndex + 1, stage: "lesson", label: "Next module ▶" };
+  if (lessonIndex + 1 < LESSONS.length) return { lessonIndex: lessonIndex + 1, stage: "lesson", label: "Next module" };
   return null;
 }
 function prevTarget() {
@@ -157,7 +157,7 @@ function renderHeader() {
   const sc = progress.scores[m.id];
   const badge = $("done-badge");
   badge.hidden = !isDone(doneId());
-  badge.textContent = stage === "quiz" && sc ? `✓ Scored ${sc.score} / ${sc.total}` : "✓ Completed";
+  badge.textContent = stage === "quiz" && sc ? `Scored ${sc.score} / ${sc.total}` : "Completed";
   document.querySelector(".lesson").classList.toggle("is-done", isDone(doneId()));
 
   // the expected output lives in the checklist now; this box only notes
@@ -166,7 +166,7 @@ function renderHeader() {
 
   prevBtn.disabled = !prevTarget();
   const nt = nextTarget();
-  nextBtn.textContent = nt ? nt.label : "All done! 🎉";
+  nextBtn.textContent = nt ? nt.label : "All done";
   nextBtn.disabled = !nt || !isDone(doneId());
 }
 
@@ -346,7 +346,7 @@ function streakInfo() {
 function renderStreak() {
   const { cur, best, today } = streakInfo();
   const el = $("sb-streak");
-  el.innerHTML = `<span class="streak-fire ${today ? "lit" : ""}">🔥</span><b>${cur}</b><span>day streak</span><em>best ${best}</em>`;
+  el.innerHTML = `<span class="streak-fire ${today ? "lit" : ""}">${icon("local_fire_department")}</span><b>${cur}</b><span>day streak</span><em>best ${best}</em>`;
   el.title = today ? "You did something today. Nice!" : cur ? "Finish something today to keep it going." : "Finish something to start a streak.";
 }
 
@@ -354,7 +354,7 @@ function renderStreak() {
 function flash(msg) {   // a short notice in the toast spot
   const el = document.createElement("div");
   el.className = "toast toast-note"; el.setAttribute("role", "status");
-  el.innerHTML = `<span class="toast-icon">ℹ️</span><span class="toast-text"><span></span></span>`;
+  el.innerHTML = `<span class="toast-icon">${icon("info")}</span><span class="toast-text"><span></span></span>`;
   el.querySelector(".toast-text span").textContent = msg;
   $("toast-stack").appendChild(el);
   setTimeout(() => el.classList.add("out"), 4200); setTimeout(() => el.remove(), 4700);
@@ -484,7 +484,7 @@ function renderSidebar() {
   };
   list.innerHTML = MODULES.map((m, mi) => { const [md, mt] = modCount(m); const sc = progress.scores[m.id]; return `
     <div class="sb-module">
-      <div class="sb-module-title"><span class="sb-num ${md === mt ? "full" : ""}">${md === mt ? "✓" : mi + 1}</span><span class="sb-mtitle">${m.title}</span><span class="sb-mcount">${md}/${mt}</span><span class="sb-blurb">${m.blurb}</span>
+      <div class="sb-module-title"><span class="sb-num ${md === mt ? "full" : ""}">${md === mt ? icon("check") : mi + 1}</span><span class="sb-mtitle">${m.title}</span><span class="sb-mcount">${md}/${mt}</span><span class="sb-blurb">${m.blurb}</span>
         <span class="sb-mbar"><i style="width:${Math.round((md / mt) * 100)}%"></i></span></div>
       ${m.lessons.map((l, li) => {
         const idx = LESSONS.findIndex((x) => x.id === l.id);
@@ -492,14 +492,14 @@ function renderSidebar() {
         const reading = l.type === "read";
         return `<button class="sb-lesson ${cur ? "current" : ""} ${reading ? "sb-read" : ""} ${l.final ? "sb-final" : ""}" data-idx="${idx}" type="button">
           <span class="sb-lnum">${mi + 1}.${li + 1}</span>
-          <span class="sb-ltitle">${reading ? "📖 " : l.final ? "🎮 " : ""}${l.title}</span>
+          <span class="sb-ltitle">${reading ? icon("menu_book", "sb-kind") : l.final ? icon("sports_esports", "sb-kind") : ""}${l.title}</span>
           <span class="sb-marks">
             <span class="sb-mark ${isDone(l.id) ? "on" : ""}" title="${reading ? "Reading" : "Lesson"}">${reading ? "R" : "L"}</span>
             ${reading ? "" : `<span class="sb-mark ${isDone(l.id + "-practice") ? "on" : ""}" title="Practice">P</span>`}
           </span></button>`;
       }).join("")}
       <button class="sb-lesson sb-quiz ${lessonIndex === LESSONS.findIndex((x) => x.id === m.lessons[m.lessons.length - 1].id) && stage === "quiz" ? "current" : ""}" data-quiz="${mi}" type="button">
-        <span class="sb-lnum">★</span><span class="sb-ltitle">Module ${mi + 1} quiz</span>
+        <span class="sb-lnum">${icon("star")}</span><span class="sb-ltitle">Module ${mi + 1} quiz</span>
         <span class="sb-marks">${sc && isDone(m.id + "-quiz") ? `<span class="sb-score ${sc.score === sc.total ? "perfect" : ""}">${sc.score}/${sc.total}</span>` : ""}<span class="sb-mark ${isDone(m.id + "-quiz") ? "on" : ""}">Q</span></span></button>
     </div>`; }).join("");
   list.querySelectorAll(".sb-lesson[data-idx]").forEach((b) => b.addEventListener("click", () => open({ lessonIndex: +b.dataset.idx, stage: "lesson" })));
@@ -647,7 +647,7 @@ let cleanLines = 0;
 tutor.ui.onStepDone = (lineNumber) => {
   sfx.lineDone();
   cleanLines++;
-  if (cleanLines > 0 && cleanLines % 3 === 0) setTimeout(() => react(pick(["🔥", "⚡", "🚀", "✨"])), 250);
+  if (cleanLines > 0 && cleanLines % 3 === 0) setTimeout(() => react(pick(["local_fire_department", "bolt", "rocket_launch"])), 250);
   badges.earn("first-line");
   const handle = editor.addLineClass(lineNumber, "background", "done-line");
   setTimeout(() => editor.removeLineClass(handle, "background", "done-line"), 900);
@@ -839,13 +839,13 @@ function poked() {
   pokes = pokes.filter((t) => now - t < 1600); pokes.push(now);
   if (pokes.length >= 4) {
     pokes = [];
-    react(pick(["😆", "🤭", "😂"])); sfx.giggle();
-    buddy.say(pick(["# Hey!\nThat tickles! 😆", "# Hehe\nOkay okay, I'm awake!", "# Whoa\nOne click is enough, I promise I'm listening."]), "celebrate");
+    react("sentiment_very_satisfied"); sfx.giggle();
+    buddy.say(pick(["# Hey!\nThat tickles!", "# Hehe\nOkay okay, I'm awake!", "# Whoa\nOne click is enough, I promise I'm listening."]), "celebrate");
     return true;
   }
   return false;
 }
-buddy.onClick(() => { if (poked()) return; if (stage !== "quiz") react("💡"); sfx.click(); tutor.hint(); refocus(); clearTimeout(codeSaveTimer); if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); });
+buddy.onClick(() => { if (poked()) return; if (stage !== "quiz") react("lightbulb"); sfx.click(); tutor.hint(); refocus(); clearTimeout(codeSaveTimer); if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); });
 
 // ---------- 9. Running code safely ----------
 
@@ -1207,7 +1207,7 @@ function showWelcome() {
     progress.toured = true; saveProgress();
     editor.setOption("readOnly", false);
     buddy.unpause(); refocus();
-    if (settings.name) setTimeout(() => react("👋"), 300);
+    if (settings.name) setTimeout(() => react("waving_hand"), 300);
   };
   $("welcome-form").onsubmit = (e) => { e.preventDefault(); leave(true); };
   $("welcome-skip").onclick = () => leave(false);
@@ -1233,7 +1233,7 @@ function firstVisitTour() {
     { target: ".editor-wrap", title: "Type here", text: "<span class='ghost-demo'>Gray letters</span> show exactly what to type next. Type over them and they turn real. A red underline means a typo.", place: "left" },
     { target: "#buddy", title: "Meet your buddy", text: "He explains each piece as you type it. <strong>Click him</strong> whenever you're stuck. In practice you get 3 hints.", place: "left" },
     { target: "#run-btn", title: "Run your code", text: "Press Run (or Ctrl+Enter) to see what your program does.", place: "bottom" },
-    { target: "#next-btn", title: "Reading → Coding → Practice → Quiz", text: "📖 Reading lessons teach the ideas (click through the cards). Coding lessons use them. Practice proves it. Each module ends with a quiz.", place: "top" },
+    { target: "#next-btn", title: "Reading → Coding → Practice → Quiz", text: "Reading lessons teach the ideas (click through the cards). Coding lessons use them. Practice proves it. Each module ends with a quiz.", place: "top" },
     { target: "#settings-btn", title: "Settings", text: "Turn on his voice and pick one, set how fast he talks, sound effects, ghost letters, text size, and more.", place: "bottom" },
     { target: "#tour-btn", title: "See this again", text: "Click Tutorial any time to replay this walkthrough.", place: "bottom" },
   ], () => {
