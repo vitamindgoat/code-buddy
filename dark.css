@@ -110,3 +110,4 @@
 
 /* white text on blue chips needs a deeper blue than the dark-mode accent */
 :root[data-theme="dark"] .stage-quiz, :root[data-theme="dark"] .quiz-dot.on, :root[data-theme="dark"] .steps li.run-step, :root[data-theme="dark"] .callout, :root[data-theme="dark"] .vis-bit.on .vis-digit, :root[data-theme="dark"] .keybar .keybar-run, :root[data-theme="dark"] .scratch-tabs button.on, :root[data-theme="dark"] .sb-num:not(.full), :root[data-theme="dark"] .scratch-tools button.on, :root[data-theme="dark"] .scratch-pill { background: #1f66c8; }
+:root[data-theme="dark"] .status.bad { color: var(--red); }

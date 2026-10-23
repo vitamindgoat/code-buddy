@@ -287,7 +287,7 @@ code {
 .status:empty { display: none; }
 .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
 .status.ok { color: var(--green); }
-.status.bad { color: var(--red); }
+.status.bad { color: #c62f35; }   /* darker than --red so small text passes contrast */
 .status.running { color: var(--blue-dark); }
 .status.running::before { animation: status-blink 0.9s ease-in-out infinite; }
 @keyframes status-blink { 50% { opacity: 0.25; } }
