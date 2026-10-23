@@ -16,7 +16,7 @@
 
 const quiz = (() => {
   const card = document.getElementById("quiz-card");
-  let questions = [], index = 0, score = 0, onDone = null, answered = false, sandbox = null, codeEditor = null, onSave = null;
+  let questions = [], index = 0, score = 0, onDone = null, sandbox = null, codeEditor = null, onSave = null;
 
   // Each attempt draws a fresh set from the module's bank: draw.mc choice
   // questions and draw.code coding questions, mixed so the coding ones are
@@ -48,68 +48,88 @@ const quiz = (() => {
     last = (saved && saved.last) || [];
     set = (saved && saved.set && saved.set.length) ? saved.set : draw(last);
     questions = set.map((i) => bank.questions[i]);
-    if (saved && saved.set && saved.set.length && saved.index > 0) { index = Math.min(saved.index, questions.length); score = saved.score || 0; }
-    else if (saved && saved.finished) { score = saved.score || 0; index = questions.length; }
+    answers = (saved && saved.set && saved.set.length && saved.answers) || {};
+    score = tally();
+    if (saved && saved.set && saved.set.length && saved.index > 0) index = Math.min(saved.index, questions.length - 1);
+    if (saved && saved.finished) { score = saved.score || 0; index = questions.length; }
     card.dataset.title = module.title;
     if (saved && saved.finished) return finish({ again: true });
     saveState();
-    index < questions.length ? render() : finish();
+    render();
   }
-  function saveState(extra = {}) { onSave && onSave({ index, score, total: questions.length, set, last, finished: false, ...extra }); }
+  function saveState(extra = {}) { onSave && onSave({ index, score, total: questions.length, set, last, answers, finished: false, ...extra }); }
 
-  // Fisher-Yates shuffle, with the correct answer's new position tracked
-  function shuffled(q) {
-    const items = q.choices.map((text, i) => ({ text, correct: i === q.answer }));
-    for (let i = items.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [items[i], items[j]] = [items[j], items[i]];
-    }
-    return items;
+  // One record per question, kept for the whole attempt (and saved), so
+  // you can go back to an answered question and see it as you left it:
+  //   choice: { order: [original choice indexes, as shown], picked, right }
+  //   code:   { code, output, ok, right }
+  let answers = {};
+  const isAnswered = (i) => !!answers[i] && (answers[i].picked !== undefined || answers[i].code !== undefined);
+  const answeredCount = () => questions.filter((_, i) => isAnswered(i)).length;
+  const tally = () => questions.filter((_, i) => isAnswered(i) && answers[i].right).length;
+
+  function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  // the shown order of a question's choices is fixed on first view
+  function orderFor(i) {
+    if (!answers[i] || !answers[i].order) answers[i] = { ...(answers[i] || {}), order: shuffle(questions[i].choices.map((_, k) => k)) };
+    return answers[i].order;
   }
 
   function header() {
+    const dots = questions.map((qq, i) => {
+      const a = isAnswered(i) ? (answers[i].right ? "right" : "wrong") : "";
+      return `<button type="button" class="quiz-dot ${i === index ? "on" : ""} ${a} ${qq.type === "code" ? "code" : ""}" data-go="${i}" aria-label="Question ${i + 1}" title="Question ${i + 1}${qq.type === "code" ? " (coding)" : ""}">${i + 1}</button>`;
+    }).join("");
     return `
       <div class="quiz-head">
         <span class="quiz-label">Quiz · ${card.dataset.title}</span>
         <span class="quiz-count">${index + 1} / ${questions.length}</span>
       </div>
-      <div class="quiz-progress"><div style="width:${(index / questions.length) * 100}%"></div></div>`;
+      <div class="quiz-progress"><div style="width:${(answeredCount() / questions.length) * 100}%"></div></div>
+      <div class="quiz-dots">${dots}</div>`;
   }
 
   function render() {
-    answered = false;
     codeEditor = null;
     const q = questions[index];
     if (q.type === "code") return renderCode(q);
-
-    const items = shuffled(q);
+    const order = orderFor(index);
+    const a = answers[index];
+    const done = isAnswered(index);
     card.innerHTML = `${header()}
       <h2 class="quiz-q">${escapeHtml(q.q).replace(/\n/g, "<br>")}</h2>
       <div class="quiz-choices">
-        ${items.map((c, i) => `<button class="quiz-choice" data-i="${i}" type="button"><span class="quiz-letter">${"ABCD"[i]}</span><code>${escapeHtml(c.text)}</code></button>`).join("")}
+        ${order.map((orig, i) => `<button class="quiz-choice ${done && orig === q.answer ? "right" : ""} ${done && i === a.picked && orig !== q.answer ? "wrong" : ""}" data-i="${i}" type="button" ${done ? "disabled" : ""}><span class="quiz-letter">${"ABCD"[i]}</span><code>${escapeHtml(q.choices[orig])}</code></button>`).join("")}
       </div>
-      <div class="quiz-feedback" hidden></div>
-      <div class="quiz-actions"><button class="btn btn-primary quiz-next" type="button" hidden>Next ▶</button></div>`;
-    card.querySelectorAll(".quiz-choice").forEach((b) => b.addEventListener("click", () => choose(+b.dataset.i, items)));
-    wireNext();
+      <div class="quiz-feedback ${done ? (a.right ? "ok" : "bad") : ""}" ${done ? "" : "hidden"}>${done ? `<strong>${a.right ? "Correct!" : "Not quite."}</strong> ${escapeHtml(q.explain)}` : ""}</div>
+      ${nav(done)}`;
+    card.querySelectorAll(".quiz-choice").forEach((b) => b.addEventListener("click", () => choose(+b.dataset.i)));
+    wireNav();
   }
 
   function renderCode(q) {
+    const a = answers[index];
+    const done = isAnswered(index);
     card.innerHTML = `${header()}
       <div class="quiz-kind">💻 Coding question</div>
       <h2 class="quiz-q">${escapeHtml(q.q).replace(/\n/g, "<br>")}</h2>
       ${q.inputs ? `<div class="quiz-inputs">The user types: <code>${escapeHtml(q.inputs.join(", "))}</code></div>` : ""}
       <div class="quiz-editor"><textarea id="quiz-code"></textarea></div>
       <div class="quiz-run-row">
-        <button class="btn btn-ghost quiz-run" type="button">▶ Run</button>
-        <button class="btn btn-primary quiz-submit" type="button">Submit answer</button>
+        <button class="btn btn-ghost quiz-run" type="button" ${done ? "disabled" : ""}>▶ Run</button>
+        <button class="btn btn-primary quiz-submit" type="button" ${done ? "disabled" : ""}>Submit answer</button>
       </div>
-      <pre class="quiz-output" hidden></pre>
-      <div class="quiz-feedback" hidden></div>
-      <div class="quiz-actions"><button class="btn btn-primary quiz-next" type="button" hidden>Next ▶</button></div>`;
+      <pre class="quiz-output ${done && !a.ok ? "err" : ""}" ${done ? "" : "hidden"}>${done ? escapeHtml(a.output) : ""}</pre>
+      <div class="quiz-feedback ${done ? (a.right ? "ok" : "bad") : ""}" ${done ? "" : "hidden"}>${done ? `<strong>${a.right ? "Correct!" : "Not quite."}</strong> ${escapeHtml(q.explain)}${a.right ? "" : `<br>Expected output:<pre class="quiz-expected">${escapeHtml(q.expectedOutput)}</pre>`}` : ""}</div>
+      ${nav(done)}`;
     codeEditor = CodeMirror.fromTextArea(card.querySelector("#quiz-code"), {
-      mode: "python", lineNumbers: true, indentUnit: 4, tabSize: 4, indentWithTabs: false, autofocus: true,
+      mode: "python", lineNumbers: true, indentUnit: 4, tabSize: 4, indentWithTabs: false, autofocus: !done,
     });
+    if (a && a.code !== undefined) codeEditor.setValue(a.code);
+    else if (a && a.draft) codeEditor.setValue(a.draft);
+    if (done) codeEditor.setOption("readOnly", true);
+    // keep unsubmitted code when they wander off to another question
+    codeEditor.on("change", () => { if (!isAnswered(index)) { answers[index] = { ...(answers[index] || {}), draft: codeEditor.getValue() }; } });
     if (window.keybar) keybar.attach(codeEditor, () => card.querySelector(".quiz-run")?.click());
     const out = card.querySelector(".quiz-output");
     const runIt = async () => {
@@ -123,49 +143,79 @@ const quiz = (() => {
     };
     card.querySelector(".quiz-run").addEventListener("click", runIt);
     card.querySelector(".quiz-submit").addEventListener("click", async () => {
-      if (answered) return;
+      if (isAnswered(index)) return;
       const r = await runIt();
       if (!r) return;
-      answered = true;
       const right = r.ok && r.output.trim() === q.expectedOutput;
-      if (right) { score++; sfx.success(); } else sfx.error();
-      card.querySelector(".quiz-submit").disabled = true;
-      card.querySelector(".quiz-run").disabled = true;
-      codeEditor.setOption("readOnly", true);
-      const fb = card.querySelector(".quiz-feedback");
-      fb.hidden = false;
-      fb.className = `quiz-feedback ${right ? "ok" : "bad"}`;
-      fb.innerHTML = `<strong>${right ? "Correct!" : "Not quite."}</strong> ${escapeHtml(q.explain)}${right ? "" : `<br>Expected output:<pre class="quiz-expected">${escapeHtml(q.expectedOutput)}</pre>`}`;
-      const next = card.querySelector(".quiz-next");
-      next.hidden = false;
-      next.textContent = index === questions.length - 1 ? "See my score ▶" : "Next ▶";
+      answers[index] = { code: codeEditor.getValue(), output: out.textContent, ok: r.ok, right };
+      score = tally();
+      if (right) sfx.success(); else sfx.error();
+      saveState();
+      render();   // redraws read-only with the feedback and the nav
     });
-    wireNext();
+    wireNav();
   }
 
-  function wireNext() {
-    card.querySelector(".quiz-next").addEventListener("click", () => { index++; saveState(); index < questions.length ? render() : finish(); });
+  // Back / Next under every question. Next is there once the question is
+  // answered; on the last question it becomes "See my score" when
+  // everything is answered, or jumps to the first unanswered one.
+  function nav(done) {
+    const left = index > 0;
+    const allDone = answeredCount() === questions.length;
+    const lastQ = index === questions.length - 1;
+    const nextLabel = allDone ? (lastQ ? "See my score ▶" : "Next ▶") : lastQ ? "Next unanswered ▶" : "Next ▶";
+    return `<div class="quiz-actions">
+      <button class="btn btn-ghost quiz-back" type="button" ${left ? "" : "hidden"}>◀ Back</button>
+      <button class="btn btn-primary quiz-next" type="button" ${done ? "" : "hidden"}>${nextLabel}</button>
+    </div>`;
+  }
+
+  function wireNav() {
+    card.querySelector(".quiz-back")?.addEventListener("click", () => go(index - 1));
+    card.querySelector(".quiz-next")?.addEventListener("click", () => {
+      const allDone = answeredCount() === questions.length;
+      if (index === questions.length - 1) {
+        if (allDone) return finish();
+        const first = questions.findIndex((_, i) => !isAnswered(i));
+        return go(first);
+      }
+      go(index + 1);
+    });
+    card.querySelectorAll(".quiz-dot").forEach((d) => d.addEventListener("click", () => go(+d.dataset.go)));
     card.classList.remove("swap-in"); void card.offsetWidth; card.classList.add("swap-in");
   }
 
-  function choose(i, items) {
-    if (answered) return;
-    answered = true;
+  function go(i) {
+    if (i < 0 || i >= questions.length || i === index) return;
+    index = i;
+    saveState();
+    sfx.click();
+    render();
+  }
+
+  function choose(i) {
+    if (isAnswered(index)) return;
     const q = questions[index];
-    const right = items[i].correct;
-    if (right) { score++; sfx.success(); } else sfx.error();
+    const order = orderFor(index);
+    const right = order[i] === q.answer;
+    answers[index] = { order, picked: i, right };
+    score = tally();
+    if (right) sfx.success(); else sfx.error();
+    saveState();
+    // show the result in place (same order, so nothing jumps), then the nav
     card.querySelectorAll(".quiz-choice").forEach((b, j) => {
       b.disabled = true;
-      if (items[j].correct) b.classList.add("right");
+      if (order[j] === q.answer) b.classList.add("right");
       else if (j === i) b.classList.add("wrong");
     });
     const fb = card.querySelector(".quiz-feedback");
     fb.hidden = false;
     fb.className = `quiz-feedback ${right ? "ok" : "bad"}`;
     fb.innerHTML = `<strong>${right ? "Correct!" : "Not quite."}</strong> ${escapeHtml(q.explain)}`;
-    const next = card.querySelector(".quiz-next");
-    next.hidden = false;
-    next.textContent = index === questions.length - 1 ? "See my score ▶" : "Next ▶";
+    card.querySelector(".quiz-actions").outerHTML = nav(true);
+    card.querySelector(".quiz-dots").outerHTML = header().match(/<div class="quiz-dots">[\s\S]*<\/div>/)[0];
+    card.querySelector(".quiz-progress div").style.width = `${(answeredCount() / questions.length) * 100}%`;
+    wireNav();
   }
 
   // The score screen. It sticks: coming back to a finished quiz shows it
@@ -197,7 +247,7 @@ const quiz = (() => {
     last = set;                      // none of these again this time
     set = draw(last);
     questions = set.map((i) => bank.questions[i]);
-    index = 0; score = 0;
+    index = 0; score = 0; answers = {};
     saveState();
     sfx.pop();
     render();

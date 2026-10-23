@@ -600,7 +600,17 @@ body { background: var(--bg); }
 .quiz-feedback { margin-top: 14px; padding: 12px 14px; border-radius: 12px; font-weight: 600; line-height: 1.45; animation: rise 0.3s ease-out; }
 .quiz-feedback.ok { background: var(--green-soft); color: #0f5132; }
 .quiz-feedback.bad { background: var(--red-soft); color: #842029; }
-.quiz-actions { display: flex; justify-content: flex-end; margin-top: 14px; }
+.quiz-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 14px; }
+.quiz-actions .quiz-next { margin-left: auto; }
+/* question strip: jump anywhere; answered ones show how it went */
+.quiz-dots { display: flex; flex-wrap: wrap; gap: 6px; margin: -8px 0 14px; }
+.quiz-dot { width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid var(--line); background: #fff; color: var(--ink-soft); font: 800 12px "Nunito", sans-serif; cursor: pointer; display: grid; place-items: center; transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease; }
+.quiz-dot.code { border-radius: 50%; }
+.quiz-dot:hover { transform: translateY(-1px); border-color: var(--blue-mid); }
+.quiz-dot.on { border-color: var(--blue); background: var(--blue); color: #fff; box-shadow: 0 0 0 3px rgba(116, 188, 254, 0.35); }
+.quiz-dot.right { background: var(--green-soft); border-color: #bfeedb; color: var(--green); }
+.quiz-dot.wrong { background: var(--red-soft); border-color: #f5c2c4; color: var(--red); }
+.quiz-dot.on.right, .quiz-dot.on.wrong { color: #fff; background: var(--blue); border-color: var(--blue); }
 .quiz-result { text-align: center; padding: 20px; animation: rise 0.5s ease-out; }
 .quiz-buddy { width: 220px; margin: 0 auto; }
 .quiz-buddy .buddy, .quiz-buddy .buddy .pose { width: 220px; }
