@@ -1128,17 +1128,17 @@ window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSidebar
 // ---------- 12. Settings ----------
 
 const SETTINGS_KEY = "codebuddy.settings";
-let settings = { speed: 1, explain: "normal", ghost: "always", textSize: "m", motion: "on", theme: "auto" };
+let settings = { speed: 1, explain: "normal", ghost: "always", textSize: "m", motion: "on", themePick: "" };   // themePick: only set when the learner chooses a theme in Settings (default: light)
 // Light / dark: "auto" follows the device and updates live if it changes
 const darkQuery = matchMedia("(prefers-color-scheme: dark)");
 function applyTheme() {
-  const t = settings.theme || "auto";
+  const t = settings.themePick || "light";
   const dark = t === "dark" || (t === "auto" && darkQuery.matches);
   document.documentElement.dataset.theme = dark ? "dark" : "light";
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.content = dark ? "#0b1220" : "#ffffff";
 }
-darkQuery.addEventListener?.("change", () => { if ((settings.theme || "auto") === "auto") applyTheme(); });
+darkQuery.addEventListener?.("change", () => { if (settings.themePick === "auto") applyTheme(); });
 try { settings = { ...settings, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") }; } catch {}
 
 function applySettings() {
@@ -1153,7 +1153,7 @@ function applySettings() {
 }
 function syncSettingsUI() {
   $("set-name").value = settings.name || "";
-  $("set-theme").value = settings.theme || "auto";
+  $("set-theme").value = settings.themePick || "light";
   $("set-speed").value = settings.speed;
   paintSpeed();
   $("set-explain").value = settings.explain;
@@ -1204,7 +1204,7 @@ $("set-speed").addEventListener("input", (e) => {
 });
 $("set-speed").addEventListener("change", applySettings);
 $("set-explain").addEventListener("change", (e) => { settings.explain = e.target.value; applySettings(); });
-$("set-theme").addEventListener("change", (e) => { settings.theme = e.target.value; applySettings(); sfx.toggle && sfx.click(); });
+$("set-theme").addEventListener("change", (e) => { settings.themePick = e.target.value; applySettings(); sfx.click(); });
 $("set-name").addEventListener("change", (e) => { settings.name = cleanName(e.target.value); applySettings(); renderHeader(); });
 $("set-ghost").addEventListener("change", (e) => { settings.ghost = e.target.value; applySettings(); tutor.onChange(); });
 $("set-size").addEventListener("change", (e) => { settings.textSize = e.target.value; applySettings(); });
