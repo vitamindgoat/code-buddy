@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="99" />
+  <meta name="build" content="100" />
   <!-- Theme before first paint, so dark mode never flashes white -->
   <script>
     try {
@@ -30,8 +30,8 @@
   <meta name="twitter:title" content="CodeBuddy – Learn Python by typing every line" />
   <meta name="twitter:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on." />
   <meta name="twitter:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=99" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=99" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=100" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=100" />
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -43,9 +43,9 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=99" />
-  <link rel="stylesheet" href="buddy.css?v=99" />
-  <link rel="stylesheet" href="dark.css?v=99" />
+  <link rel="stylesheet" href="styles.css?v=100" />
+  <link rel="stylesheet" href="buddy.css?v=100" />
+  <link rel="stylesheet" href="dark.css?v=100" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -187,6 +187,28 @@
       </div>
     </div>
   </div>
+  </div>
+
+  <!-- First visit: Buddy says hi, explains the app in three lines, asks your
+       name, then offers the tour (app.js showWelcome) -->
+  <div id="welcome" class="complete" hidden role="dialog" aria-labelledby="welcome-title">
+    <form class="done-card card welcome-card" id="welcome-form">
+      <div class="done-rays"></div>
+      <div id="welcome-buddy" class="done-buddy"></div>
+      <h2 id="welcome-title" class="done-title welcome-title">Hi, I'm Buddy!</h2>
+      <p class="done-sub">I'll teach you to code in Python, one line at a time.</p>
+      <ul class="welcome-points">
+        <li><span aria-hidden="true">⌨️</span><span><b>You type every line.</b> Gray letters show what comes next.</span></li>
+        <li><span aria-hidden="true">💬</span><span><b>I explain each piece</b> as you type it, and catch typos.</span></li>
+        <li><span aria-hidden="true">▶️</span><span><b>Real Python</b> runs right here. Nothing to install.</span></li>
+      </ul>
+      <label class="welcome-name"><span>What should I call you? <em>(optional)</em></span>
+        <input id="welcome-input" class="name-input" type="text" maxlength="40" placeholder="Your name" autocomplete="given-name" spellcheck="false" /></label>
+      <div class="done-actions">
+        <button id="welcome-tour" class="btn btn-primary btn-big" type="submit">Show me around ▶</button>
+        <button id="welcome-skip" class="btn btn-ghost" type="button">Skip the tour, let's code</button>
+      </div>
+    </form>
   </div>
 
   <!-- "What should I call you?" asked once after the tutorial; Settings can change it -->
@@ -396,17 +418,17 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=99"></script>
-  <script src="fx.js?v=99"></script>
-  <script src="lessons.js?v=99"></script>
-  <script src="buddy.js?v=99"></script>
-  <script src="tutor.js?v=99"></script>
-  <script src="scratch.js?v=99"></script>
-  <script src="quiz.js?v=99"></script>
-  <script src="read.js?v=99"></script>
-  <script src="finish.js?v=99"></script>
-  <script src="badges.js?v=99"></script>
-  <script src="tour.js?v=99"></script>
-  <script src="app.js?v=99"></script>
+  <script src="sfx.js?v=100"></script>
+  <script src="fx.js?v=100"></script>
+  <script src="lessons.js?v=100"></script>
+  <script src="buddy.js?v=100"></script>
+  <script src="tutor.js?v=100"></script>
+  <script src="scratch.js?v=100"></script>
+  <script src="quiz.js?v=100"></script>
+  <script src="read.js?v=100"></script>
+  <script src="finish.js?v=100"></script>
+  <script src="badges.js?v=100"></script>
+  <script src="tour.js?v=100"></script>
+  <script src="app.js?v=100"></script>
 </body>
 </html>

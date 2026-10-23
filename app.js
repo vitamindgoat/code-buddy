@@ -1081,6 +1081,32 @@ const needsName = () => !settings.name && !settings.nameAsked;
 // a friendly ", Alex" to tack onto a cheer (empty when no name is set)
 const nm = () => (settings.name ? `, ${settings.name}` : "");
 
+// ---------- First visit: the welcome card ----------
+// A first-time visitor gets a hello before anything else: what CodeBuddy is,
+// their name, then a choice of the tour or jumping straight in.
+const welcomeEl = $("welcome");
+function showWelcome() {
+  buddy.pause(); voice.stop();
+  editor.setOption("readOnly", "nocursor");
+  $("welcome-input").value = settings.name || "";
+  buddy.mount($("welcome-buddy"), "celebrate");
+  welcomeEl.hidden = false; replayClass(welcomeEl, "show");
+  if (!touchDevice()) setTimeout(() => $("welcome-input").focus(), 450);   // phones: no surprise keyboard
+  const leave = (tour) => {
+    if (welcomeEl.hidden) return;
+    settings.name = cleanName($("welcome-input").value) || settings.name || "";
+    settings.nameAsked = true; applySettings(); renderHeader();
+    welcomeEl.hidden = true; sfx.click();
+    if (tour) { firstVisitTour(); return; }
+    progress.toured = true; saveProgress();
+    editor.setOption("readOnly", false);
+    buddy.unpause(); refocus();
+    if (settings.name) setTimeout(() => react("👋"), 300);
+  };
+  $("welcome-form").onsubmit = (e) => { e.preventDefault(); leave(true); };
+  $("welcome-skip").onclick = () => leave(false);
+}
+
 function firstVisitTour() {
   closeSidebar();
   // the walkthrough points at the editor and the buddy, so it needs a
@@ -1144,7 +1170,7 @@ renderSidebar();
 editorCard.classList.add("loading");
 startWorker(); // Python loads in the background; Run stays disabled until it's ready
 open({ lessonIndex: progress.lessonIndex || 0, stage: progress.stage || "lesson" });
-if (!progress.toured) firstVisitTour();
+if (!progress.toured) showWelcome();
 else if (needsName()) setTimeout(() => askName(refocus), 900);   // toured before names existed
 window.addEventListener("resize", () => floatBuddyToLine(editor.getCursor().line));
 
