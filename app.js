@@ -642,17 +642,19 @@ async function runCode() {
   replayClass(runBtn, "pressed");
   sfx.run();
 
+  const t0 = performance.now();
   const r = await sandbox.run(code, inputs, (text, isError) => appendOutput(text, isError));
+  const took = Math.round(performance.now() - t0);
   finishRun();
   if (r.timeout) {
     appendOutput(r.error, true);
-    setStatus("bad", "Timed out");
+    setStatus("bad", "Stopped after 3s");
     buddy.set("thinking");
     buddy.say("# Infinite loop!\nYour program never finished, so I stopped it. Check that something inside the loop changes each time. Give me a second to reload Python.");
   } else if (!r.ok) {
     appendOutput(r.error, true);
     markErrorLine(r.line);
-    setStatus("bad", "Error");
+    setStatus("bad", r.line ? `Error on line ${r.line}` : "Error");
     sfx.error();
     replayClass(outputCard, "error-shake");
     if (!tutor.onError({ error: r.error, line: r.line })) {
@@ -660,8 +662,10 @@ async function runCode() {
     }
     if (stage === "lesson") saveWork({ cpIndex: tutor.current.cpIndex, awaitingRun: tutor.current.awaitingRun });
   } else {
-    if (outputLines.length === 0) appendOutput("(your program ran, but it didn't print anything)");
-    setStatus("ok", "Ran successfully");
+    // a quiet, factual readout like an editor's status bar
+    const n = outputLines.length;
+    if (n === 0) appendOutput("(your program ran, but it didn't print anything)");
+    setStatus("ok", `${n ? `${n} line${n === 1 ? "" : "s"} printed` : "No output"} · ${took < 1000 ? `${took} ms` : `${(took / 1000).toFixed(1)} s`}`);
     if (stage === "practice") { lastRunOutput = outputLines.join("\n"); renderSteps(0); }
     tutor.onRun({ ok: true, output: outputLines.join("\n") });
     // remember which checkpoints have been run, so coming back doesn't ask
