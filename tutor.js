@@ -568,11 +568,16 @@ const tutor = (() => {
     ui.setCode(saved.code);
     hintsUsed = saved.hintsUsed || 0; ghostAsked = !!saved.ghostAsked;
     const lines = codeLines();
-    const n = countCorrect(lines);
-    stepIndex = Math.min(n, targets().length); partIndex = 0;
     if (mode === "lesson") {
       // a fixed bug line in the saved code means that crash was already seen
       lesson.steps.forEach((st, i) => { const ln = lines[i]; if (st.bug && ln && lineMatches(ln.text, st.code)) bugDone[i] = true; });
+      // so does a saved checkpoint position past an on-purpose crash: the
+      // buggy line is still there, unfixed, and must not count as done
+      if (saved.cpIndex !== undefined) checkpoints().forEach((cp, k) => { if (k < saved.cpIndex && cp.error) bugDone[cp.after] = true; });
+    }
+    const n = countCorrect(lines);
+    stepIndex = Math.min(n, targets().length); partIndex = 0;
+    if (mode === "lesson") {
       // which checkpoint are they on? a typed-but-not-run checkpoint line
       // means they still owe a Run
       cpIndex = 0;
@@ -580,8 +585,9 @@ const tutor = (() => {
       awaitingRun = !saved.finished && stepIndex >= checkpoints()[cpIndex].after + 1;
       // a run they already did counts: the saved checkpoint position wins
       // when the code still matches it
-      if (saved.cpIndex !== undefined && saved.cpIndex >= cpIndex && saved.cpIndex < checkpoints().length
-          && stepIndex >= (saved.cpIndex ? checkpoints()[saved.cpIndex - 1].after + 1 : 0)) {
+      const prev = saved.cpIndex ? checkpoints()[saved.cpIndex - 1] : null;
+      const reached = !prev ? 0 : prev.error ? prev.after : prev.after + 1;   // a crash checkpoint leaves you ON its line
+      if (saved.cpIndex !== undefined && saved.cpIndex >= cpIndex && saved.cpIndex < checkpoints().length && stepIndex >= reached) {
         cpIndex = saved.cpIndex;
         awaitingRun = !saved.finished && !!saved.awaitingRun && stepIndex >= checkpoints()[cpIndex].after + 1;
       }
@@ -607,7 +613,11 @@ const tutor = (() => {
       const cur = lines[stepIndex], step = lesson.steps[stepIndex];
       partIndex = cur && step ? countParts(cur.text, { parts: stepParts(step, stepIndex) }) : 0;
       const donePiece = (parts, k) => `# ✓ \`${parts[k].text}\`\n${explainText(parts[k])}\n`;
-      if (awaitingRun) {
+      const stillBug = step && step.bug && bugDone[stepIndex] && cur && norm(cur.text) === norm(step.bug.code);
+      if (stillBug) {
+        body = `# It crashed, on purpose\n${step.bug.explain}\n# Fix it\n${step.bug.fix}\n\`${step.code.trim()}\``;
+        partIndex = 0;
+      } else if (awaitingRun) {
         const fparts = stepParts(lesson.steps[stepIndex - 1], stepIndex - 1);
         const cp = checkpoint(), last = cpIndex === checkpoints().length - 1;
         body = `${donePiece(fparts, fparts.length - 1)}# Now run it\n${cp.error ? "Press Run and watch what happens." : last ? "That's the whole program! Press Run to see what it prints." : "Before we add more, press Run and see what this prints so far."}`;
