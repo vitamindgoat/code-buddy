@@ -238,6 +238,10 @@ function open(target) {
 
   const showQuiz = stage === "quiz";
   const showRead = !showQuiz && isReading();
+  // whatever the buddy was saying belongs to the old screen: quiet him
+  // (quizzes have no buddy at all; readings and lessons start their own talk)
+  voice.stop();
+  if (buddy.talking) buddy.finishTyping(true);
   editorCard.hidden = showQuiz || showRead; outputCard.hidden = showQuiz || showRead;
   quizCard.hidden = !showQuiz; readCard.hidden = !showRead;
   runTag.hidden = true; runBtn.classList.remove("pulse");
