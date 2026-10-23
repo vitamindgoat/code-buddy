@@ -16,15 +16,17 @@ const quiz = (() => {
   const card = document.getElementById("quiz-card");
   let questions = [], index = 0, score = 0, onDone = null, answered = false, sandbox = null, codeEditor = null, onSave = null;
 
-  // saved = { index, score } from a previous visit: pick up at that question
+  // saved = { index, score, finished } from a previous visit: pick up at that
+  // question, or show the score screen again if the quiz was finished
   function start(module, done, sb, saved, save) {
     questions = module.quiz;
     index = 0; score = 0; onDone = done; sandbox = sb; onSave = save;
     if (saved && saved.index > 0) { index = Math.min(saved.index, questions.length); score = saved.score || 0; }
     card.dataset.title = module.title;
+    if (saved && saved.finished) return finish({ again: true });
     index < questions.length ? render() : finish();
   }
-  function saveState() { onSave && onSave({ index, score }); }
+  function saveState(extra = {}) { onSave && onSave({ index, score, finished: false, ...extra }); }
 
   // Fisher-Yates shuffle, with the correct answer's new position tracked
   function shuffled(q) {
@@ -137,20 +139,36 @@ const quiz = (() => {
     next.textContent = index === questions.length - 1 ? "See my score ▶" : "Next ▶";
   }
 
-  function finish() {
+  // The score screen. It sticks: coming back to a finished quiz shows it
+  // again (quietly, no second round of confetti) with the option to retake.
+  function finish({ again = false } = {}) {
     const pct = Math.round((score / questions.length) * 100);
     const msg = pct === 100 ? "Perfect score!" : pct >= 70 ? "Nice work!" : "Good try. Review the lessons and come back.";
+    if (!again) saveState({ finished: true });
     card.innerHTML = `
       <div class="quiz-result">
         <div class="quiz-buddy" id="quiz-buddy"></div>
+        <div class="quiz-kicker">${again ? "Your score" : "Quiz finished"}</div>
         <div class="quiz-score">${score} / ${questions.length}</div>
         <div class="quiz-pct">${pct}%</div>
         <p>${msg}</p>
-        <button class="btn btn-primary quiz-done" type="button">Continue ▶</button>
+        <div class="quiz-result-actions">
+          <button class="btn btn-primary quiz-done" type="button">Continue ▶</button>
+          <button class="btn btn-ghost quiz-retake" type="button">↺ Retake quiz</button>
+        </div>
       </div>`;
-    buddy.mount(card.querySelector("#quiz-buddy"), pct >= 70 ? "celebrate" : "thinking");
-    if (pct >= 70) { fx.confetti(); sfx.levelUp(); }
+    buddy.mount(card.querySelector("#quiz-buddy"), pct >= 70 ? (again ? "happy" : "celebrate") : "thinking");
+    if (pct >= 70 && !again) { fx.confetti(); sfx.levelUp(); }
     card.querySelector(".quiz-done").addEventListener("click", (e) => { e.currentTarget.disabled = true; onDone && onDone({ score, total: questions.length }); });
+    card.querySelector(".quiz-retake").addEventListener("click", retake);
+    card.classList.remove("swap-in"); void card.offsetWidth; card.classList.add("swap-in");
+  }
+
+  function retake() {
+    index = 0; score = 0;
+    saveState();
+    sfx.pop();
+    render();
   }
 
   function escapeHtml(s) {

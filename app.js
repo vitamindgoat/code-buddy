@@ -252,7 +252,14 @@ function open(target) {
   if (showRead) { renderSteps(0); read.start(lesson(), () => finishStage(), (i) => { renderSteps(i); saveWork({ index: i }); }, saved); }
   else if (stage === "lesson") tutor.start(lesson(), saved);
   else if (stage === "practice") tutor.startPractice(lesson(), saved);
-  else { renderSteps(0); quiz.start(module_(), (r) => { progress.scores[module_().id] = r; finishStage(); }, sandbox, saved, (st) => saveWork(st)); }
+  else {
+    renderSteps(0);
+    quiz.start(module_(), (r) => { progress.scores[module_().id] = r; finishStage(); }, sandbox, saved, (st) => {
+      saveWork(st);
+      // the score counts the moment the quiz ends, not only when Continue is pressed
+      if (st.finished) { progress.scores[module_().id] = { score: st.score, total: module_().quiz.length }; progress.done[module_().id + "-quiz"] = true; saveProgress(); renderSidebar(); renderHeader(); }
+    });
+  }
 
   replayClass(document.querySelector(".lesson"), "swap-in");
   replayClass(showQuiz ? quizCard : showRead ? readCard : editorCard, "swap-in");
@@ -266,7 +273,7 @@ function finishStage() {
   const first = !progress.done[doneId()];
   progress.done[doneId()] = true;
   if (stage === "lesson" || stage === "practice") { clearTimeout(codeSaveTimer); saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked, finished: true }); }
-  else delete progress.work[workKey()];
+  // (a finished quiz keeps its saved state so its score screen comes back on a revisit)
   if (stage === "lesson" && first) progress.lessonsFinished = (progress.lessonsFinished || 0) + 1;
   saveProgress();
   renderHeader();
