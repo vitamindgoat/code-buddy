@@ -20,16 +20,19 @@ Record the screen with your voice over it (OBS, or Win+G on Windows). Use a fres
 
 | Time | Show | Say (roughly) |
 |---|---|---|
-| 0:00 to 0:15 | Your face or the logo, then the home screen | "Hi, I'm Oleksandr Rybitskyi from Folsom High School. This is **CodeBuddy**, a free web app that teaches total beginners Python by having them type every line, with a buddy who explains each piece as they type." |
-| 0:15 to 0:30 | Scroll the sidebar: modules, lessons | "It's for middle and high schoolers who've never coded. No install and no account: 33 lessons, practices and quizzes." |
-| 0:30 to 1:10 | Lesson 1.1: type `print("Wake up")` slowly. Buddy moves to your line, ghost letters, explanation per piece | "Buddy follows the line you're on. Gray letters show what's next, and as I type each part he explains what it means." |
-| 1:10 to 1:25 | Make a typo (`prnit`), tap the autocorrect bubble | "Typos get caught as they happen. Tap the bubble to fix it, like autocorrect. That's huge on a phone." |
-| 1:25 to 1:45 | Press Run, show output, finish the lesson, confetti and badge | "This is real Python running in the browser. Finishing a lesson earns progress and badges." |
-| 1:45 to 2:00 | A lesson that crashes on purpose, then fix it | "Some lessons crash on purpose so kids learn to read errors instead of fearing them." |
-| 2:00 to 2:15 | Practice (goal + hints), then a quiz question plus the scratch pad | "Then you prove it in a practice without help, and quizzes test everything." |
-| 2:15 to 2:30 | Phone: open CodeBuddy **from the home screen icon with airplane mode on**, type and Run; then the dark mode toggle | "It installs like an app and even works offline: this is airplane mode and the Python still runs. It has dark mode too." |
-| 2:30 to 2:45 | Certificate screen | "Finish the course and you get a certificate." |
+| 0:00 to 0:12 | Your face or the logo, then the welcome card | "Hi, I'm Oleksandr Rybitskyi from Folsom High School. This is **CodeBuddy**, a free web app that teaches total beginners Python by having them type every line, with a buddy who explains each piece as they type." |
+| 0:12 to 0:22 | Open the sidebar: modules, streak, daily challenge; type "loop" in search | "It's for middle and high schoolers who've never coded. No install, no account: 34 lessons, each with a practice, plus quizzes." |
+| 0:22 to 0:55 | Lesson 1.1: type `print("Wake up")` slowly. Buddy moves to your line, ghost letters, explanation per piece; hover `print` to show its card | "Buddy follows the line you're on. Gray letters show what's next, and as I type each part he explains what it means. I can hover any word to see what it does." |
+| 0:55 to 1:05 | Make a typo (`prnit`), tap the autocorrect bubble | "Typos get caught as they happen. Tap the bubble to fix it, like autocorrect. That's huge on a phone." |
+| 1:05 to 1:20 | Press Run, show output, finish the lesson, confetti and badge | "This is real Python running in the browser. Finishing a lesson earns progress and badges." |
+| 1:20 to 1:45 | A loop lesson: press **👣 Step through**, click Next a few times so the variables change and it says "the loop goes around again" | "This is my favorite part: Step through. It runs the program one line at a time, so you can actually watch the variables change and the loop go around." |
+| 1:45 to 2:05 | The **Playground**: write a line with a mistake (`print("Score: " + 10)`), Run, show Buddy's plain-English explanation, fix it | "Once you know the basics, the Playground lets you write anything, and Buddy explains errors in plain English." |
+| 2:05 to 2:20 | The final project's "Make it random" button, then play the guessing game | "The course ends with a final project: you build a real guessing game, then play it." |
+| 2:20 to 2:35 | Phone: open CodeBuddy **from the home screen icon with airplane mode on**, type and Run; then the dark mode toggle | "It installs like an app and even works offline: this is airplane mode and the Python still runs." |
+| 2:35 to 2:45 | Certificate screen | "Finish everything and you get a certificate." |
 | 2:45 to 2:55 | Back to the lesson screen | "I built it with HTML, CSS and JavaScript, Pyodide to run Python, and CodeMirror for the editor, with help from an AI assistant that I've disclosed. Thanks for watching!" |
+
+That's a lot for 3 minutes: practice once and cut anything that runs long. Keep the Step through and Playground shots; they're the most impressive.
 
 ## 3. Written answers (drafts, rewrite in your own words)
 
@@ -39,7 +42,7 @@ Record the screen with your voice over it (OBS, or Win+G on Windows). Use a fres
 
 **Target audience:** Middle and high school students who have never coded, especially those without access to a CS class or tutor.
 
-**Tools and languages:** JavaScript, HTML, CSS; Service Worker + Web App Manifest (installable, offline); Python (the language taught); Pyodide (Python in WebAssembly); CodeMirror 5 (editor); Web Workers; Web Audio API; Web Speech API; Vercel (hosting); GitHub; Playwright (testing); Claude (AI pair programmer, disclosed).
+**Tools and languages:** JavaScript, HTML, CSS; Python's `sys.settrace` (the Step through visualizer); Service Worker + Web App Manifest (installable, offline); Python (the language taught); Pyodide (Python in WebAssembly); CodeMirror 5 (editor); Web Workers; Web Audio API; Web Speech API; Vercel (hosting); GitHub; Playwright (testing); Claude (AI pair programmer, disclosed).
 
 **What inspired you:** *Write this one yourself:* why you wanted a free "tutor next to you," and what learning to code was like for you.
 
@@ -48,11 +51,12 @@ Record the screen with your voice over it (OBS, or Win+G on Windows). Use a fres
 - Knowing exactly where the learner is: each line is split into parts, and the tutor compares what's typed to the target piece by piece, so it can tell "on track" from "typo" and show the right ghost letters.
 - Phones: the on-screen keyboard covers things and lacks Python's symbols, so I added a key bar that sits above it and tap-to-fix typo bubbles.
 - Keeping the typewriter text in sync with text-to-speech, which behaves differently on every browser.
+- Showing a program run step by step: Python's `sys.settrace` records each line, every variable and the output so far, capped at 500 steps so an infinite loop can't freeze it; the page then plays the recording back.
 - Working offline without ever serving an old version: the service worker loads the app network-first (so updates always arrive) but keeps Python cache-first (its URL has a version number, and it's 10 MB).
 
 **What you learned / biggest takeaway:** *Write this yourself.*
 
-**2.0 version:** More modules (lists, functions you write yourself, a small game project), teacher dashboards to track a class, a live AI "ask Buddy anything" mode, and Spanish and Ukrainian translations.
+**2.0 version:** More modules (lists, dictionaries, writing your own functions), more final projects, a teacher dashboard to follow a whole class, a live AI "ask Buddy anything" mode, and Spanish and Ukrainian translations.
 
 ## 4. AI disclosure (required)
 
