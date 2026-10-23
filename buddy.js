@@ -468,6 +468,7 @@ const voice = (() => {
   try { on = localStorage.getItem("codebuddy.voiceOn") === "on"; } catch {}
   let chosen = null;      // SpeechSynthesisVoice
   let rate = 1;           // what we actually ask the engine for
+  let current = null;     // what's being said now: { text, handlers, at } (at = offset of the sentence group playing)
   let wanted = 1;         // the slider value
   // Browsers refuse to speak until the page has been clicked or typed in.
   // If the first message gets refused, say it again on the first click.
@@ -479,7 +480,10 @@ const voice = (() => {
   function setRate(r) {
     wanted = r;
     const cap = chosen && !/Google/i.test(chosen.name) ? 1.7 : 1.4;
-    rate = r <= 1 ? r : Math.min(cap, 1 + (r - 1) * (cap - 1));
+    const next = r <= 1 ? r : Math.min(cap, 1 + (r - 1) * (cap - 1));
+    const changed = Math.abs(next - rate) > 0.001;
+    rate = next;
+    if (changed) restart();   // takes effect on what's being said right now
   }
   const PREFERRED = [
     /Google UK English Male/i,
@@ -544,14 +548,18 @@ const voice = (() => {
   }
 
   let generation = 0;
-  function speak(text, { onWord, onEnd, onChunk, onChunkEnd } = {}) {
+  function speak(text, handlers = {}, from = 0) {
+    const { onWord, onEnd, onChunk, onChunkEnd } = handlers;
     if (!on || !("speechSynthesis" in window)) return false;
     window.speechSynthesis.cancel();
     try { window.speechSynthesis.resume(); } catch {}   // iOS can leave the engine paused
     const gen = ++generation;
-    const chunks = chunk(text);
+    // offsets stay relative to the whole text even when starting part-way
+    // through it (a speed change restarts from the current sentence group)
+    const chunks = chunk(text.slice(from)).map((c) => ({ text: c.text, offset: c.offset + from }));
     if (!chunks.length) return false;
     blockedText = null;
+    current = { text, handlers, at: from };
     chunks.forEach((c, i) => {
       const u = new SpeechSynthesisUtterance(c.text);
       if (chosen) u.voice = chosen;
@@ -559,25 +567,34 @@ const voice = (() => {
       u.pitch = 1.05;
       // every voice fires start/end per sentence, even the ones that never
       // report word positions: that's what keeps the text in step
-      u.onstart = () => { if (gen === generation && onChunk) onChunk(c.offset, c.offset + c.text.length); };
+      u.onstart = () => { if (gen !== generation) return; if (current) current.at = c.offset; if (onChunk) onChunk(c.offset, c.offset + c.text.length); };
       u.onboundary = (e) => { if (gen === generation && e.name === "word" && onWord) onWord(c.offset + e.charIndex); };
       u.onerror = (e) => {
         if (gen !== generation) return;
-        if (e.error === "not-allowed") { blockedText = text; generation++; if (onEnd) onEnd(); return; }
-        if (i === chunks.length - 1 && e.error !== "interrupted" && e.error !== "canceled" && onEnd) onEnd();
+        if (e.error === "not-allowed") { blockedText = text; generation++; current = null; if (onEnd) onEnd(); return; }
+        if (i === chunks.length - 1 && e.error !== "interrupted" && e.error !== "canceled") { current = null; if (onEnd) onEnd(); }
       };
       u.onend = () => {
         if (gen !== generation) return;
         if (onChunkEnd) onChunkEnd(c.offset, c.offset + c.text.length);
-        if (i === chunks.length - 1 && onEnd) onEnd();
+        if (i === chunks.length - 1) { current = null; if (onEnd) onEnd(); }
       };
       window.speechSynthesis.speak(u);
     });
     return true;
   }
 
+  // The engine can't change speed mid-utterance, so a new rate restarts the
+  // message from the sentence group that was playing, at the new speed.
+  function restart() {
+    if (!current || !on || !("speechSynthesis" in window) || !window.speechSynthesis.speaking) return;
+    const { text, handlers, at } = current;
+    speak(text, handlers, at);
+  }
+
   function stop() {
     generation++;                       // ignore events from the old utterances
+    current = null;
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   }
 

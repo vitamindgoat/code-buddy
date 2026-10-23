@@ -783,7 +783,13 @@ function paintSpeed() {
   $("set-speed-val").textContent = `${v.toFixed(2)}×`;
   el.style.setProperty("--fill", `${((v - min) / (max - min)) * 100}%`);
 }
-$("set-speed").addEventListener("input", (e) => { settings.speed = +e.target.value; paintSpeed(); });
+let speedLive = null;
+$("set-speed").addEventListener("input", (e) => {
+  settings.speed = +e.target.value; paintSpeed();
+  // apply while dragging (a beat after the thumb stops, so the voice doesn't stutter)
+  clearTimeout(speedLive);
+  speedLive = setTimeout(() => { buddy.setSpeed(settings.speed); voice.setRate(settings.speed); }, 250);
+});
 $("set-speed").addEventListener("change", applySettings);
 $("set-explain").addEventListener("change", (e) => { settings.explain = e.target.value; applySettings(); });
 $("set-ghost").addEventListener("change", (e) => { settings.ghost = e.target.value; applySettings(); tutor.onChange(); });
