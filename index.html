@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="109" />
+  <meta name="build" content="110" />
   <!-- Theme before first paint, so dark mode never flashes white -->
   <script>
     try {
@@ -30,8 +30,8 @@
   <meta name="twitter:title" content="CodeBuddy – Learn Python by typing every line" />
   <meta name="twitter:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on." />
   <meta name="twitter:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=109" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=109" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=110" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=110" />
   <!-- Installable app: icon, name and colors for "Add to Home Screen" -->
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -49,9 +49,9 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=109" />
-  <link rel="stylesheet" href="buddy.css?v=109" />
-  <link rel="stylesheet" href="dark.css?v=109" />
+  <link rel="stylesheet" href="styles.css?v=110" />
+  <link rel="stylesheet" href="buddy.css?v=110" />
+  <link rel="stylesheet" href="dark.css?v=110" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -194,6 +194,9 @@
         <button id="set-install" class="btn btn-ghost" type="button" hidden>📲 Install app</button>
         <button id="set-keys" class="btn btn-ghost" type="button">⌨ Shortcuts</button>
         <button id="set-tour" class="btn btn-ghost" type="button">❔ Redo tutorial</button>
+        <button id="set-report" class="btn btn-ghost" type="button">📄 Progress report</button>
+        <button id="set-backup" class="btn btn-ghost" type="button">⬇ Back up progress</button>
+        <button id="set-restore" class="btn btn-ghost" type="button">⬆ Restore a backup</button>
         <button id="set-reset" class="btn btn-ghost" type="button">↺ Reset progress</button>
       </div>
     </div>
@@ -274,6 +277,17 @@
       </div>
     </div>
   </section>
+
+  <!-- Printable progress report (backup.js) -->
+  <div id="report" class="complete report" hidden role="dialog" aria-label="Progress report">
+    <div class="report-wrap">
+      <div class="report-toolbar">
+        <button id="report-print" class="btn btn-primary" type="button">🖨 Print or save as PDF</button>
+        <button id="report-close" class="btn btn-ghost" type="button">Close</button>
+      </div>
+      <article id="report-body" class="card report-card"></article>
+    </div>
+  </div>
 
   <!-- Daily challenge: one puzzle a day (daily.js) -->
   <div id="daily" class="complete daily" hidden role="dialog" aria-labelledby="daily-title">
@@ -393,6 +407,7 @@
         </div>
       </div>
       <div class="finish-foot">
+        <button id="finish-report" class="btn btn-ghost" type="button">📄 Report</button>
         <button id="finish-trophies" class="btn btn-ghost" type="button">🏆 Trophies <span data-trophy-count>0 / 18</span></button>
         <button id="finish-back" class="btn btn-ghost" type="button">Back to lessons</button>
       </div>
@@ -518,21 +533,22 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=109"></script>
-  <script src="fx.js?v=109"></script>
-  <script src="wordinfo.js?v=109"></script>
-  <script src="lessons.js?v=109"></script>
-  <script src="buddy.js?v=109"></script>
-  <script src="tutor.js?v=109"></script>
-  <script src="scratch.js?v=109"></script>
-  <script src="quiz.js?v=109"></script>
-  <script src="read.js?v=109"></script>
-  <script src="finish.js?v=109"></script>
-  <script src="badges.js?v=109"></script>
-  <script src="playground.js?v=109"></script>
-  <script src="viz.js?v=109"></script>
-  <script src="daily.js?v=109"></script>
-  <script src="tour.js?v=109"></script>
-  <script src="app.js?v=109"></script>
+  <script src="sfx.js?v=110"></script>
+  <script src="fx.js?v=110"></script>
+  <script src="wordinfo.js?v=110"></script>
+  <script src="lessons.js?v=110"></script>
+  <script src="buddy.js?v=110"></script>
+  <script src="tutor.js?v=110"></script>
+  <script src="scratch.js?v=110"></script>
+  <script src="quiz.js?v=110"></script>
+  <script src="read.js?v=110"></script>
+  <script src="finish.js?v=110"></script>
+  <script src="badges.js?v=110"></script>
+  <script src="playground.js?v=110"></script>
+  <script src="viz.js?v=110"></script>
+  <script src="daily.js?v=110"></script>
+  <script src="backup.js?v=110"></script>
+  <script src="tour.js?v=110"></script>
+  <script src="app.js?v=110"></script>
 </body>
 </html>

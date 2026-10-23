@@ -377,6 +377,38 @@ function showFinish() {
   sfx.pop();
 }
 $("cert-btn").addEventListener("click", showFinish);
+
+// ---------- Backup / restore / progress report (backup.js) ----------
+function flash(msg) {   // a short notice in the toast spot
+  const el = document.createElement("div");
+  el.className = "toast toast-note"; el.setAttribute("role", "status");
+  el.innerHTML = `<span class="toast-icon">ℹ️</span><span class="toast-text"><span></span></span>`;
+  el.querySelector(".toast-text span").textContent = msg;
+  $("toast-stack").appendChild(el);
+  setTimeout(() => el.classList.add("out"), 4200); setTimeout(() => el.remove(), 4700);
+}
+backup.init({
+  toast: flash,
+  confirm: (o) => { closeSettings(); askConfirm(o); },
+  data: () => {
+    const st = courseStats(), earned = progress.badges || {};
+    return {
+      name: settings.name || progress.certName || "", stats: st, streak: streakInfo(), complete: courseComplete(),
+      dailyCount: Object.keys(progress.daily || {}).length, daysActive: (progress.days || []).length,
+      badges: badges.LIST.filter((b) => earned[b.id]), badgeTotal: badges.LIST.length,
+      modules: MODULES.map((m, mi) => {
+        const ls = m.lessons.map((l) => { const L = LESSONS.find((x) => x.id === l.id); return { number: L.number, title: l.title, reading: l.type === "read", done: !!progress.done[l.id], practice: !!progress.done[l.id + "-practice"] }; });
+        const total = ls.reduce((a, l) => a + (l.reading ? 1 : 2), 1);
+        const done = ls.reduce((a, l) => a + (l.done ? 1 : 0) + (!l.reading && l.practice ? 1 : 0), progress.done[m.id + "-quiz"] ? 1 : 0);
+        return { n: mi + 1, title: m.title, lessons: ls, total, done, quiz: progress.done[m.id + "-quiz"] ? progress.scores[m.id] : null };
+      }),
+    };
+  },
+});
+$("set-backup").addEventListener("click", () => backup.download());
+$("set-restore").addEventListener("click", () => backup.restore());
+$("set-report").addEventListener("click", () => { closeSettings(); backup.report(); });
+$("finish-report").addEventListener("click", () => backup.report());
 // Step through: watch the code in the editor run one line at a time (viz.js)
 $("step-btn").addEventListener("click", () => {
   if (!editor.getValue().trim()) { buddy.say("# Nothing to step through yet\nType some code first, then press Step through to watch it run line by line.", "pointing"); return; }
@@ -527,16 +559,24 @@ $("sidebar-close").addEventListener("click", closeSidebar);
 backdrop.addEventListener("click", closeSidebar);
 // Reset asks first (an in-app dialog, same look as the completion card)
 const confirmEl = $("confirm");
-function askReset() {
+// One "are you sure?" dialog for every risky action (reset, restore a backup)
+let confirmAction = null;
+function askConfirm({ title, sub, yes, no = "Keep my progress", onYes }) {
   closeSidebar();
+  $("confirm-title").textContent = title; $("confirm-sub").textContent = sub;
+  $("confirm-yes").textContent = yes; $("confirm-no").textContent = no;
+  confirmAction = onYes;
   confirmEl.hidden = false; replayClass(confirmEl, "show");
   setTimeout(() => $("confirm-no").focus(), 300);
   sfx.pop();
 }
-$("confirm-no").addEventListener("click", () => { confirmEl.hidden = true; });
-confirmEl.addEventListener("click", (e) => { if (e.target === confirmEl) confirmEl.hidden = true; });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !confirmEl.hidden) confirmEl.hidden = true; });
-$("confirm-yes").addEventListener("click", () => { confirmEl.hidden = true; resetAll(); });
+function askReset() {
+  askConfirm({ title: "Reset all progress?", sub: "This erases every finished lesson, your saved code and your quiz scores. There's no undo.", yes: "Yes, reset everything", onYes: resetAll });
+}
+$("confirm-no").addEventListener("click", () => { confirmEl.hidden = true; confirmAction = null; });
+confirmEl.addEventListener("click", (e) => { if (e.target === confirmEl) { confirmEl.hidden = true; confirmAction = null; } });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !confirmEl.hidden) { confirmEl.hidden = true; confirmAction = null; } });
+$("confirm-yes").addEventListener("click", () => { confirmEl.hidden = true; const f = confirmAction; confirmAction = null; if (f) f(); });
 $("reset-btn-all").addEventListener("click", askReset);
 function resetAll() {
   progress = { done: {}, work: {}, scores: {}, daily: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0, certName: progress.certName };
