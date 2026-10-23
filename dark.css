@@ -96,3 +96,14 @@
 :root[data-theme="dark"] .sidebar-backdrop { background: rgba(0, 4, 12, 0.6); }
 :root[data-theme="dark"] .toast { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5); }
 :root[data-theme="dark"] kbd { background: var(--card-2); }
+
+/* elevation on a dark page is plain black shadow, never a blue glow */
+:root[data-theme="dark"] .btn-primary:hover:not(:disabled),
+:root[data-theme="dark"] .btn-big,
+:root[data-theme="dark"] .vis-bit.on .vis-digit,
+:root[data-theme="dark"] .scratch-pill { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45); }
+:root[data-theme="dark"] .finish-preview { box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45); }
+:root[data-theme="dark"] .settings input[type="range"]::-webkit-slider-thumb { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5); }
+:root[data-theme="dark"] .steps li.current,
+:root[data-theme="dark"] .quiz-dot.on { box-shadow: 0 0 0 2px var(--blue-line); }
+:root[data-theme="dark"] .buddy:hover { filter: none; }
