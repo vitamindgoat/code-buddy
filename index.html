@@ -6,14 +6,28 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="93" />
+  <meta name="build" content="94" />
   <title>CodeBuddy – Learn to code with a friend</title>
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=93" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=93" />
+  <meta name="description" content="Learn Python by typing every line. A friendly buddy explains each piece as you type, catches typos, and cheers you on. 33 lessons, practices and quizzes, free in your browser." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="CodeBuddy" />
+  <meta property="og:title" content="CodeBuddy – Learn Python by typing every line" />
+  <meta property="og:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on. Free, in your browser." />
+  <meta property="og:url" content="https://code-buddy-iota-puce.vercel.app/" />
+  <meta property="og:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="CodeBuddy: a lesson with the buddy explaining Python as you type" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="CodeBuddy – Learn Python by typing every line" />
+  <meta name="twitter:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on." />
+  <meta name="twitter:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=94" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=94" />
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <!-- CodeMirror 5: the code editor library (styles + core + Python mode).
        Shipped in vendor/ so the app has no outside dependency at runtime. -->
@@ -21,8 +35,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=93" />
-  <link rel="stylesheet" href="buddy.css?v=93" />
+  <link rel="stylesheet" href="styles.css?v=94" />
+  <link rel="stylesheet" href="buddy.css?v=94" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -149,7 +163,7 @@
       <label class="set-row"><span>Your name</span><input id="set-name" type="text" maxlength="40" placeholder="Optional" autocomplete="given-name" spellcheck="false" /></label>
       <label class="set-row"><span>Buddy talking speed</span><span class="set-ctl"><input id="set-speed" type="range" min="0.5" max="2" step="0.05" /><b id="set-speed-val">1.00×</b></span></label>
       <label class="set-row"><span>Explanation length</span><select id="set-explain"><option value="short">Short (one line)</option><option value="normal">Normal</option><option value="long">Detailed</option></select></label>
-      <label class="set-row"><span>Ghost letters</span><select id="set-ghost"><option value="always">Always show what to type</option><option value="stuck">Only after I click the buddy</option></select></label>
+      <label class="set-row"><span>Ghost letters</span><select id="set-ghost"><option value="always">Always show</option><option value="stuck">Only when I ask</option></select></label>
       <label class="set-row"><span>Code text size</span><select id="set-size"><option value="s">Small</option><option value="m">Medium</option><option value="l">Large</option></select></label>
       <label class="set-row"><span>Buddy reads out loud</span><input id="set-voice" type="checkbox" /></label>
       <label class="set-row" id="set-voicepick-row"><span>Voice</span><select id="set-voicepick"></select></label>
@@ -339,17 +353,17 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=93"></script>
-  <script src="fx.js?v=93"></script>
-  <script src="lessons.js?v=93"></script>
-  <script src="buddy.js?v=93"></script>
-  <script src="tutor.js?v=93"></script>
-  <script src="scratch.js?v=93"></script>
-  <script src="quiz.js?v=93"></script>
-  <script src="read.js?v=93"></script>
-  <script src="finish.js?v=93"></script>
-  <script src="badges.js?v=93"></script>
-  <script src="tour.js?v=93"></script>
-  <script src="app.js?v=93"></script>
+  <script src="sfx.js?v=94"></script>
+  <script src="fx.js?v=94"></script>
+  <script src="lessons.js?v=94"></script>
+  <script src="buddy.js?v=94"></script>
+  <script src="tutor.js?v=94"></script>
+  <script src="scratch.js?v=94"></script>
+  <script src="quiz.js?v=94"></script>
+  <script src="read.js?v=94"></script>
+  <script src="finish.js?v=94"></script>
+  <script src="badges.js?v=94"></script>
+  <script src="tour.js?v=94"></script>
+  <script src="app.js?v=94"></script>
 </body>
 </html>
