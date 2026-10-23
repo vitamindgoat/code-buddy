@@ -12,6 +12,8 @@
      sfx.levelUp()   lesson complete (rising arpeggio)
      sfx.error()     a wrong character appeared (soft low bonk)
      sfx.badge()     a badge was earned (bright fanfare)
+     sfx.fanfare()   course complete / perfect quiz (longer fanfare)
+     sfx.giggle()    poking the buddy a bunch
      sfx.click()     any button
      sfx.run()       Run pressed (whoosh)
      sfx.pop()       bubble / tour card appears
@@ -22,7 +24,7 @@
    ============================================================ */
 
 const sfx = (() => {
-  let ctx = null;
+  let ctx = null, master = null;
   let on = true;
   try { on = localStorage.getItem("codebuddy.sound") !== "off"; } catch {}
 
@@ -32,6 +34,12 @@ const sfx = (() => {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
       ctx = new AC();
+      // everything goes through one gentle compressor so stacked sounds
+      // (a jingle + a badge + a click) never get harsh or clip
+      master = ctx.createDynamicsCompressor();
+      master.threshold.value = -18; master.knee.value = 12; master.ratio.value = 4;
+      master.attack.value = 0.003; master.release.value = 0.15;
+      master.connect(ctx.destination);
     }
     if (ctx.state === "suspended") ctx.resume();
     return ctx;
@@ -56,8 +64,10 @@ const sfx = (() => {
 
   // One note: `type` is the waveform, freq in Hz, timing in seconds.
   // The gain envelope goes 0 -> vol quickly, then decays to silence.
-  function note({ type = "sine", freq = 440, start = 0, dur = 0.12, vol = 0.18, slideTo = null }) {
+  // a hair of random pitch (±1.5%) so repeated blips don't sound robotic
+  function note({ type = "sine", freq = 440, start = 0, dur = 0.12, vol = 0.18, slideTo = null, wobble = true }) {
     const c = ready(); if (!c) return;
+    if (wobble) { const k = 1 + (Math.random() - 0.5) * 0.03; freq *= k; if (slideTo) slideTo *= k; }
     const t0 = c.currentTime + start;
     const osc = c.createOscillator();
     const gain = c.createGain();
@@ -67,7 +77,7 @@ const sfx = (() => {
     gain.gain.setValueAtTime(0.0001, t0);
     gain.gain.exponentialRampToValueAtTime(vol, t0 + 0.012);
     gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    osc.connect(gain).connect(c.destination);
+    osc.connect(gain).connect(master || c.destination);
     osc.start(t0);
     osc.stop(t0 + dur + 0.02);
   }
@@ -84,7 +94,7 @@ const sfx = (() => {
     filter.frequency.setValueAtTime(300, c.currentTime);
     filter.frequency.exponentialRampToValueAtTime(2400, c.currentTime + dur);
     const gain = c.createGain(); gain.gain.value = 0.25;
-    src.connect(filter).connect(gain).connect(c.destination);
+    src.connect(filter).connect(gain).connect(master || c.destination);
     src.start();
   }
 
@@ -112,6 +122,14 @@ const sfx = (() => {
     lastJingle = bag.pop();
     LINE_JINGLES[lastJingle]();
   };
+  // course complete / perfect quiz: a longer two-part fanfare
+  const fanfare = () => {
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => note({ type: "triangle", freq: f, start: i * 0.08, dur: 0.2, vol: 0.18, wobble: false }));
+    [783.99, 1046.5, 1318.5].forEach((f) => note({ type: "triangle", freq: f, start: 0.42, dur: 0.6, vol: 0.12, wobble: false }));
+    note({ type: "sine", freq: 2093, start: 0.5, dur: 0.5, vol: 0.05, wobble: false });
+  };
+  // poking the buddy: a quick wobbly "hehe"
+  const giggle = () => [0, 0.11, 0.22].forEach((t, i) => note({ type: "sine", freq: 880 + i * 120, slideTo: 1100 + i * 120, start: t, dur: 0.08, vol: 0.12 }));
   const levelUp = () => [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => note({ type: "triangle", freq: f, start: i * 0.09, dur: 0.22, vol: 0.2 }));
   const error = () => note({ type: "triangle", freq: 220, slideTo: 160, dur: 0.16, vol: 0.14 });
   // badge earned: a bright little three-note fanfare with a shimmer on top
@@ -127,5 +145,5 @@ const sfx = (() => {
     return on;
   }
 
-  return { tick, success, lineDone, levelUp, error, badge, click, pop, run, toggle, get on() { return on; } };
+  return { tick, success, lineDone, levelUp, fanfare, giggle, error, badge, click, pop, run, toggle, get on() { return on; } };
 })();

@@ -696,6 +696,23 @@ body { background: var(--bg); }
 #set-name { font: 700 14px "Nunito", sans-serif; color: var(--ink); border: 1.5px solid var(--blue-line); border-radius: 9px; padding: 6px 10px; width: 160px; max-width: 50%; outline: none; }
 #set-name:focus { border-color: var(--blue); }
 
+/* ---------- Buddy reactions (floating emoji) ---------- */
+.fx-react { position: fixed; z-index: 96; pointer-events: none; font-size: 26px; transform: translate(-50%, 0); animation: react-up 1.3s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+@keyframes react-up { 0% { opacity: 0; transform: translate(-50%, 6px) scale(0.4); } 20% { opacity: 1; transform: translate(-50%, -14px) scale(1.15); } 100% { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), -70px) scale(1); } }
+.reduce-motion .fx-react { display: none; }
+
+/* ---------- Keyboard shortcuts ---------- */
+.keys-card { width: 640px; text-align: left; }
+.keys-card .done-kicker, .keys-title { display: table; margin-left: auto; margin-right: auto; }
+.keys-title { font-size: 26px; text-align: center; }
+.keys-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px; }
+.keys-cols h3 { margin: 0 0 8px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue); }
+.keys-cols dl { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.keys-cols dl > div { display: flex; flex-direction: column; gap: 3px; }
+.keys-cols dt { font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+.keys-cols dd { margin: 0; font-size: 14px; font-weight: 700; color: var(--ink); }
+kbd { display: inline-block; min-width: 22px; padding: 2px 7px; border-radius: 7px; border: 1.5px solid var(--blue-line); border-bottom-width: 3px; background: #fff; font: 800 12px "Nunito", sans-serif; color: var(--blue-ink); text-align: center; }
+
 /* ---------- Badges: toasts + Trophies ---------- */
 .toast-stack { position: fixed; right: 16px; top: 72px; z-index: 95; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .toast { pointer-events: auto; display: flex; align-items: center; gap: 10px; background: #fff; border: 2px solid var(--blue-line); border-radius: 14px; padding: 8px 14px 8px 10px; box-shadow: 0 12px 32px rgba(6, 51, 126, 0.22); cursor: pointer; animation: toast-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.25) both; }
@@ -1033,6 +1050,9 @@ body { overflow-x: hidden; }
   .done-card { padding: 22px 18px 20px; }
   .finish-stats { grid-template-columns: repeat(2, 1fr); }
   .trophies-grid { grid-template-columns: repeat(2, 1fr); }
+  .keys-cols { grid-template-columns: 1fr; gap: 12px; }
+  .keys-cols dl > div { flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; }
+  .keys-cols dt { flex: none; } .keys-cols dd { text-align: right; }
   .toast-stack { left: 12px; right: 12px; top: 64px; }
   .toast { justify-content: flex-start; }
   .finish-stat b { font-size: 20px; }

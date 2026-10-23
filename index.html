@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="94" />
+  <meta name="build" content="95" />
   <title>CodeBuddy – Learn to code with a friend</title>
   <meta name="description" content="Learn Python by typing every line. A friendly buddy explains each piece as you type, catches typos, and cheers you on. 33 lessons, practices and quizzes, free in your browser." />
   <meta property="og:type" content="website" />
@@ -22,8 +22,8 @@
   <meta name="twitter:title" content="CodeBuddy – Learn Python by typing every line" />
   <meta name="twitter:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on." />
   <meta name="twitter:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=94" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=94" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=95" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=95" />
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -35,8 +35,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=94" />
-  <link rel="stylesheet" href="buddy.css?v=94" />
+  <link rel="stylesheet" href="styles.css?v=95" />
+  <link rel="stylesheet" href="buddy.css?v=95" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -171,6 +171,7 @@
       <label class="set-row"><span>Animations</span><input id="set-motion" type="checkbox" /></label>
       <div class="set-actions">
         <button id="set-test" class="btn btn-ghost" type="button">🗣 Test speed</button>
+        <button id="set-keys" class="btn btn-ghost" type="button">⌨ Shortcuts</button>
         <button id="set-tour" class="btn btn-ghost" type="button">❔ Redo tutorial</button>
         <button id="set-reset" class="btn btn-ghost" type="button">↺ Reset progress</button>
       </div>
@@ -191,6 +192,38 @@
         <button id="name-skip" class="btn btn-ghost" type="button">Skip for now</button>
       </div>
     </form>
+  </div>
+
+  <!-- Keyboard shortcuts: press ? anywhere outside the editor -->
+  <div id="keys" class="complete" hidden role="dialog" aria-label="Keyboard shortcuts">
+    <div class="done-card card keys-card">
+      <button id="keys-close" class="finish-close" type="button" aria-label="Close">✕</button>
+      <div class="done-kicker">Keyboard</div>
+      <h2 class="done-title keys-title">Shortcuts</h2>
+      <div class="keys-cols">
+        <section><h3>Coding</h3>
+          <dl>
+            <div><dt><kbd>Ctrl</kbd> <kbd>Enter</kbd></dt><dd>Run your code</dd></div>
+            <div><dt><kbd>Tab</kbd></dt><dd>Indent the line</dd></div>
+            <div><dt><kbd>Shift</kbd> <kbd>Tab</kbd></dt><dd>Un-indent</dd></div>
+            <div><dt><kbd>Ctrl</kbd> <kbd>Z</kbd></dt><dd>Undo</dd></div>
+          </dl></section>
+        <section><h3>Everywhere</h3>
+          <dl>
+            <div><dt><kbd>?</kbd></dt><dd>This list</dd></div>
+            <div><dt><kbd>Esc</kbd></dt><dd>Close a popup</dd></div>
+            <div><dt><kbd>Tab</kbd></dt><dd>Move between buttons</dd></div>
+            <div><dt><kbd>Enter</kbd></dt><dd>Press the focused button</dd></div>
+          </dl></section>
+        <section><h3>Scratch pad</h3>
+          <dl>
+            <div><dt><kbd>P</kbd> <kbd>L</kbd> <kbd>E</kbd> <kbd>H</kbd></dt><dd>Pen, highlighter, eraser, move</dd></div>
+            <div><dt><kbd>Space</kbd> + drag</dt><dd>Move around</dd></div>
+            <div><dt>Scroll</dt><dd>Zoom in and out</dd></div>
+            <div><dt><kbd>G</kbd> <kbd>N</kbd></dt><dd>Grid, notes</dd></div>
+          </dl></section>
+      </div>
+    </div>
   </div>
 
   <!-- "Are you sure?" dialog (reset progress) -->
@@ -353,17 +386,17 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=94"></script>
-  <script src="fx.js?v=94"></script>
-  <script src="lessons.js?v=94"></script>
-  <script src="buddy.js?v=94"></script>
-  <script src="tutor.js?v=94"></script>
-  <script src="scratch.js?v=94"></script>
-  <script src="quiz.js?v=94"></script>
-  <script src="read.js?v=94"></script>
-  <script src="finish.js?v=94"></script>
-  <script src="badges.js?v=94"></script>
-  <script src="tour.js?v=94"></script>
-  <script src="app.js?v=94"></script>
+  <script src="sfx.js?v=95"></script>
+  <script src="fx.js?v=95"></script>
+  <script src="lessons.js?v=95"></script>
+  <script src="buddy.js?v=95"></script>
+  <script src="tutor.js?v=95"></script>
+  <script src="scratch.js?v=95"></script>
+  <script src="quiz.js?v=95"></script>
+  <script src="read.js?v=95"></script>
+  <script src="finish.js?v=95"></script>
+  <script src="badges.js?v=95"></script>
+  <script src="tour.js?v=95"></script>
+  <script src="app.js?v=95"></script>
 </body>
 </html>

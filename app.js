@@ -347,6 +347,26 @@ function showFinish() {
   sfx.pop();
 }
 $("cert-btn").addEventListener("click", showFinish);
+
+// ---------- Keyboard shortcuts overlay ("?") ----------
+const keysEl = $("keys");
+function showKeys() {
+  if (!keysEl.hidden) return;
+  keysEl.hidden = false; replayClass(keysEl, "show"); sfx.pop();
+  setTimeout(() => $("keys-close").focus(), 300);
+}
+function hideKeys() { if (keysEl.hidden) return; keysEl.hidden = true; refocus(); }
+$("keys-close").addEventListener("click", hideKeys);
+keysEl.addEventListener("click", (e) => { if (e.target === keysEl) hideKeys(); });
+$("set-keys").addEventListener("click", () => { closeSettings(); showKeys(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !keysEl.hidden) { hideKeys(); return; }
+  if (e.key !== "?" || e.ctrlKey || e.metaKey || e.altKey) return;
+  const t = e.target;
+  // typing a "?" into the editor, a text box or the scratch pad stays a "?"
+  if (t.closest && (t.closest(".CodeMirror") || t.closest("input, textarea, select, [contenteditable]") || t.closest("#scratch"))) return;
+  e.preventDefault(); showKeys();
+});
 $("trophies-btn").addEventListener("click", () => { closeSidebar(); badges.show(); });
 $("finish-trophies").addEventListener("click", () => badges.show());
 // opening the scratch pad (from a quiz) is a badge of its own
@@ -377,7 +397,7 @@ function finishStage() {
   // the very last item: the whole-course celebration instead of the usual card
   if (courseComplete() && !progress.celebrated) {
     progress.celebrated = true; saveProgress();
-    fx.confetti(240); sfx.levelUp(); setTimeout(() => fx.confetti(160), 700);
+    fx.confetti(220, "cannons"); sfx.fanfare(); setTimeout(() => fx.confetti(200, "stars"), 900);
     showFinish();
     return;
   }
@@ -507,8 +527,20 @@ tutor.ui.markLine = (lineNumber) => {
   }
 };
 // A line was finished: flash it green and pop sparkles at its end
+// ---------- Buddy reactions ----------
+// Little emoji that float up off the buddy: a flame for three clean lines
+// in a row, a giggle when you poke him a bunch, a bulb for a hint.
+function react(symbol) {
+  const el = $("buddy"); if (!el) return;
+  const r = el.getBoundingClientRect();
+  if (!r.width) return;
+  fx.reaction(r.left + r.width / 2, r.top + 6, symbol);
+}
+let cleanLines = 0;
 tutor.ui.onStepDone = (lineNumber) => {
   sfx.lineDone();
+  cleanLines++;
+  if (cleanLines > 0 && cleanLines % 3 === 0) setTimeout(() => react(pick(["🔥", "⚡", "🚀", "✨"])), 250);
   badges.earn("first-line");
   const handle = editor.addLineClass(lineNumber, "background", "done-line");
   setTimeout(() => editor.removeLineClass(handle, "background", "done-line"), 900);
@@ -557,6 +589,7 @@ fixPill.type = "button"; fixPill.className = "fixpill"; fixPill.hidden = true;
 editorWrap.appendChild(fixPill);
 let fix = null;   // { line, from, text } -> replace line[from..end] with text
 tutor.ui.markWrong = (lineNumber, fromCh, toCh, target) => {
+  if (lineNumber !== undefined && fromCh !== null && fromCh !== undefined) cleanLines = -1;   // a typo resets the streak (the fixed line won't count)
   if (wrongMark) { wrongMark.clear(); wrongMark = null; }
   fix = null; fixPill.hidden = true;
   if (lineNumber === undefined || fromCh === null || fromCh === undefined) return;
@@ -692,7 +725,20 @@ editor.on("cursorActivity", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("scroll", () => floatBuddyToLine(editor.getCursor().line));
 editor.on("change", () => { clearErrorLine(); tutor.onChange(); saveCodeSoon(); });
 $("replay-btn").addEventListener("click", (e) => { e.stopPropagation(); sfx.click(); buddy.replay(); refocus(); });
-buddy.onClick(() => { sfx.click(); tutor.hint(); refocus(); clearTimeout(codeSaveTimer); if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); });
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+let pokes = [];
+function poked() {
+  const now = Date.now();
+  pokes = pokes.filter((t) => now - t < 1600); pokes.push(now);
+  if (pokes.length >= 4) {
+    pokes = [];
+    react(pick(["😆", "🤭", "😂"])); sfx.giggle();
+    buddy.say(pick(["# Hey!\nThat tickles! 😆", "# Hehe\nOkay okay, I'm awake!", "# Whoa\nOne click is enough, I promise I'm listening."]), "celebrate");
+    return true;
+  }
+  return false;
+}
+buddy.onClick(() => { if (poked()) return; if (stage !== "quiz") react("💡"); sfx.click(); tutor.hint(); refocus(); clearTimeout(codeSaveTimer); if (stage === "lesson" || stage === "practice") saveWork({ code: editor.getValue(), hintsUsed: tutor.current.hintsUsed, ghostAsked: tutor.current.ghostAsked }); });
 
 // ---------- 9. Running code safely ----------
 

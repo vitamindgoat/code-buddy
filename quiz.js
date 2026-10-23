@@ -247,7 +247,7 @@ const quiz = (() => {
         </div>
       </div>`;
     buddy.mount(card.querySelector("#quiz-buddy"), pct >= 70 ? (again ? "happy" : "celebrate") : "thinking");
-    if (pct >= 70 && !again) { fx.confetti(); sfx.levelUp(); }
+    if (pct >= 70 && !again) { fx.confetti(pct === 100 ? 220 : 160, pct === 100 ? "stars" : undefined); pct === 100 ? sfx.fanfare() : sfx.levelUp(); }
     card.querySelector(".quiz-done").addEventListener("click", (e) => { e.currentTarget.disabled = true; onDone && onDone({ score, total: questions.length }); });
     card.querySelector(".quiz-retake").addEventListener("click", retake);
     card.querySelector(".quiz-share").addEventListener("click", async (e) => {
