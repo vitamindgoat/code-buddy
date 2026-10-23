@@ -216,8 +216,9 @@ code {
 
 .btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
 
-/* Line in the editor where an error happened */
-.error-line { background: var(--red-soft); }
+/* Line in the editor where an error happened: flashes, then stays tinted */
+.error-line { background: var(--red-soft); animation: error-flash 0.6s ease-out; }
+@keyframes error-flash { 0% { background: #f9c5c8; } 100% { background: var(--red-soft); } }
 
 /* The line the buddy is talking about */
 .active-line { background: var(--blue-soft); }
@@ -335,10 +336,13 @@ code {
   100% { opacity: 1; transform: none; }
 }
 .lesson.swap-in { animation: swap-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes swap-in-prev { 0% { opacity: 0.4; transform: translateX(10px); } 100% { opacity: 1; transform: none; } }
+.quiz-card.swap-in { animation: swap-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.quiz-card[data-dir="prev"].swap-in { animation-name: swap-in-prev; }
 .editor-card.swap-in { animation: swap-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s; }
 
 /* Buttons: lift on hover, squish on press, ripple on click */
-.btn { position: relative; overflow: hidden; transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.15s ease; }
+.btn { position: relative; overflow: hidden; transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.15s ease, opacity 0.25s ease; }
 .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(30, 111, 217, 0.3); }
 .btn:active:not(:disabled) { transform: scale(0.96); }
 .btn .ripple {
@@ -359,8 +363,9 @@ code {
 }
 .btn.glow { animation: glow 1.4s ease-out infinite; }
 
-/* Steps: clickable, pop when they turn green */
-.steps li { cursor: pointer; transition: background 0.25s ease, border-color 0.25s ease; }
+/* Steps: clickable, arrive one by one, pop when they turn green */
+.steps li { cursor: pointer; transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, color 0.25s ease; }
+.steps li.arrive { animation: rise 0.3s ease-out backwards; }
 .steps li.out-row { cursor: default; }
 @keyframes step-pop { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
 .steps li.done { animation: step-pop 0.4s ease; }
@@ -440,6 +445,8 @@ code {
   color: #a3adc2; white-space: pre;
 }
 .ghost[hidden] { display: none; }
+.ghost:not([hidden]) { animation: ghost-in 0.25s ease-out; }
+@keyframes ghost-in { from { opacity: 0; transform: translateX(-3px); } }
 
 /* The character where the line went wrong */
 .wrong-char {
@@ -542,7 +549,7 @@ body { background: var(--bg); }
 .sb-ltitle { flex: 1; }
 .sb-quiz .sb-lnum { color: var(--blue); }
 .sb-marks { display: flex; gap: 4px; }
-.sb-mark { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--line); color: #aab2c4; font-size: 11px; font-weight: 800; display: grid; place-items: center; }
+.sb-mark { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--line); color: #aab2c4; font-size: 11px; font-weight: 800; display: grid; place-items: center; transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
 .sb-mark.on { background: var(--green); border-color: var(--green); color: #fff; }
 
 /* ---------- Stage badge ---------- */
@@ -714,7 +721,10 @@ body { background: var(--bg); }
 .read-dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--line); transition: background 0.3s ease, transform 0.3s ease; }
 .read-dots span.done { background: var(--green); }
 .read-dots span.on { background: var(--blue); transform: scale(1.3); }
-.read-body { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; flex: 1; }
+.read-body { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; flex: 1; animation: read-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.read-card[data-dir="prev"] .read-body { animation-name: read-in-prev; }
+@keyframes read-in { from { opacity: 0; transform: translateX(14px); } }
+@keyframes read-in-prev { from { opacity: 0; transform: translateX(-14px); } }
 @media (max-width: 1100px) { .read-body { grid-template-columns: 1fr; } }
 .read-visual { display: grid; place-items: center; min-height: 240px; background: #f7fbff; border: 1px solid var(--line); border-radius: 16px; padding: 18px; animation: rise 0.5s ease-out; }
 .read-visual:empty { display: none; }
@@ -804,7 +814,9 @@ body { background: var(--bg); }
 @keyframes fade-out { to { opacity: 0; } }
 .settings-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
 .settings-body { padding: 10px 18px 18px; }
-.set-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--line); font-weight: 700; }
+.set-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--line); font-weight: 700; transition: background 0.15s ease; }
+.set-row { margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: 10px; }
+.set-row:hover { background: #f7fbff; }
 .set-row > span:first-child { color: var(--ink); }
 .set-ctl { display: flex; align-items: center; gap: 8px; }
 .set-ctl b { min-width: 58px; text-align: center; color: var(--blue-dark); font-variant-numeric: tabular-nums; background: var(--blue-soft); border: 1px solid var(--blue-line); border-radius: 8px; padding: 3px 6px; font-size: 13px; }
@@ -977,6 +989,8 @@ body { overflow-x: hidden; }
 .keybar-keys { display: flex; gap: 6px; flex: 1; min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; touch-action: pan-x; padding-right: 4px; }
 .keybar-keys::-webkit-scrollbar { display: none; }
 .keybar[hidden] { display: none; }
+.keybar:not([hidden]) { animation: keybar-in 0.2s ease-out; }
+@keyframes keybar-in { from { transform: translateY(100%); } }
 .keybar button {
   flex: none; min-width: 40px; height: 40px; padding: 0 10px;
   font: 800 17px var(--mono); color: var(--blue-dark);

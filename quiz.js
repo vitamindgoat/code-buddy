@@ -191,6 +191,7 @@ const quiz = (() => {
 
   function go(i) {
     if (i < 0 || i >= questions.length || i === index) return;
+    card.dataset.dir = i < index ? "prev" : "next";   // slide from the side you're heading to
     index = i;
     saveState();
     sfx.click();

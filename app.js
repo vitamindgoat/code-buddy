@@ -168,56 +168,65 @@ function richText(s) {
 // In practice mode the lines are hidden (that would be the answer!) and we
 // show how many lines are right so far.
 function renderSteps(stepIndex) {
-  stepsEl.innerHTML = "";
-  if (stage === "quiz") return;
+  // Rows are described first, then patched onto the existing list when it's
+  // the same list (same lesson, same stage, same row count), so a row that
+  // turns green animates in place instead of the whole list being rebuilt
+  // (which replayed every row's pop and killed the transitions).
+  if (stage === "quiz") { stepsEl.innerHTML = ""; stepsEl.dataset.key = ""; return; }
+  const rows = [];     // { cls, html, title?, onClick? }
+  let hint = null;
   if (isReading()) {
-    lesson().cards.forEach((c, i) => {
-      const li = document.createElement("li");
-      li.className = i < stepIndex ? "done" : i === stepIndex ? "current" : "";
-      li.innerHTML = `<span class="step-mark"></span><span>${escapeHtml(c.title)}</span>`;
-      stepsEl.appendChild(li);
-    });
-    return;
-  }
-  if (stage === "practice") {
+    lesson().cards.forEach((c, i) => rows.push({ cls: i < stepIndex ? "done" : i === stepIndex ? "current" : "", html: `<span class="step-mark"></span><span>${escapeHtml(c.title)}</span>` }));
+  } else if (stage === "practice") {
     // Practice is graded on OUTPUT, not on matching one exact solution:
     // one row per expected output line, ticked after a Run prints it.
     const want = lesson().practice.expectedOutput.split("\n");
     const got = lastRunOutput === null ? null : lastRunOutput.split("\n");
     want.forEach((line, i) => {
-      const li = document.createElement("li");
       const ok = got !== null && got[i] === line;
       const bad = got !== null && !ok;
-      li.className = "out-row " + (ok ? "done" : bad ? "wrong" : "");
-      li.innerHTML = `<span class="step-mark"></span><code>${escapeHtml(line)}</code>${bad ? `<span class="out-got">${got[i] === undefined ? "(missing)" : escapeHtml(got[i])}</span>` : ""}`;
-      stepsEl.appendChild(li);
+      rows.push({ cls: "out-row " + (ok ? "done" : bad ? "wrong" : ""), html: `<span class="step-mark"></span><code>${escapeHtml(line)}</code>${bad ? `<span class="out-got">${got[i] === undefined ? "(missing)" : escapeHtml(got[i])}</span>` : ""}` });
     });
-    if (got !== null && got.length > want.length) {
-      const li = document.createElement("li");
-      li.className = "out-row wrong";
-      li.innerHTML = `<span class="step-mark"></span><code>(nothing else)</code><span class="out-got">${escapeHtml(got.slice(want.length).join(" / "))}</span>`;
-      stepsEl.appendChild(li);
-    }
-    const hint = document.createElement("div");
-    hint.className = "out-hint";
-    hint.textContent = got === null ? "Press Run to check each line of output." : "";
-    stepsEl.appendChild(hint);
+    if (got !== null && got.length > want.length) rows.push({ cls: "out-row wrong", html: `<span class="step-mark"></span><code>(nothing else)</code><span class="out-got">${escapeHtml(got.slice(want.length).join(" / "))}</span>` });
+    hint = got === null ? "Press Run to check each line of output." : "";
+  } else {
+    lesson().steps.forEach((step, i) => rows.push({
+      cls: i < stepIndex ? "done" : i === stepIndex ? "current" : "",
+      html: `<span class="step-mark"></span><code>${colorCode((tutor.displayCode(i) || step.code).trim())}</code>`,
+      title: "Click to hear this step again", onClick: () => { tutor.review(i); editor.focus(); },
+    }));
+    if (stepIndex >= lesson().steps.length) rows.push({ cls: "current run-step", html: `<span class="step-mark"></span><span>Press <strong>Run</strong></span>`, onClick: runCode });
+  }
+
+  const key = `${stage}:${lesson().id}:${rows.length}:${hint === null ? "" : "h"}`;
+  const lis = [...stepsEl.querySelectorAll(":scope > li")];
+  if (stepsEl.dataset.key === key && lis.length === rows.length) {
+    rows.forEach((r, i) => {
+      const li = lis[i];
+      if (li.className !== r.cls) li.className = r.cls;
+      if (li.innerHTML !== r.html) li.innerHTML = r.html;
+    });
+    const h = stepsEl.querySelector(".out-hint");
+    if (h && hint !== null) h.textContent = hint;
     return;
   }
-  lesson().steps.forEach((step, i) => {
+  stepsEl.innerHTML = "";
+  stepsEl.dataset.key = key;
+  rows.forEach((r, i) => {
     const li = document.createElement("li");
-    li.className = i < stepIndex ? "done" : i === stepIndex ? "current" : "";
-    li.innerHTML = `<span class="step-mark"></span><code>${colorCode((tutor.displayCode(i) || step.code).trim())}</code>`;
-    li.title = "Click to hear this step again";
-    li.addEventListener("click", () => { tutor.review(i); editor.focus(); });
+    li.className = r.cls;
+    li.innerHTML = r.html;
+    if (r.title) li.title = r.title;
+    if (r.onClick) li.addEventListener("click", r.onClick);
+    li.style.animationDelay = `${Math.min(i, 8) * 0.04}s`;   // rows arrive one after another
+    li.classList.add("arrive");
     stepsEl.appendChild(li);
   });
-  if (stepIndex >= lesson().steps.length) {
-    const li = document.createElement("li");
-    li.className = "current run-step";
-    li.innerHTML = `<span class="step-mark"></span><span>Press <strong>Run</strong></span>`;
-    li.addEventListener("click", runCode);
-    stepsEl.appendChild(li);
+  if (hint !== null) {
+    const h = document.createElement("div");
+    h.className = "out-hint";
+    h.textContent = hint;
+    stepsEl.appendChild(h);
   }
 }
 

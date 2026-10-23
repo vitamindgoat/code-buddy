@@ -52,8 +52,8 @@ const read = (() => {
         <button class="btn btn-primary read-next" type="button" ${c.checks ? "disabled" : ""}>${last ? "Finish ✓" : "Continue ▶"}</button>
       </div>`;
 
-    card.querySelector(".read-prev").addEventListener("click", () => { if (index > 0) { index--; render(); } });
-    card.querySelector(".read-next").addEventListener("click", (e) => { e.currentTarget.disabled = true; index++; index < lesson.cards.length ? render() : finish(); });
+    card.querySelector(".read-prev").addEventListener("click", () => { if (index > 0) { index--; card.dataset.dir = "prev"; render(); } });
+    card.querySelector(".read-next").addEventListener("click", (e) => { e.currentTarget.disabled = true; index++; card.dataset.dir = "next"; index < lesson.cards.length ? render() : finish(); });
     if (c.checks) { passed = false; askQuestion(c, pickQuestion(c)); }
     card.classList.remove("swap-in"); void card.offsetWidth; card.classList.add("swap-in");
     sfx.pop();
