@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="79" />
+  <meta name="build" content="80" />
   <title>CodeBuddy – Learn to code with a friend</title>
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=79" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=79" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=80" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=80" />
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,8 +21,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=79" />
-  <link rel="stylesheet" href="buddy.css?v=79" />
+  <link rel="stylesheet" href="styles.css?v=80" />
+  <link rel="stylesheet" href="buddy.css?v=80" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -181,6 +181,28 @@
     </div>
   </div>
 
+  <!-- Quiz scratch pad: draw or type to work things out (scratch.js) -->
+  <div id="scratch" class="scratch" hidden role="dialog" aria-label="Scratch pad" data-tab="draw">
+    <div class="scratch-head">
+      <span class="scratch-title">✎ Scratch pad</span>
+      <div class="scratch-tabs">
+        <button type="button" data-tab="draw" class="on">Draw</button>
+        <button type="button" data-tab="notes">Notes</button>
+      </div>
+      <button type="button" class="scratch-close" aria-label="Close">✕</button>
+    </div>
+    <div class="scratch-tools">
+      <button type="button" data-tool="pen" class="on">✏️ Pen</button>
+      <button type="button" data-tool="eraser">◻ Eraser</button>
+      <button type="button" class="scratch-clear">Clear</button>
+    </div>
+    <div class="scratch-body">
+      <canvas class="scratch-canvas"></canvas>
+      <textarea class="scratch-notes" placeholder="Type your working here…" spellcheck="false"></textarea>
+    </div>
+    <div class="scratch-grip" aria-hidden="true"></div>
+  </div>
+
   <!-- Phone key bar: sits above the on-screen keyboard while a code editor
        has focus, with the keys phone keyboards hide and cursor arrows -->
   <div id="keybar" class="keybar" hidden aria-label="Code keys">
@@ -207,14 +229,15 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=79"></script>
-  <script src="fx.js?v=79"></script>
-  <script src="lessons.js?v=79"></script>
-  <script src="buddy.js?v=79"></script>
-  <script src="tutor.js?v=79"></script>
-  <script src="quiz.js?v=79"></script>
-  <script src="read.js?v=79"></script>
-  <script src="tour.js?v=79"></script>
-  <script src="app.js?v=79"></script>
+  <script src="sfx.js?v=80"></script>
+  <script src="fx.js?v=80"></script>
+  <script src="lessons.js?v=80"></script>
+  <script src="buddy.js?v=80"></script>
+  <script src="tutor.js?v=80"></script>
+  <script src="scratch.js?v=80"></script>
+  <script src="quiz.js?v=80"></script>
+  <script src="read.js?v=80"></script>
+  <script src="tour.js?v=80"></script>
+  <script src="app.js?v=80"></script>
 </body>
 </html>

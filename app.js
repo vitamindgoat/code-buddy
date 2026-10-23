@@ -248,6 +248,7 @@ function open(target) {
   // (quizzes have no buddy at all; readings and lessons start their own talk)
   voice.stop();
   if (buddy.talking) buddy.finishTyping(true);
+  if (window.scratch) scratch.hide();   // the scratch pad belongs to the quiz
   editorCard.hidden = showQuiz || showRead; outputCard.hidden = showQuiz || showRead;
   quizCard.hidden = !showQuiz; readCard.hidden = !showRead;
   runTag.hidden = true; runBtn.classList.remove("pulse");

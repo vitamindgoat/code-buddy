@@ -577,7 +577,9 @@ body { background: var(--bg); }
 
 /* ---------- Quiz ---------- */
 .quiz-card { padding: 22px; min-height: 420px; }
-.quiz-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.quiz-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+.quiz-head-right { display: flex; align-items: center; gap: 10px; }
+.quiz-scratch { font-size: 13px; padding: 6px 10px; white-space: nowrap; }
 .quiz-label { font-size: 12px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--blue-dark); }
 .quiz-count { font-weight: 800; color: var(--ink-soft); white-space: nowrap; flex: none; }
 .quiz-progress { height: 6px; background: var(--blue-soft); border-radius: 999px; overflow: hidden; margin-bottom: 18px; }
@@ -600,12 +602,12 @@ body { background: var(--bg); }
 .quiz-feedback { margin-top: 14px; padding: 12px 14px; border-radius: 12px; font-weight: 600; line-height: 1.45; animation: rise 0.3s ease-out; }
 .quiz-feedback.ok { background: var(--green-soft); color: #0f5132; }
 .quiz-feedback.bad { background: var(--red-soft); color: #842029; }
-.quiz-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 14px; }
+.quiz-actions { display: flex; justify-content: space-between; gap: 8px; }
 .quiz-actions .quiz-next { margin-left: auto; }
 /* question strip: jump anywhere; answered ones show how it went */
-.quiz-dots { display: flex; flex-wrap: wrap; gap: 6px; margin: -8px 0 14px; }
+.quiz-nav { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.quiz-dots { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .quiz-dot { width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid var(--line); background: #fff; color: var(--ink-soft); font: 800 12px "Nunito", sans-serif; cursor: pointer; display: grid; place-items: center; transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease; }
-.quiz-dot.code { border-radius: 50%; }
 .quiz-dot:hover { transform: translateY(-1px); border-color: var(--blue-mid); }
 .quiz-dot.on { border-color: var(--blue); background: var(--blue); color: #fff; box-shadow: 0 0 0 3px rgba(116, 188, 254, 0.35); }
 .quiz-dot.right { background: var(--green-soft); border-color: #bfeedb; color: var(--green); }
@@ -897,6 +899,8 @@ body { overflow-x: hidden; }
 
   /* quiz */
   .quiz-card { min-height: 0; }
+  .quiz-head { flex-wrap: wrap; }
+  .quiz-head-right { margin-left: auto; }
   .quiz-q { font-size: 19px; }
   .quiz-choice { padding: 11px 12px; font-size: 15px; }
   .quiz-choice:hover:not(:disabled) { transform: none; }
@@ -984,3 +988,36 @@ body { overflow-x: hidden; }
 .keybar .keybar-run { font-family: "Nunito", sans-serif; font-size: 14px; color: #fff; background: var(--blue); border-color: var(--blue); flex: none; }
 /* room so the last code line isn't hidden under the bar */
 body.kb-open .layout { padding-bottom: 72px; }
+
+/* ---------- Quiz scratch pad ---------- */
+.scratch {
+  position: fixed; z-index: 78; display: flex; flex-direction: column;
+  background: #fff; border: 1.5px solid var(--blue-line); border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(6, 51, 126, 0.25); overflow: hidden;
+  animation: scratch-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.scratch[hidden] { display: none; }
+@keyframes scratch-in { from { opacity: 0; transform: translateY(10px) scale(0.97); } }
+.scratch-head { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; background: var(--blue-soft); border-bottom: 1px solid var(--blue-line); cursor: grab; user-select: none; touch-action: none; }
+.scratch-head:active { cursor: grabbing; }
+.scratch-title { font-weight: 800; color: var(--blue-ink); font-size: 14px; flex: 1; }
+.scratch-tabs { display: flex; gap: 4px; background: #fff; border-radius: 9px; padding: 3px; border: 1px solid var(--blue-line); }
+.scratch-tabs button, .scratch-tools button, .scratch-close { font: 800 12px "Nunito", sans-serif; border: none; background: transparent; color: var(--ink-soft); border-radius: 7px; padding: 5px 10px; cursor: pointer; }
+.scratch-tabs button.on { background: var(--blue); color: #fff; }
+.scratch-close { font-size: 14px; width: 30px; height: 30px; padding: 0; }
+.scratch-close:hover { background: #fff; color: var(--blue-dark); }
+.scratch-tools { display: flex; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.scratch-tools button { border: 1px solid var(--line); background: #fff; }
+.scratch-tools button.on { background: var(--blue-soft); border-color: var(--blue-mid); color: var(--blue-dark); }
+.scratch-tools .scratch-clear { margin-left: auto; }
+.scratch[data-tab="notes"] .scratch-tools { display: none; }
+.scratch-body { flex: 1; min-height: 0; position: relative; }
+.scratch-canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; background-image: radial-gradient(var(--line) 1px, transparent 1px); background-size: 18px 18px; }
+.scratch-notes { display: none; width: 100%; height: 100%; border: none; resize: none; padding: 12px 14px; font: 600 15px "Nunito", sans-serif; color: var(--ink); line-height: 1.5; background: #fff; outline: none; }
+.scratch[data-tab="notes"] .scratch-canvas { display: none; }
+.scratch[data-tab="notes"] .scratch-notes { display: block; }
+.scratch-grip { position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; cursor: nwse-resize; touch-action: none; background: linear-gradient(135deg, transparent 50%, var(--blue-line) 50%, var(--blue-line) 60%, transparent 60%, transparent 75%, var(--blue-line) 75%, var(--blue-line) 85%, transparent 85%); border-bottom-right-radius: 16px; }
+/* phones: a bottom sheet, no dragging or resizing */
+.scratch.sheet { left: 0; right: 0; bottom: 0; top: auto; width: auto; height: 56vh; border-radius: 16px 16px 0 0; padding-bottom: env(safe-area-inset-bottom); }
+.scratch.sheet .scratch-head { cursor: default; }
+.scratch.sheet .scratch-grip { display: none; }

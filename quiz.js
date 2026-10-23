@@ -23,7 +23,7 @@ const quiz = (() => {
   // spread out. The set is saved (as bank indexes) so coming back mid-quiz
   // shows the same questions; a retake draws a set with none of the
   // questions from the previous attempt.
-  let bank = null, set = [], last = [];
+  let bank = null, set = [], last = [], scratchKey = "";
   function pick(pool, n, avoid) {
     const fresh = shuffle(pool.filter((i) => !avoid.includes(i)));
     const extra = shuffle(pool.filter((i) => avoid.includes(i)));   // only if the bank runs short
@@ -44,6 +44,7 @@ const quiz = (() => {
   // saved = { index, score, finished, set, last } from a previous visit
   function start(module, done, sb, saved, save) {
     bank = module.quizBank;
+    scratchKey = module.id;
     index = 0; score = 0; onDone = done; sandbox = sb; onSave = save;
     last = (saved && saved.last) || [];
     set = (saved && saved.set && saved.set.length) ? saved.set : draw(last);
@@ -76,17 +77,19 @@ const quiz = (() => {
   }
 
   function header() {
-    const dots = questions.map((qq, i) => {
-      const a = isAnswered(i) ? (answers[i].right ? "right" : "wrong") : "";
-      return `<button type="button" class="quiz-dot ${i === index ? "on" : ""} ${a} ${qq.type === "code" ? "code" : ""}" data-go="${i}" aria-label="Question ${i + 1}" title="Question ${i + 1}${qq.type === "code" ? " (coding)" : ""}">${i + 1}</button>`;
-    }).join("");
     return `
       <div class="quiz-head">
         <span class="quiz-label">Quiz · ${card.dataset.title}</span>
-        <span class="quiz-count">${index + 1} / ${questions.length}</span>
+        <span class="quiz-head-right"><button type="button" class="btn btn-ghost quiz-scratch" title="Open the scratch pad">✎ Scratch pad</button><span class="quiz-count">${index + 1} / ${questions.length}</span></span>
       </div>
-      <div class="quiz-progress"><div style="width:${(answeredCount() / questions.length) * 100}%"></div></div>
-      <div class="quiz-dots">${dots}</div>`;
+      <div class="quiz-progress"><div style="width:${(answeredCount() / questions.length) * 100}%"></div></div>`;
+  }
+  // the numbered strip under the question: jump anywhere, see how each went
+  function dots() {
+    return `<div class="quiz-dots">${questions.map((qq, i) => {
+      const a = isAnswered(i) ? (answers[i].right ? "right" : "wrong") : "";
+      return `<button type="button" class="quiz-dot ${i === index ? "on" : ""} ${a}" data-go="${i}" aria-label="Question ${i + 1}" title="Question ${i + 1}">${i + 1}</button>`;
+    }).join("")}</div>`;
   }
 
   function render() {
@@ -164,10 +167,10 @@ const quiz = (() => {
     const allDone = answeredCount() === questions.length;
     const lastQ = index === questions.length - 1;
     const nextLabel = allDone ? (lastQ ? "See my score ▶" : "Next ▶") : lastQ ? "Next unanswered ▶" : "Next ▶";
-    return `<div class="quiz-actions">
+    return `<div class="quiz-nav">${dots()}<div class="quiz-actions">
       <button class="btn btn-ghost quiz-back" type="button" ${left ? "" : "hidden"}>◀ Back</button>
       <button class="btn btn-primary quiz-next" type="button" ${done ? "" : "hidden"}>${nextLabel}</button>
-    </div>`;
+    </div></div>`;
   }
 
   function wireNav() {
@@ -182,6 +185,7 @@ const quiz = (() => {
       go(index + 1);
     });
     card.querySelectorAll(".quiz-dot").forEach((d) => d.addEventListener("click", () => go(+d.dataset.go)));
+    card.querySelector(".quiz-scratch")?.addEventListener("click", () => scratch.toggle(scratchKey));
     card.classList.remove("swap-in"); void card.offsetWidth; card.classList.add("swap-in");
   }
 
@@ -212,8 +216,7 @@ const quiz = (() => {
     fb.hidden = false;
     fb.className = `quiz-feedback ${right ? "ok" : "bad"}`;
     fb.innerHTML = `<strong>${right ? "Correct!" : "Not quite."}</strong> ${escapeHtml(q.explain)}`;
-    card.querySelector(".quiz-actions").outerHTML = nav(true);
-    card.querySelector(".quiz-dots").outerHTML = header().match(/<div class="quiz-dots">[\s\S]*<\/div>/)[0];
+    card.querySelector(".quiz-nav").outerHTML = nav(true);
     card.querySelector(".quiz-progress div").style.width = `${(answeredCount() / questions.length) * 100}%`;
     wireNav();
   }
@@ -248,6 +251,7 @@ const quiz = (() => {
     set = draw(last);
     questions = set.map((i) => bank.questions[i]);
     index = 0; score = 0; answers = {};
+    scratch.clear(scratchKey);      // a clean pad for the new attempt
     saveState();
     sfx.pop();
     render();
