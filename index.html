@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="86" />
+  <meta name="build" content="87" />
   <title>CodeBuddy – Learn to code with a friend</title>
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=86" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=86" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=87" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=87" />
 
   <!-- Font: Nunito is rounded and friendly, good for a kid-facing app -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,8 +21,8 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=86" />
-  <link rel="stylesheet" href="buddy.css?v=86" />
+  <link rel="stylesheet" href="styles.css?v=87" />
+  <link rel="stylesheet" href="buddy.css?v=87" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -199,7 +199,7 @@
       <div class="scratch-group">
         <button type="button" data-tool="pen" class="on" title="Pen (P)">✏️</button>
         <button type="button" data-tool="highlighter" title="Highlighter (L)">🖍️</button>
-        <button type="button" data-tool="eraser" title="Eraser (E)">◻</button>
+        <button type="button" data-tool="eraser" title="Eraser (E)"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M4 17.5 13.5 8a2 2 0 0 1 2.8 0l3.7 3.7a2 2 0 0 1 0 2.8L15.3 19H9l-5-1.5Z" fill="#fff" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9.5 11.5 15.5 17.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 21h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
         <button type="button" data-tool="hand" title="Move around (H, or hold Space)">✋</button>
       </div>
       <div class="scratch-group scratch-colors">
@@ -234,7 +234,14 @@
       <textarea class="scratch-notes" placeholder="Type your working here…" spellcheck="false"></textarea>
       <div class="scratch-hint">scroll to zoom · drag with ✋ or Space to move · two fingers on a phone</div>
     </div>
-    <div class="scratch-grip" aria-hidden="true"></div>
+    <div class="scratch-edge" data-edge="n" aria-hidden="true"></div>
+    <div class="scratch-edge" data-edge="s" aria-hidden="true"></div>
+    <div class="scratch-edge" data-edge="e" aria-hidden="true"></div>
+    <div class="scratch-edge" data-edge="w" aria-hidden="true"></div>
+    <div class="scratch-edge" data-edge="nw" aria-hidden="true"></div>
+    <div class="scratch-edge" data-edge="ne" aria-hidden="true"></div>
+    <div class="scratch-edge" data-edge="sw" aria-hidden="true"></div>
+    <div class="scratch-edge scratch-grip" data-edge="se" aria-hidden="true"></div>
   </div>
   <button id="scratch-pill" class="scratch-pill" type="button" hidden aria-label="Open the scratch pad">✎ Scratch pad</button>
 
@@ -264,15 +271,15 @@
     <button type="button" data-cmd="run" class="keybar-run">▶ Run</button>
   </div>
 
-  <script src="sfx.js?v=86"></script>
-  <script src="fx.js?v=86"></script>
-  <script src="lessons.js?v=86"></script>
-  <script src="buddy.js?v=86"></script>
-  <script src="tutor.js?v=86"></script>
-  <script src="scratch.js?v=86"></script>
-  <script src="quiz.js?v=86"></script>
-  <script src="read.js?v=86"></script>
-  <script src="tour.js?v=86"></script>
-  <script src="app.js?v=86"></script>
+  <script src="sfx.js?v=87"></script>
+  <script src="fx.js?v=87"></script>
+  <script src="lessons.js?v=87"></script>
+  <script src="buddy.js?v=87"></script>
+  <script src="tutor.js?v=87"></script>
+  <script src="scratch.js?v=87"></script>
+  <script src="quiz.js?v=87"></script>
+  <script src="read.js?v=87"></script>
+  <script src="tour.js?v=87"></script>
+  <script src="app.js?v=87"></script>
 </body>
 </html>

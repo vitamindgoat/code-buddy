@@ -1030,7 +1030,8 @@ body.kb-open .layout { padding-bottom: 72px; }
 .scratch-winbtns button:hover { background: #fff; color: var(--blue-dark); }
 .scratch-tools { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--line); background: #fbfdff; }
 .scratch-group { display: flex; gap: 3px; align-items: center; padding: 2px; border-radius: 9px; background: #fff; border: 1px solid var(--line); }
-.scratch-tools button { height: 28px; min-width: 30px; padding: 0 7px; font-size: 14px; }
+.scratch-tools button { height: 28px; min-width: 30px; padding: 0 7px; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; }
+.scratch-tools button svg { display: block; }
 .scratch-tools button:hover:not(:disabled) { background: var(--blue-soft); color: var(--blue-dark); }
 .scratch-tools button:active:not(:disabled) { transform: scale(0.94); }
 .scratch-tools button.on { background: var(--blue); color: #fff; }
@@ -1052,8 +1053,18 @@ body.kb-open .layout { padding-bottom: 72px; }
 .scratch-notes { display: none; width: 100%; height: 100%; border: none; resize: none; padding: 12px 14px; font: 600 15px "Nunito", sans-serif; color: var(--ink); line-height: 1.5; background: #fff; outline: none; }
 .scratch[data-tab="notes"] .scratch-canvas, .scratch[data-tab="notes"] .scratch-hint { display: none; }
 .scratch[data-tab="notes"] .scratch-notes { display: block; }
-.scratch-grip { position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; cursor: nwse-resize; touch-action: none; background: linear-gradient(135deg, transparent 50%, var(--blue-line) 50%, var(--blue-line) 60%, transparent 60%, transparent 75%, var(--blue-line) 75%, var(--blue-line) 85%, transparent 85%); border-bottom-right-radius: 16px; }
-.scratch.max .scratch-grip { display: none; }
+/* Resize handles: thin invisible strips on every edge and squares on the corners */
+.scratch-edge { position: absolute; touch-action: none; z-index: 3; }
+.scratch-edge[data-edge="n"], .scratch-edge[data-edge="s"] { left: 10px; right: 10px; height: 7px; cursor: ns-resize; }
+.scratch-edge[data-edge="n"] { top: -2px; } .scratch-edge[data-edge="s"] { bottom: -2px; }
+.scratch-edge[data-edge="e"], .scratch-edge[data-edge="w"] { top: 10px; bottom: 10px; width: 7px; cursor: ew-resize; }
+.scratch-edge[data-edge="e"] { right: -2px; } .scratch-edge[data-edge="w"] { left: -2px; }
+.scratch-edge[data-edge="nw"], .scratch-edge[data-edge="ne"], .scratch-edge[data-edge="sw"], .scratch-edge[data-edge="se"] { width: 16px; height: 16px; }
+.scratch-edge[data-edge="nw"] { left: 0; top: 0; cursor: nwse-resize; } .scratch-edge[data-edge="se"] { right: 0; bottom: 0; cursor: nwse-resize; }
+.scratch-edge[data-edge="ne"] { right: 0; top: 0; cursor: nesw-resize; } .scratch-edge[data-edge="sw"] { left: 0; bottom: 0; cursor: nesw-resize; }
+.scratch-grip { width: 18px; height: 18px; background: linear-gradient(135deg, transparent 50%, var(--blue-line) 50%, var(--blue-line) 60%, transparent 60%, transparent 75%, var(--blue-line) 75%, var(--blue-line) 85%, transparent 85%); border-bottom-right-radius: 16px; }
+.scratch.resizing { user-select: none; } .scratch.resizing .scratch-canvas { pointer-events: none; }
+.scratch.max .scratch-edge { display: none; }
 /* minimized: a pill in the corner */
 .scratch-pill { position: fixed; right: 16px; bottom: 16px; z-index: 78; font: 800 13px "Nunito", sans-serif; color: #fff; background: var(--blue); border: none; border-radius: 999px; padding: 10px 16px; box-shadow: 0 8px 20px rgba(30, 111, 217, 0.35); cursor: pointer; }
 .scratch-pill[hidden] { display: none; }
@@ -1062,7 +1073,7 @@ body.kb-open .layout { padding-bottom: 72px; }
 /* phones: a bottom sheet; maximize makes it full screen */
 .scratch.sheet { left: 0; right: 0; bottom: 0; top: auto; width: auto; height: 58vh; border-radius: 16px 16px 0 0; padding-bottom: env(safe-area-inset-bottom); transform-origin: bottom center; }
 .scratch.sheet.max { top: 0 !important; left: 0 !important; right: 0; bottom: 0; height: auto; border-radius: 0; }
-.scratch.sheet .scratch-grip { display: none; }
+.scratch.sheet .scratch-edge { display: none; }
 .scratch.sheet .scratch-tools { gap: 4px 6px; padding: 6px 8px; }
 .scratch.sheet .scratch-hint { display: none; }
 .scratch-pill.sheet { left: 16px; right: 16px; }

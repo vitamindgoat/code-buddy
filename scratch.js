@@ -8,7 +8,7 @@
                 two-finger drag on touch, middle button / space+drag = pan,
                 + - buttons, "fit" to drawing, 100%
      History    undo / redo (Ctrl+Z, Ctrl+Shift+Z or Ctrl+Y), clear (asks)
-     Window     drag by the title bar, resize from the corner, minimize to
+     Window     drag by the title bar, resize from any edge or corner, minimize to
                 a pill, maximize to the whole screen, smooth open / close
      Extras     grid toggle, export PNG, Notes tab, keyboard shortcuts
                 (P pen, H hand, E eraser, L highlighter, G grid, N notes)
@@ -25,7 +25,7 @@ const scratch = (() => {
   if (!win) return { toggle() {}, hide() {}, clear() {}, get open() { return false; } };
   const $ = (sel) => win.querySelector(sel);
   const canvas = $("canvas"), ctx = canvas.getContext("2d");
-  const notes = $(".scratch-notes"), head = $(".scratch-head"), grip = $(".scratch-grip");
+  const notes = $(".scratch-notes"), head = $(".scratch-head");
   const zoomLabel = $(".scratch-zoom-val"), undoBtn = $('[data-act="undo"]'), redoBtn = $('[data-act="redo"]');
   const pill = document.getElementById("scratch-pill");
   const STORE = "codebuddy.scratch";
@@ -323,7 +323,16 @@ const scratch = (() => {
   }
   let drag = null;
   head.addEventListener("pointerdown", (e) => {
-    if (phone() || state !== "normal" || e.target.closest("button")) return;
+    if (phone() || state === "min" || e.target.closest("button")) return;
+    if (state === "max") {
+      // pull a maximized window down by its bar: it pops back to its old size under the cursor
+      const r0 = win.getBoundingClientRect();
+      state = "normal"; savePrefs(); win.classList.remove("max");
+      const b = defaultBox();
+      b.x = Math.max(0, Math.min(window.innerWidth - b.w, e.clientX - (e.clientX - r0.left) * (b.w / r0.width)));
+      b.y = Math.max(0, e.clientY - (e.clientY - r0.top));
+      applyBox(b); requestAnimationFrame(fit);
+    }
     const r = win.getBoundingClientRect();
     drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
     try { head.setPointerCapture(e.pointerId); } catch {} e.preventDefault();
@@ -336,20 +345,34 @@ const scratch = (() => {
   });
   head.addEventListener("pointerup", () => { if (drag) { drag = null; rememberBox(); } });
   head.addEventListener("dblclick", (e) => { if (!e.target.closest("button") && !phone()) toggleMax(); });
+  // Resize from any edge or corner, like a desktop window. Each edge strip
+  // says which sides it moves ("n", "se", ...); the opposite side stays put.
   let rs = null;
-  grip.addEventListener("pointerdown", (e) => {
-    if (phone() || state !== "normal") return;
-    const r = win.getBoundingClientRect();
-    rs = { x: e.clientX, y: e.clientY, w: r.width, h: r.height };
-    try { grip.setPointerCapture(e.pointerId); } catch {} e.preventDefault();
+  const MIN_W = 300, MIN_H = 240;
+  win.querySelectorAll(".scratch-edge").forEach((edge) => {
+    edge.addEventListener("pointerdown", (e) => {
+      if (phone() || state !== "normal") return;
+      const r = win.getBoundingClientRect();
+      rs = { sides: edge.dataset.edge, x: e.clientX, y: e.clientY, l: r.left, t: r.top, w: r.width, h: r.height };
+      win.classList.add("resizing");
+      try { edge.setPointerCapture(e.pointerId); } catch {} e.preventDefault();
+    });
+    edge.addEventListener("pointermove", (e) => {
+      if (!rs) return;
+      const dx = e.clientX - rs.x, dy = e.clientY - rs.y;
+      let { l, t, w, h } = rs;
+      const maxW = window.innerWidth - 12, maxH = window.innerHeight - 12;
+      if (rs.sides.includes("e")) w = Math.max(MIN_W, Math.min(maxW - l, rs.w + dx));
+      if (rs.sides.includes("s")) h = Math.max(MIN_H, Math.min(maxH - t, rs.h + dy));
+      if (rs.sides.includes("w")) { const right = rs.l + rs.w; l = Math.max(0, Math.min(right - MIN_W, rs.l + dx)); w = right - l; }
+      if (rs.sides.includes("n")) { const bottom = rs.t + rs.h; t = Math.max(0, Math.min(bottom - MIN_H, rs.t + dy)); h = bottom - t; }
+      applyBox({ x: l, y: t, w, h });
+      fit();
+    });
+    const end = () => { if (rs) { rs = null; win.classList.remove("resizing"); rememberBox(); fit(); } };
+    edge.addEventListener("pointerup", end);
+    edge.addEventListener("pointercancel", end);
   });
-  grip.addEventListener("pointermove", (e) => {
-    if (!rs) return;
-    win.style.width = `${Math.max(300, Math.min(window.innerWidth - 24, rs.w + e.clientX - rs.x))}px`;
-    win.style.height = `${Math.max(240, Math.min(window.innerHeight - 24, rs.h + e.clientY - rs.y))}px`;
-    fit();
-  });
-  grip.addEventListener("pointerup", () => { if (rs) { rs = null; rememberBox(); fit(); } });
 
   function minimize() {
     if (state === "normal") rememberBox();
