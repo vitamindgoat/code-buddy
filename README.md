@@ -52,7 +52,12 @@ After each guided lesson there's a practice with the same idea and no step-by-st
 ![Trophies](docs/trophies.png)
 ![Certificate](docs/certificate.png)
 
-### Works everywhere
+### A friendly first minute
+First-time visitors are greeted by Buddy: what CodeBuddy is in three lines, an optional name (used in his cheers and on the certificate), then a 30-second tour or straight into lesson 1.
+
+### Works everywhere, even offline
+- **Installable:** add it to your home screen (Android, iPhone, Chrome, Edge) and it opens full-screen like a native app, with its own icon
+- **Offline:** after the first visit everything works with no internet, including running Python. A service worker keeps a copy of the app and of Python (network-first for the app, so updates always arrive)
 - **Phones:** a key bar above the keyboard has the symbols Python needs (`( ) " : Tab`) and a Run button
 - **Dark mode:** Auto, Light or Dark
 - **Saves automatically:** close the tab and Buddy picks up exactly where you left off
@@ -66,7 +71,8 @@ After each guided lesson there's a practice with the same idea and no step-by-st
 - Code text size, explanation length (short, normal, detailed) and ghost letters are all adjustable
 - Keyboard-friendly, with visible focus rings and a shortcuts list (press `?`)
 - Respects "reduce motion": turn animations off and the confetti and sparkles stop too
-- Readable contrast in both light and dark themes
+- Readable contrast in both light and dark themes: zero violations in an automated [axe](https://github.com/dequelabs/axe-core) accessibility scan of every main screen
+- Labeled editors for screen readers; decorative effects are hidden from them
 
 ## Privacy
 
@@ -87,7 +93,8 @@ Plain HTML, CSS and JavaScript. No framework and no build step.
 | Scratch pad | `scratch.js` | Infinite whiteboard: pen, highlighter, eraser, zoom, pan, undo, export |
 | Badges, certificate | `badges.js`, `finish.js` | Achievements, toasts, canvas-drawn certificate and share card |
 | Effects and sound | `fx.js`, `sfx.js` | Confetti on a canvas; every sound synthesized live with the Web Audio API (no audio files) |
-| App shell | `app.js`, `styles.css`, `dark.css` | Layout, sidebar, settings, phone key bar, themes |
+| App shell | `app.js`, `styles.css`, `dark.css` | Layout, sidebar, welcome card, settings, phone key bar, themes |
+| Installable + offline | `manifest.webmanifest`, `sw.js` | App name, icons and colors; service worker caching for offline use |
 
 **Libraries:** [CodeMirror 5](https://codemirror.net/5/) (vendored in `vendor/`) for the editor, and [Pyodide](https://pyodide.org) (loaded from jsDelivr) for Python.
 
@@ -109,7 +116,7 @@ Then open the printed URL. The first visit downloads Python (about 10 MB); after
 
 ## Testing
 
-The app was tested with automated browser runs (Playwright) that type through every lesson, practice and quiz, on desktop and on a phone-sized screen, in light and dark mode. They check that every correct answer is accepted, every program prints what the lesson expects, and nothing overflows the screen at 320px wide.
+The app was tested with automated browser runs (Playwright) that type through every lesson, practice and quiz, on desktop and on a phone-sized screen, in light and dark mode. They check that every correct answer is accepted, every program prints what the lesson expects, and nothing overflows the screen at 320px wide. Separate checks cover accessibility (axe), the first-visit flow, and loading the app and running Python with the network turned off.
 
 ## AI disclosure
 
