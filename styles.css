@@ -405,6 +405,18 @@ code {
 }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
+/* Python slow / failed to load */
+.py-banner { display: flex; align-items: center; gap: 10px; margin: 0 14px 10px; padding: 9px 12px; border-radius: 12px; background: var(--blue-soft); border: 1.5px solid var(--blue-line); font-size: 14px; font-weight: 600; color: var(--ink); animation: rise 0.3s ease-out both; }
+.py-banner[hidden] { display: none; }
+.py-banner b { color: var(--blue-ink); }
+.py-banner[data-kind="fail"] { background: #fff1f1; border-color: #ffc9c9; }
+.py-banner[data-kind="fail"] b { color: #c92a2a; }
+.py-msg { flex: 1; line-height: 1.35; }
+.py-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--blue-mid); animation: py-pulse 1.1s ease-in-out infinite; }
+.py-banner[data-kind="fail"] .py-dot { background: var(--red, #e5484d); animation: none; }
+@keyframes py-pulse { 50% { transform: scale(0.6); opacity: 0.5; } }
+.py-retry { flex: none; font-size: 13px; padding: 7px 12px; }
+
 /* Output card: running stripe, success flash, error shake */
 .output-card { position: relative; overflow: hidden; }
 .output-card.is-running::before {

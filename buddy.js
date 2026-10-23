@@ -459,6 +459,7 @@ const buddy = (() => {
     set, say, mount, floatTo, finishTyping, onClick, onDone, tokenize, setSpeed, pause, unpause, replay,
     get state() { return host.getAttribute("data-state"); },
     get talking() { return speechEl.classList.contains("typing"); },
+    get last() { return lastSay; },
   };
 })();
 

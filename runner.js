@@ -24,12 +24,18 @@ function send(type, text = "", extra = {}) {
 // ---------- 1. Load Python (happens once, takes a few seconds) ----------
 
 // This worker is a JavaScript module, so we can import Pyodide directly.
-const { loadPyodide } = await import(PYODIDE_URL + "pyodide.mjs");
+// If the download fails (offline, blocked network) the page is told so it
+// can offer a Retry instead of waiting forever.
+let loadPyodide = null;
+try { ({ loadPyodide } = await import(PYODIDE_URL + "pyodide.mjs")); }
+catch (e) { send("loadfail", String(e && e.message || e)); }
 
 let pyodide = null;
 
 const ready = (async () => {
-  pyodide = await loadPyodide({ indexURL: PYODIDE_URL });
+  if (!loadPyodide) return new Promise(() => {});
+  try { pyodide = await loadPyodide({ indexURL: PYODIDE_URL }); }
+  catch (e) { send("loadfail", String(e && e.message || e)); return new Promise(() => {}); }
 
   // Anything Python prints goes to "stdout". We catch it line by line
   // and send each line back to the page as a "log" message.

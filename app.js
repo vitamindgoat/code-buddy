@@ -701,19 +701,66 @@ buddy.onClick(() => { sfx.click(); tutor.hint(); refocus(); clearTimeout(codeSav
 // Run button and the quiz's code questions both use it.
 let worker = null, pythonReady = false, active = null, errorLineHandle = null, outputLines = [], running = false;
 
+// Python loading watch: after 10s say it's slow (first visit downloads
+// ~10 MB), after 40s or any load error give up and offer Retry. Typing in
+// the lesson keeps working the whole time; only Run waits.
+let pyTimers = [], pyFailed = false, pyTrouble = false, pyPrevSay = null;   // pyTrouble: the learner saw a slow/fail banner
+const pyBanner = $("py-banner");
+function pyState(kind) {
+  pyBanner.dataset.kind = kind || "";
+  pyBanner.hidden = !kind;
+  if (kind) pyTrouble = true;
+  if (kind === "slow") {
+    $("py-msg").innerHTML = "<b>Python is still loading…</b> The first visit downloads about 10 MB. You can keep typing; Run unlocks when it's ready.";
+    $("py-retry").hidden = true;
+  } else if (kind === "fail") {
+    $("py-msg").innerHTML = "<b>Couldn't load Python.</b> Check your internet connection, then try again. Your code is safe.";
+    $("py-retry").hidden = false;
+  }
+  runBtn.title = kind === "fail" ? "Python didn't load. Press Retry above." : kind ? "Python is still loading…" : "Run your code (Ctrl+Enter)";
+}
+function pyFail() {
+  if (pythonReady || pyFailed) return;
+  pyFailed = true;
+  pyTimers.forEach(clearTimeout);
+  editorCard.classList.remove("loading");
+  setStatus("bad", "Python didn't load");
+  pyState("fail");
+  pyPrevSay = buddy.last;
+  if (stage !== "quiz") buddy.say("# Uh oh\nPython didn't load, so Run can't work yet. Check your internet and press *Retry*. You can keep typing meanwhile!", "thinking");
+}
+$("py-retry").addEventListener("click", () => {
+  sfx.click();
+  try { worker && worker.terminate(); } catch {}
+  editorCard.classList.add("loading");
+  startWorker();
+});
 function startWorker() {
-  pythonReady = false;
+  pythonReady = false; pyFailed = false;
   runBtn.disabled = true;
   setStatus("running", "Loading Python…");
+  pyState("");
+  pyTimers.forEach(clearTimeout);
+  pyTimers = [setTimeout(() => { if (!pythonReady && !pyFailed) pyState("slow"); }, 10000), setTimeout(pyFail, 40000)];
   worker = new Worker(`runner.js?v=${BUILD}`, { type: "module" });
 
   worker.onmessage = (event) => {
     const { type, text, line } = event.data;
+    if (type === "loadfail") { pyFail(); return; }
     if (type === "ready") {
-      pythonReady = true;
+      const wasStuck = pyTrouble; pyTrouble = false;
+      pythonReady = true; pyFailed = false;
+      pyTimers.forEach(clearTimeout);
       runBtn.disabled = false;
       setStatus("", "");
       editorCard.classList.remove("loading");
+      pyState("");
+      if (wasStuck) {
+        sfx.success(); setStatus("ok", "Python is ready");
+        // put back what the buddy was saying before the "uh oh"
+        if (pyPrevSay && stage !== "quiz" && buddy.last && /^# Uh oh/.test(buddy.last[0])) buddy.say(...pyPrevSay);
+        pyPrevSay = null;
+      }
       return;
     }
     if (!active) return;
@@ -723,6 +770,7 @@ function startWorker() {
     else if (type === "done") { active.finish({ ok: true, output: active.lines.join("\n") }); }
   };
   worker.onerror = (event) => {
+    if (!pythonReady) { pyFail(); return; }
     if (active) active.finish({ ok: false, error: event.message || "Unknown error", output: active.lines.join("\n") });
   };
 }
