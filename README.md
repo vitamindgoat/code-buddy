@@ -53,6 +53,7 @@ The course ends with a guided capstone: a number-guessing game that uses everyth
 - **Badges:** 15 achievements, like "No hints needed", "Bug squasher" or "Game maker", each with a pop-up and its own sound
 - **Day streak** and per-module progress in the sidebar, plus **lesson search** (titles and what's inside each lesson)
 - **Share card** for quiz scores
+- **Progress report** to print or save as PDF for a teacher or parent
 
 ![Trophies](docs/trophies.png)
 
@@ -100,6 +101,7 @@ Plain HTML, CSS and JavaScript. No framework and no build step.
 | Effects and sound | `fx.js`, `sfx.js` | Confetti on a canvas; every sound synthesized live with the Web Audio API (no audio files) |
 | App shell | `app.js`, `styles.css`, `dark.css` | Layout, sidebar, search, welcome card, settings, phone key bar, themes |
 | Word tooltips | `wordinfo.js` | Hover/tap explanations for 38 Python words |
+| Progress report | `backup.js` | Printable progress report |
 | Installable + offline | `manifest.webmanifest`, `sw.js` | App name, icons and colors; service worker caching for offline use |
 
 **Libraries:** [CodeMirror 5](https://codemirror.net/5/) (vendored in `vendor/`) for the editor, and [Pyodide](https://pyodide.org) (loaded from jsDelivr) for Python.

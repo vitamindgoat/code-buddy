@@ -116,10 +116,19 @@
 :root[data-theme="dark"] .wordtip { box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5); }
 :root[data-theme="dark"] .wordtip-word { background: #1f66c8; }
 
+/* paper is white: a printed report always uses the light colors */
+@media print {
+  :root[data-theme="dark"] {
+    color-scheme: light;
+    --blue: #1e6fd9; --blue-dark: #135ab6; --blue-ink: #06337e; --blue-mid: #74bcfe; --blue-soft: #e4f3ff; --blue-line: #b6e3ff;
+    --ink: #1d2433; --ink-soft: #5b6475; --line: #dbe9f7; --bg: #ffffff; --card: #ffffff; --card-2: #f7fbff;
+    --green: #17a673; --green-soft: #e4f7ef; --red: #e5484d; --red-soft: #fdecec;
+  }
+}
+
 :root[data-theme="dark"] .stage-badge.stage-practice, :root[data-theme="dark"] .done-badge { color: var(--green); }
 :root[data-theme="dark"] .speech-label.label-ok, :root[data-theme="dark"] .speech-label.label-win { color: var(--green); }
 :root[data-theme="dark"] .sb-streak em { color: #e0b48a; }
 :root[data-theme="dark"] .scratch-colors button.on { outline: 2.5px solid var(--blue-mid); }
 :root[data-theme="dark"] .set-row select, :root[data-theme="dark"] #set-name { border-color: #3a4a66; }
-:root[data-theme="dark"] .sb-state.half { color: #6b7891; }
 :root[data-theme="dark"] #set-reset { color: #ff8a8e; }

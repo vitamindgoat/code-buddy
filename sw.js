@@ -21,7 +21,7 @@ const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/";
 const v = (f) => `${f}?v=${BUILD}`;
 const SITE_FILES = [
   "./", "index.html", "manifest.webmanifest",
-  ...["app.js", "icons.js", "tutor.js", "buddy.js", "lessons.js", "quiz.js", "read.js", "tour.js", "scratch.js", "finish.js", "badges.js", "wordinfo.js", "fx.js", "sfx.js", "runner.js",
+  ...["app.js", "icons.js", "tutor.js", "buddy.js", "lessons.js", "quiz.js", "read.js", "tour.js", "scratch.js", "finish.js", "badges.js", "wordinfo.js", "backup.js", "fx.js", "sfx.js", "runner.js",
       "styles.css", "buddy.css", "dark.css",
       "assets/logo.svg", "assets/logo.png", "assets/logo-192.png", "assets/favicon.png",
       ...["idle", "thinking", "happy", "pointing", "celebrate"].map((p) => `assets/buddy/${p}.svg`)].map(v),
