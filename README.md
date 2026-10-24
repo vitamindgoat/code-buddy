@@ -16,12 +16,13 @@ Most beginner coding sites either hand you finished code to read or drop you int
 
 ## What's inside
 
-**34 lessons in two modules**, each followed by a practice and ending in a module quiz:
+**34 lessons in three modules**, each followed by a practice and ending in a module quiz:
 
 - **Module 1, Computer Science Fundamentals:** programs as steps, binary, patterns and compression, logic gates
-- **Module 2, Programming Basics Through Python:** output and comments, variables and data types, math and order of operations, f-strings, input, errors, comparisons, `if`/`elif`/`else`, functions, `for` and `while` loops, `break`/`continue` and nested loops, ending in a **final project: a number-guessing game**
+- **Module 2, Programming Basics Through Python:** output and comments, variables and data types, math and order of operations, f-strings, input, errors
+- **Module 3, Conditionals and Loops:** comparisons, `if`/`elif`/`else`, functions, `for` and `while` loops, `break`/`continue` and nested loops, ending in a **final project: a number-guessing game**
 
-That's 10 reading lessons (interactive cards with diagrams and quick checks), 24 guided coding lessons, 24 practices and 2 quizzes, drawn fresh each time from a bank of 70 questions.
+That's 10 reading lessons (interactive cards with diagrams and quick checks), 24 guided coding lessons, 24 practices and 3 quizzes, drawn fresh each time from a bank of 70 questions.
 
 ## Features
 
