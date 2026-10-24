@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <!-- Bump BUILD whenever css/js/assets change: the ?v= below makes every
        deploy a brand-new URL, so no browser or CDN cache can serve old files. -->
-  <meta name="build" content="118" />
+  <meta name="build" content="119" />
   <!-- Theme before first paint, so dark mode never flashes white -->
   <script>
     try {
@@ -30,8 +30,8 @@
   <meta name="twitter:title" content="CodeBuddy – Learn Python by typing every line" />
   <meta name="twitter:description" content="A friendly buddy explains each piece as you type, catches typos, and cheers you on." />
   <meta name="twitter:image" content="https://code-buddy-iota-puce.vercel.app/assets/og.png" />
-  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=118" />
-  <link rel="apple-touch-icon" href="assets/logo-192.png?v=118" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=119" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png?v=119" />
   <!-- Installable app: icon, name and colors for "Add to Home Screen" -->
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -49,9 +49,9 @@
   <script src="vendor/codemirror/codemirror.js"></script>
   <script src="vendor/codemirror/python.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=118" />
-  <link rel="stylesheet" href="buddy.css?v=118" />
-  <link rel="stylesheet" href="dark.css?v=118" />
+  <link rel="stylesheet" href="styles.css?v=119" />
+  <link rel="stylesheet" href="buddy.css?v=119" />
+  <link rel="stylesheet" href="dark.css?v=119" />
 </head>
 <body>
   <div class="bg-blob bg-blob-a"></div>
@@ -83,8 +83,6 @@
     <nav id="sidebar-list" class="sidebar-list"></nav>
     <div class="sidebar-foot">
       <button id="trophies-btn" class="btn btn-ghost" type="button" title="Badges you've earned"><span>Badges</span> <span class="sb-count" data-trophy-count>0 / 15</span></button>
-      <button id="redo-tour-btn" class="btn btn-ghost" type="button">Redo tutorial</button>
-      <button id="reset-btn-all" class="btn btn-ghost" type="button">Reset progress</button>
     </div>
   </aside>
 
@@ -179,7 +177,6 @@
       <label class="set-row"><span>Your name</span><input id="set-name" type="text" maxlength="40" placeholder="Optional" autocomplete="given-name" spellcheck="false" /></label>
       <label class="set-row"><span>Theme</span><select id="set-theme"><option value="light">Light</option><option value="dark">Dark</option><option value="auto">Match my device</option></select></label>
       <label class="set-row"><span>Buddy talking speed</span><span class="set-ctl"><input id="set-speed" type="range" min="0.5" max="2" step="0.05" /><b id="set-speed-val">1.00×</b></span></label>
-      <label class="set-row"><span>Explanation length</span><select id="set-explain"><option value="short">Short (one line)</option><option value="normal">Normal</option><option value="long">Detailed</option></select></label>
       <label class="set-row"><span>Ghost letters</span><select id="set-ghost"><option value="always">Always show</option><option value="stuck">Only when I ask</option></select></label>
       <label class="set-row"><span>Code text size</span><select id="set-size"><option value="s">Small</option><option value="m">Medium</option><option value="l">Large</option></select></label>
       <label class="set-row"><span>Buddy reads out loud</span><input id="set-voice" type="checkbox" /></label>
@@ -187,13 +184,7 @@
       <label class="set-row"><span>Sound effects</span><input id="set-sound" type="checkbox" /></label>
       <label class="set-row"><span>Animations</span><input id="set-motion" type="checkbox" /></label>
       <div class="set-actions">
-        <button id="set-test" class="btn btn-ghost" type="button">Test speed</button>
         <button id="set-install" class="btn btn-ghost" type="button" hidden>Install app</button>
-        <button id="set-keys" class="btn btn-ghost" type="button">Shortcuts</button>
-        <button id="set-tour" class="btn btn-ghost" type="button">Redo tutorial</button>
-        <button id="set-report" class="btn btn-ghost" type="button">Progress report</button>
-        <button id="set-backup" class="btn btn-ghost" type="button">Back up progress</button>
-        <button id="set-restore" class="btn btn-ghost" type="button">Restore a backup</button>
         <button id="set-reset" class="btn btn-ghost" type="button">Reset progress</button>
       </div>
     </div>
@@ -238,16 +229,6 @@
   </div>
 
 
-  <!-- Printable progress report (backup.js) -->
-  <div id="report" class="complete report" hidden role="dialog" aria-label="Progress report">
-    <div class="report-wrap">
-      <div class="report-toolbar">
-        <button id="report-print" class="btn btn-primary" type="button">Print or save as PDF</button>
-        <button id="report-close" class="btn btn-ghost" type="button">Close</button>
-      </div>
-      <article id="report-body" class="card report-card"></article>
-    </div>
-  </div>
 
 
 
@@ -411,20 +392,19 @@
     <button type="button" data-cmd="run" class="keybar-run"><span class="i" data-icon="play_arrow"></span>Run</button>
   </div>
 
-  <script src="icons.js?v=118"></script>
-  <script src="sfx.js?v=118"></script>
-  <script src="fx.js?v=118"></script>
-  <script src="wordinfo.js?v=118"></script>
-  <script src="lessons.js?v=118"></script>
-  <script src="buddy.js?v=118"></script>
-  <script src="tutor.js?v=118"></script>
-  <script src="scratch.js?v=118"></script>
-  <script src="quiz.js?v=118"></script>
-  <script src="read.js?v=118"></script>
-  <script src="finish.js?v=118"></script>
-  <script src="badges.js?v=118"></script>
-  <script src="backup.js?v=118"></script>
-  <script src="tour.js?v=118"></script>
-  <script src="app.js?v=118"></script>
+  <script src="icons.js?v=119"></script>
+  <script src="sfx.js?v=119"></script>
+  <script src="fx.js?v=119"></script>
+  <script src="wordinfo.js?v=119"></script>
+  <script src="lessons.js?v=119"></script>
+  <script src="buddy.js?v=119"></script>
+  <script src="tutor.js?v=119"></script>
+  <script src="scratch.js?v=119"></script>
+  <script src="quiz.js?v=119"></script>
+  <script src="read.js?v=119"></script>
+  <script src="finish.js?v=119"></script>
+  <script src="badges.js?v=119"></script>
+  <script src="tour.js?v=119"></script>
+  <script src="app.js?v=119"></script>
 </body>
 </html>

@@ -350,7 +350,7 @@ function renderStreak() {
   el.title = today ? "You did something today. Nice!" : cur ? "Finish something today to keep it going." : "Finish something to start a streak.";
 }
 
-// ---------- Backup / restore / progress report// ---------- Backup / restore / progress report (backup.js) ----------
+// ---------- Short notices ----------
 function flash(msg) {   // a short notice in the toast spot
   const el = document.createElement("div");
   el.className = "toast toast-note"; el.setAttribute("role", "status");
@@ -359,27 +359,6 @@ function flash(msg) {   // a short notice in the toast spot
   $("toast-stack").appendChild(el);
   setTimeout(() => el.classList.add("out"), 4200); setTimeout(() => el.remove(), 4700);
 }
-backup.init({
-  toast: flash,
-  confirm: (o) => { closeSettings(); askConfirm(o); },
-  data: () => {
-    const st = courseStats(), earned = progress.badges || {};
-    return {
-      name: settings.name || progress.certName || "", stats: st, streak: streakInfo(), complete: courseComplete(),
-      daysActive: (progress.days || []).length,
-      badges: badges.LIST.filter((b) => earned[b.id]), badgeTotal: badges.LIST.length,
-      modules: MODULES.map((m, mi) => {
-        const ls = m.lessons.map((l) => { const L = LESSONS.find((x) => x.id === l.id); return { number: L.number, title: l.title, reading: l.type === "read", done: !!progress.done[l.id], practice: !!progress.done[l.id + "-practice"] }; });
-        const total = ls.reduce((a, l) => a + (l.reading ? 1 : 2), 1);
-        const done = ls.reduce((a, l) => a + (l.done ? 1 : 0) + (!l.reading && l.practice ? 1 : 0), progress.done[m.id + "-quiz"] ? 1 : 0);
-        return { n: mi + 1, title: m.title, lessons: ls, total, done, quiz: progress.done[m.id + "-quiz"] ? progress.scores[m.id] : null };
-      }),
-    };
-  },
-});
-$("set-backup").addEventListener("click", () => backup.download());
-$("set-restore").addEventListener("click", () => backup.restore());
-$("set-report").addEventListener("click", () => { closeSettings(); backup.report(); });
 
 // ---------- Keyboard shortcuts overlay
 // ---------- Keyboard shortcuts overlay ("?") ----------
@@ -392,7 +371,6 @@ function showKeys() {
 function hideKeys() { if (keysEl.hidden) return; keysEl.hidden = true; refocus(); }
 $("keys-close").addEventListener("click", hideKeys);
 keysEl.addEventListener("click", (e) => { if (e.target === keysEl) hideKeys(); });
-$("set-keys").addEventListener("click", () => { closeSettings(); showKeys(); });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !keysEl.hidden) { hideKeys(); return; }
   if (e.key !== "?" || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -484,23 +462,23 @@ function renderSidebar() {
   };
   list.innerHTML = MODULES.map((m, mi) => { const [md, mt] = modCount(m); const sc = progress.scores[m.id]; return `
     <div class="sb-module">
-      <div class="sb-module-title"><span class="sb-num ${md === mt ? "full" : ""}">${md === mt ? icon("check") : mi + 1}</span><span class="sb-mtitle">${m.title}</span><span class="sb-mcount">${md}/${mt}</span><span class="sb-blurb">${m.blurb}</span>
+      <div class="sb-module-title"><span class="sb-mtitle">${mi + 1}. ${m.title}</span><span class="sb-mcount">${md}/${mt}</span>
         <span class="sb-mbar"><i style="width:${Math.round((md / mt) * 100)}%"></i></span></div>
       ${m.lessons.map((l, li) => {
         const idx = LESSONS.findIndex((x) => x.id === l.id);
         const cur = idx === lessonIndex && stage !== "quiz";
         const reading = l.type === "read";
+        const all = isDone(l.id) && (reading || isDone(l.id + "-practice"));
+        const half = !all && (isDone(l.id) || isDone(l.id + "-practice"));
+        const state = all ? "Done" : half ? "Lesson done, practice left" : "Not started";
         return `<button class="sb-lesson ${cur ? "current" : ""} ${reading ? "sb-read" : ""} ${l.final ? "sb-final" : ""}" data-idx="${idx}" type="button">
           <span class="sb-lnum">${mi + 1}.${li + 1}</span>
-          <span class="sb-ltitle">${reading ? icon("menu_book", "sb-kind") : l.final ? icon("sports_esports", "sb-kind") : ""}${l.title}</span>
-          <span class="sb-marks">
-            <span class="sb-mark ${isDone(l.id) ? "on" : ""}" title="${reading ? "Reading" : "Lesson"}">${reading ? "R" : "L"}</span>
-            ${reading ? "" : `<span class="sb-mark ${isDone(l.id + "-practice") ? "on" : ""}" title="Practice">P</span>`}
-          </span></button>`;
+          <span class="sb-ltitle">${l.title}</span>${reading ? `<span class="sb-tag">Reading</span>` : l.final ? `<span class="sb-tag">Project</span>` : ""}
+          <span class="sb-state ${all ? "on" : half ? "half" : ""}" title="${state}" aria-label="${state}">${all || half ? icon("check") : ""}</span></button>`;
       }).join("")}
       <button class="sb-lesson sb-quiz ${lessonIndex === LESSONS.findIndex((x) => x.id === m.lessons[m.lessons.length - 1].id) && stage === "quiz" ? "current" : ""}" data-quiz="${mi}" type="button">
-        <span class="sb-lnum">${icon("star")}</span><span class="sb-ltitle">Module ${mi + 1} quiz</span>
-        <span class="sb-marks">${sc && isDone(m.id + "-quiz") ? `<span class="sb-score ${sc.score === sc.total ? "perfect" : ""}">${sc.score}/${sc.total}</span>` : ""}<span class="sb-mark ${isDone(m.id + "-quiz") ? "on" : ""}">Q</span></span></button>
+        <span class="sb-lnum"></span><span class="sb-ltitle">Module ${mi + 1} quiz</span>
+        ${sc && isDone(m.id + "-quiz") ? `<span class="sb-score">${sc.score}/${sc.total}</span>` : ""}<span class="sb-state ${isDone(m.id + "-quiz") ? "on" : ""}">${isDone(m.id + "-quiz") ? icon("check") : ""}</span></button>
     </div>`; }).join("");
   list.querySelectorAll(".sb-lesson[data-idx]").forEach((b) => b.addEventListener("click", () => open({ lessonIndex: +b.dataset.idx, stage: "lesson" })));
   if ($("sb-search").value.trim()) applySearch();
@@ -580,7 +558,7 @@ $("sidebar-close").addEventListener("click", closeSidebar);
 backdrop.addEventListener("click", closeSidebar);
 // Reset asks first (an in-app dialog, same look as the completion card)
 const confirmEl = $("confirm");
-// One "are you sure?" dialog for every risky action (reset, restore a backup)
+// One "are you sure?" dialog for every risky action (like reset)
 let confirmAction = null;
 function askConfirm({ title, sub, yes, no = "Keep my progress", onYes }) {
   closeSidebar();
@@ -598,13 +576,11 @@ $("confirm-no").addEventListener("click", () => { confirmEl.hidden = true; confi
 confirmEl.addEventListener("click", (e) => { if (e.target === confirmEl) { confirmEl.hidden = true; confirmAction = null; } });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !confirmEl.hidden) { confirmEl.hidden = true; confirmAction = null; } });
 $("confirm-yes").addEventListener("click", () => { confirmEl.hidden = true; const f = confirmAction; confirmAction = null; if (f) f(); });
-$("reset-btn-all").addEventListener("click", askReset);
 function resetAll() {
   progress = { done: {}, work: {}, scores: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0, certName: progress.certName };
   saveProgress(); open({ lessonIndex: 0, stage: "lesson", fresh: true });
   buddy.say("# Fresh start\nEverything is reset. Let's begin again from the top!", "happy");
 }
-$("redo-tour-btn").addEventListener("click", () => { closeSidebar(); firstVisitTour(); });
 $("tour-btn").addEventListener("click", firstVisitTour);
 
 // ---------- 7. Wire the tutor to the page ----------
@@ -621,6 +597,7 @@ tutor.ui.onMistake = () => sfx.error();
 tutor.ui.onComplete = () => finishStage();
 // Whole program typed: point them at Run
 tutor.ui.onReadyToRun = () => { runTag.hidden = false; runBtn.classList.add("pulse"); sfx.pop(); };
+tutor.ui.onNotReady = () => { runTag.hidden = true; runBtn.classList.remove("pulse"); };
 tutor.ui.explainLength = () => settings.explain;
 tutor.ui.name = () => settings.name || "";
 tutor.ui.onBugFixed = () => badges.earn("bug-squash");
@@ -1095,7 +1072,6 @@ function syncSettingsUI() {
   $("set-theme").value = settings.themePick || "light";
   $("set-speed").value = settings.speed;
   paintSpeed();
-  $("set-explain").value = settings.explain;
   $("set-ghost").value = settings.ghost;
   $("set-size").value = settings.textSize;
   $("set-motion").checked = settings.motion !== "off";
@@ -1142,7 +1118,6 @@ $("set-speed").addEventListener("input", (e) => {
   speedLive = setTimeout(() => { buddy.setSpeed(settings.speed); voice.setRate(settings.speed); }, 250);
 });
 $("set-speed").addEventListener("change", applySettings);
-$("set-explain").addEventListener("change", (e) => { settings.explain = e.target.value; applySettings(); });
 $("set-theme").addEventListener("change", (e) => { settings.themePick = e.target.value; applySettings(); sfx.click(); });
 $("set-name").addEventListener("change", (e) => { settings.name = cleanName(e.target.value); applySettings(); renderHeader(); });
 $("set-ghost").addEventListener("change", (e) => { settings.ghost = e.target.value; applySettings(); tutor.onChange(); });
@@ -1151,13 +1126,7 @@ $("set-motion").addEventListener("change", (e) => { settings.motion = e.target.c
 $("set-sound").addEventListener("change", (e) => { if (sfx.on !== e.target.checked) sfx.toggle(); });
 $("set-voice").addEventListener("change", (e) => setVoice(e.target.checked));
 $("set-voicepick").addEventListener("change", (e) => { voice.choose(e.target.value); voice.speak("How's this voice?"); });
-$("set-tour").addEventListener("click", () => { closeSettings(); firstVisitTour(); });
 $("set-reset").addEventListener("click", () => { closeSettings(); askReset(); });
-$("set-test").addEventListener("click", () => {
-  // testing the voice means you want to hear it: switch it on if it's off
-  if (!voice.on) setVoice(true, { greet: false });
-  buddy.say("# Testing\nThis is how fast I talk. You can change it any time in the settings.", "happy");
-});
 
 // ---------- 13. The tutorial ----------
 

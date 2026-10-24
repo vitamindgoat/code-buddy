@@ -242,15 +242,39 @@ const tutor = (() => {
   }
 
   function check() {
-    if (!lesson || complete) return;
-    if (mode === "practice") return checkPractice();
+    if (!lesson) return;
+    if (mode === "practice") return complete ? undefined : checkPractice();
 
-    const lines = codeLines();
-    const n = countCorrect(lines);
+    let lines = codeLines();
+    let n = countCorrect(lines);
 
-    if (awaitingRun) {
-      // the checkpoint line is done: nothing more to type until they Run
-      ui.ghost();
+    if (complete || awaitingRun) {
+      if (n >= stepIndex) {
+        // everything typed is still there: nothing more to type until they Run
+        if (awaitingRun) ui.ghost();
+        return;
+      }
+      // they deleted or broke a line after finishing (or before running):
+      // stop saying "all typed" and follow along again
+      if (complete) {
+        complete = false;
+        // a finished lesson already showed its crash; don't make them redo it,
+        // and skip the mid-lesson runs: the next stop is the whole program
+        lesson.steps.forEach((st, i) => { if (st.bug) bugDone[i] = true; });
+        cpIndex = checkpoints().length - 1;
+        lines = codeLines(); n = countCorrect(lines);
+      }
+      awaitingRun = false;
+      if (ui.onNotReady) ui.onNotReady();
+      stepIndex = Math.min(n, targets().length);
+      const cur = lines[stepIndex], st = lesson.steps[stepIndex];
+      partIndex = cur && st ? countParts(cur.text, { parts: stepParts(st, stepIndex) }) : 0;
+      mistake = false; lastSaid = "";
+      ui.renderSteps(stepIndex);
+      ui.markLine(cur ? cur.number : null);
+      showGhost(lines, stepIndex);
+      say(typeSection(`Back to line ${stepIndex + 1}`), "pointing");
+      armStuck(STUCK_AFTER_IDLE_MS);
       return;
     }
 
@@ -509,11 +533,16 @@ const tutor = (() => {
     }
     if (output.trim() === expected && !celebrated) {
       celebrated = true;
-      complete = true;
+      complete = true; awaitingRun = false;
       ui.ghost(); ui.markWrong(); ui.stuckTag(false);
       const done = mode === "practice" ? "You solved it on your own!" : earlyFix ? "You fixed the bug before it even crashed. Nice catch!" : lesson.done;
       say(`# Ran your code\nYes! It worked. ${done}\n# What now?\nClick the *Next* button when you're ready to move on.`, "celebrate");
       ui.onComplete(mode);
+    } else if (celebrated && !complete && output.trim() === expected) {
+      // retyped after deleting: it's whole again
+      complete = true; awaitingRun = false;
+      ui.ghost(); ui.markWrong(); ui.stuckTag(false); if (ui.onNotReady) ui.onNotReady();
+      say("# Ran your code\nAll back and working! Move on whenever you're ready.", "celebrate");
     } else if (celebrated) {
       say("# Ran your code\nNice experiment! Change something else and run it again, or move on when you're ready.", "happy");
     } else if (mode === "practice") {
