@@ -301,8 +301,6 @@
 /* "Stuck?" callout under the bubble, pointing at the buddy (see .callout
    in styles.css for the shared look) */
 .buddy-col { position: relative; flex: none; }
-.stuck-tag { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); margin-top: 2px; pointer-events: none; }
-.stuck-tag[hidden] { display: none; }
 
 /* A chip stays invisible until its first letter is typed */
 .speech .chip:not(:has(.ch.on)) { opacity: 0; }
@@ -337,5 +335,3 @@
 .speech .chip { color: #1d2433; }   /* chip text takes token colors */
 
 /* read-along: the word Buddy is saying right now */
-.speech .ch.said { background: var(--blue-line); border-radius: 3px; transition: background 0.12s ease; }
-:root[data-theme="dark"] .speech .ch.said { background: #2b4f86; }

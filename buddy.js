@@ -594,7 +594,7 @@ const voice = (() => {
   let generation = 0;
   function speak(text, handlers = {}, from = 0) {
     const { onWord, onEnd, onChunk, onChunkEnd } = handlers;
-    if (!on || !("speechSynthesis" in window)) return false;
+    if ((!on && !handlers.force) || !("speechSynthesis" in window)) return false;
     window.speechSynthesis.cancel();
     try { window.speechSynthesis.resume(); } catch {}   // iOS can leave the engine paused
     const gen = ++generation;

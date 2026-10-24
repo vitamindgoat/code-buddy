@@ -42,12 +42,12 @@ const backup = (() => {
         <p class="rep-badges">${d.badges.length ? d.badges.map((b) => `<span>${icon(b.icon)} ${esc(b.name)}</span>`).join("") : "None yet."}</p></section>
       <p class="rep-foot">${d.complete ? "Course complete!" : `${d.stats.total - d.stats.done} items left in the course.`} Days active: ${d.daysActive}. Made with CodeBuddy, a free learn-to-code app.</p>`;
     const root = $("report");
-    root.hidden = false; root.classList.remove("show"); void root.offsetWidth; root.classList.add("show");
+    fx.open(root);
     document.body.classList.add("printing-report");
     setTimeout(() => $("report-print").focus(), 300);
     if (window.sfx) sfx.pop();
   }
-  function closeReport() { $("report").hidden = true; document.body.classList.remove("printing-report"); }
+  function closeReport() { fx.close($("report"), () => document.body.classList.remove("printing-report")); }
   $("report-print").addEventListener("click", () => window.print());
   $("report-close").addEventListener("click", closeReport);
   $("report").addEventListener("click", (e) => { if (e.target === $("report")) closeReport(); });

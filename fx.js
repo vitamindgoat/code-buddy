@@ -139,5 +139,22 @@ const fx = (() => {
     r.addEventListener("animationend", () => r.remove());
   }
 
-  return { confetti, burst, ripple, reaction };
+  // Close a popup smoothly: play the exit animation, then hide it.
+  // Opening it again before that finishes cancels the close.
+  function close(el, then) {
+    if (!el || el.hidden) { if (then) then(); return; }
+    if (el.classList.contains("closing")) return;
+    if (calm()) { el.hidden = true; if (then) then(); return; }
+    el.classList.add("closing");
+    setTimeout(() => {
+      if (!el.classList.contains("closing")) return;   // reopened meanwhile
+      el.classList.remove("closing"); el.hidden = true; if (then) then();
+    }, 170);
+  }
+  // Show a popup (cancels a close in progress) and replay its open animation
+  function open(el, cls = "show") {
+    el.classList.remove("closing"); el.hidden = false;
+    el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+  }
+  return { confetti, burst, ripple, reaction, close, open };
 })();

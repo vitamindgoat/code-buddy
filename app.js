@@ -91,6 +91,10 @@ let lastRunOutput = null;   // practice: what the last Run printed (null = not r
 let progress = { done: {}, work: {}, scores: {}, lessonIndex: 0, stage: "lesson", toured: false, lessonsFinished: 0 };
 try { progress = { ...progress, ...JSON.parse(localStorage.getItem(SAVE_KEY) || "{}") }; } catch {}
 progress.work = progress.work || {}; progress.scores = progress.scores || {};
+// where they left off: set it now, so any early save (badges, the visit
+// date) keeps this spot instead of writing lesson 1 over it
+lessonIndex = Math.min(Math.max(0, progress.lessonIndex | 0), LESSONS.length - 1);
+stage = ["lesson", "practice", "quiz"].includes(progress.stage) ? progress.stage : "lesson";
 
 function saveProgress() {
   progress.lessonIndex = lessonIndex; progress.stage = stage;
@@ -387,8 +391,20 @@ function showKeys() {
   keysEl.hidden = false; replayClass(keysEl, "show"); sfx.pop();
   setTimeout(() => $("keys-close").focus(), 300);
 }
-function hideKeys() { if (keysEl.hidden) return; keysEl.hidden = true; refocus(); }
+function hideKeys() { if (keysEl.hidden) return; keysEl.querySelectorAll("kbd.pressed").forEach((k) => k.classList.remove("pressed")); fx.close(keysEl); refocus(); }
 $("keys-close").addEventListener("click", hideKeys);
+// While the list is open, pressing a key presses its picture down
+// (and does nothing behind the popup, except Esc closing it)
+const keyName = (e) => ({ Control: "Ctrl", Meta: "Ctrl", Escape: "Esc", " ": "Space" }[e.key] || (e.key.length === 1 ? e.key.toUpperCase() : e.key));
+function pressKeys(e, down) {
+  if (keysEl.hidden || keysEl.classList.contains("closing")) return;
+  const name = keyName(e);
+  keysEl.querySelectorAll("kbd").forEach((k) => { if (k.textContent.trim().toUpperCase() === name.toUpperCase()) k.classList.toggle("pressed", down); });
+  if (down && e.key !== "Escape" && e.key !== "Tab") { e.preventDefault(); e.stopPropagation(); if (!e.repeat) sfx.click(); }
+}
+window.addEventListener("keydown", (e) => pressKeys(e, true), true);
+window.addEventListener("keyup", (e) => pressKeys(e, false), true);
+window.addEventListener("blur", () => keysEl.querySelectorAll("kbd.pressed").forEach((k) => k.classList.remove("pressed")));
 keysEl.addEventListener("click", (e) => { if (e.target === keysEl) hideKeys(); });
 $("set-keys").addEventListener("click", () => { closeSettings(); showKeys(); });
 document.addEventListener("keydown", (e) => {
@@ -457,14 +473,14 @@ function showDone() {
   replayClass(doneEl, "show");
   setTimeout(() => $("done-next").focus(), 400);
 }
-function hideDone() { doneEl.hidden = true; }
+function hideDone() { fx.close(doneEl); }
 $("done-stay").addEventListener("click", hideDone);
 doneEl.addEventListener("click", (e) => { if (e.target === doneEl) hideDone(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !doneEl.hidden) hideDone(); });
 
 // Remove-and-re-add a class so its CSS animation plays again
 function replayClass(el, cls) {
-  el.classList.remove(cls);
+  el.classList.remove("closing", cls);
   void el.offsetWidth;
   el.classList.add(cls);
 }
@@ -482,7 +498,7 @@ function renderSidebar() {
   };
   list.innerHTML = MODULES.map((m, mi) => { const [md, mt] = modCount(m); const sc = progress.scores[m.id]; return `
     <div class="sb-module">
-      <div class="sb-module-title"><span class="sb-num ${md === mt ? "full" : ""}">${md === mt ? icon("check") : mi + 1}</span><span class="sb-mtitle">${m.title}</span><span class="sb-mcount">${md}/${mt}</span><span class="sb-blurb">${m.blurb}</span>
+      <div class="sb-module-title"><span class="sb-num ${md === mt ? "full" : ""}">${md === mt ? icon("check") : mi + 1}</span><span class="sb-mtitle">${m.title}</span><span class="sb-mcount">${md}/${mt}</span>
         <span class="sb-mbar"><i style="width:${Math.round((md / mt) * 100)}%"></i></span></div>
       ${m.lessons.map((l, li) => {
         const idx = LESSONS.findIndex((x) => x.id === l.id);
@@ -490,7 +506,7 @@ function renderSidebar() {
         const reading = l.type === "read";
         return `<button class="sb-lesson ${cur ? "current" : ""} ${reading ? "sb-read" : ""} ${l.final ? "sb-final" : ""}" data-idx="${idx}" type="button">
           <span class="sb-lnum">${mi + 1}.${li + 1}</span>
-          <span class="sb-kindslot">${reading ? icon("menu_book", "sb-kind") : l.final ? icon("sports_esports", "sb-kind") : ""}</span>
+          <span class="sb-kindslot">${icon(reading ? "menu_book" : l.final ? "sports_esports" : "code", "sb-kind")}</span>
           <span class="sb-ltitle">${l.title}</span>
           <span class="sb-marks">
             <span class="sb-mark ${isDone(l.id) ? "on" : ""}" title="${reading ? "Reading" : "Lesson"}">${reading ? "R" : "L"}</span>
@@ -532,6 +548,10 @@ function markMatches(text, words) {
 function applySearch() {
   const q = $("sb-search").value.trim().toLowerCase();
   const words = q.split(/\s+/).filter(Boolean);
+  // a number like "2.3" (or "2" for all of module 2) finds sections by number
+  const isNum = (w) => /^\d+(\.\d+)?\.?$/.test(w);
+  const nums = words.filter(isNum).map((w) => w.replace(/\.$/, "")), texts = words.filter((w) => !isNum(w));
+  const numHit = (n) => nums.every((k) => n === k || n.startsWith(k + "."));
   const list = $("sidebar-list");
   let shown = 0;
   list.querySelectorAll(".sb-lesson").forEach((b) => {
@@ -541,20 +561,20 @@ function applySearch() {
     if (words.length) {
       if (b.dataset.idx !== undefined) {
         const hay = SEARCH_INDEX[+b.dataset.idx];
-        hit = words.every((w) => hay.includes(w));
-        if (hit && !words.every((w) => t.dataset.plain.toLowerCase().includes(w))) {
+        hit = numHit(b.querySelector(".sb-lnum").textContent.trim()) && texts.every((w) => hay.includes(w));
+        if (hit && texts.length && !texts.every((w) => t.dataset.plain.toLowerCase().includes(w))) {
           const l = LESSONS[+b.dataset.idx];
-          const line = (l.steps || []).map((s) => s.code.trim()).find((c) => words.some((w) => c.toLowerCase().includes(w)));
-          snippet = line ? `<code>${markMatches(line, words)}</code>` : contextSnippet(+b.dataset.idx, words) || "matches inside this lesson";
+          const line = (l.steps || []).map((s) => s.code.trim()).find((c) => texts.some((w) => c.toLowerCase().includes(w)));
+          snippet = line ? `<code>${markMatches(line, texts)}</code>` : contextSnippet(+b.dataset.idx, texts) || "matches inside this lesson";
         }
       } else {
         const m = MODULES[+b.dataset.quiz];
-        hit = words.every((w) => `quiz test ${m.title.toLowerCase()} module ${+b.dataset.quiz + 1}`.includes(w));
+        hit = numHit(String(+b.dataset.quiz + 1)) && texts.every((w) => `quiz test ${m.title.toLowerCase()} module ${+b.dataset.quiz + 1}`.includes(w));
       }
     }
     b.hidden = !hit; if (hit) shown++;
     // the snippet lives inside the title column, so the L / P marks stay put on the right
-    t.innerHTML = (words.length && hit ? markMatches(t.dataset.plain, words) : escHtml(t.dataset.plain)) + (snippet ? `<span class="sb-snippet">${snippet}</span>` : "");
+    t.innerHTML = (texts.length && hit ? markMatches(t.dataset.plain, texts) : escHtml(t.dataset.plain)) + (snippet ? `<span class="sb-snippet">${snippet}</span>` : "");
   });
   list.querySelectorAll(".sb-module").forEach((m) => { m.hidden = words.length > 0 && !m.querySelector(".sb-lesson:not([hidden])"); });
   list.classList.toggle("searching", words.length > 0);
@@ -572,8 +592,8 @@ $("sb-search").addEventListener("keydown", (e) => {
   }
 });
 
-function openSidebar() { sidebar.classList.add("open"); sidebar.setAttribute("aria-hidden", "false"); sidebar.inert = false; backdrop.hidden = false; sfx.pop(); }
-function closeSidebar() { sidebar.classList.remove("open"); sidebar.setAttribute("aria-hidden", "true"); sidebar.inert = true; backdrop.hidden = true; }   // inert: a closed sidebar is not reachable with Tab
+function openSidebar() { sidebar.classList.add("open"); sidebar.setAttribute("aria-hidden", "false"); sidebar.inert = false; backdrop.classList.remove("closing"); backdrop.hidden = false; sfx.pop(); }
+function closeSidebar() { sidebar.classList.remove("open"); sidebar.setAttribute("aria-hidden", "true"); sidebar.inert = true; fx.close(backdrop); }   // inert: a closed sidebar is not reachable with Tab
 $("menu-btn").addEventListener("click", () => (sidebar.classList.contains("open") ? closeSidebar() : openSidebar()));
 $("sidebar-close").addEventListener("click", closeSidebar);
 backdrop.addEventListener("click", closeSidebar);
@@ -593,18 +613,15 @@ function askConfirm({ title, sub, yes, no = "Keep my progress", onYes }) {
 function askReset() {
   askConfirm({ title: "Reset all progress?", sub: "This erases every finished lesson, your saved code and your quiz scores. There's no undo.", yes: "Yes, reset everything", onYes: resetAll });
 }
-$("confirm-no").addEventListener("click", () => { confirmEl.hidden = true; confirmAction = null; });
-confirmEl.addEventListener("click", (e) => { if (e.target === confirmEl) { confirmEl.hidden = true; confirmAction = null; } });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !confirmEl.hidden) { confirmEl.hidden = true; confirmAction = null; } });
-$("confirm-yes").addEventListener("click", () => { confirmEl.hidden = true; const f = confirmAction; confirmAction = null; if (f) f(); });
-$("reset-btn-all").addEventListener("click", askReset);
+$("confirm-no").addEventListener("click", () => { fx.close(confirmEl); confirmAction = null; });
+confirmEl.addEventListener("click", (e) => { if (e.target === confirmEl) { fx.close(confirmEl); confirmAction = null; } });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !confirmEl.hidden) { fx.close(confirmEl); confirmAction = null; } });
+$("confirm-yes").addEventListener("click", () => { fx.close(confirmEl); const f = confirmAction; confirmAction = null; if (f) f(); });
 function resetAll() {
   progress = { done: {}, work: {}, scores: {}, lessonIndex: 0, stage: "lesson", toured: progress.toured, lessonsFinished: 0, certName: progress.certName };
   saveProgress(); open({ lessonIndex: 0, stage: "lesson", fresh: true });
   buddy.say("# Fresh start\nEverything is reset. Let's begin again from the top!", "happy");
 }
-$("redo-tour-btn").addEventListener("click", () => { closeSidebar(); firstVisitTour(); });
-$("tour-btn").addEventListener("click", firstVisitTour);
 
 // ---------- 7. Wire the tutor to the page ----------
 
@@ -623,6 +640,7 @@ tutor.ui.onReadyToRun = () => { runTag.hidden = false; runBtn.classList.add("pul
 tutor.ui.onNotReady = () => { runTag.hidden = true; runBtn.classList.remove("pulse"); };
 tutor.ui.explainLength = () => settings.explain;
 tutor.ui.name = () => settings.name || "";
+tutor.ui.nextLabel = () => { const t = nextTarget(); return t ? t.label : ""; };
 tutor.ui.onBugFixed = () => badges.earn("bug-squash");
 tutor.ui.ghostMode = () => settings.ghost;
 tutor.ui.markLine = (lineNumber) => {
@@ -1176,7 +1194,7 @@ function askName(then) {
     if (nameEl.hidden) return;
     if (save) settings.name = cleanName($("name-input").value);
     applySettings(); renderHeader();
-    nameEl.hidden = true;
+    fx.close(nameEl);
     if (settings.name && save) { sfx.success(); buddy.say(`# Hi, ${settings.name}!\nNice to meet you. Let's write some Python.`, "celebrate"); }
     if (then) then();
   };
@@ -1202,7 +1220,7 @@ function showWelcome() {
     if (welcomeEl.hidden) return;
     settings.name = cleanName($("welcome-input").value) || settings.name || "";
     settings.nameAsked = true; applySettings(); renderHeader();
-    welcomeEl.hidden = true; sfx.click();
+    fx.close(welcomeEl); sfx.click();
     if (tour) { firstVisitTour(); return; }
     progress.toured = true; saveProgress();
     editor.setOption("readOnly", false);
@@ -1234,8 +1252,7 @@ function firstVisitTour() {
     { target: "#buddy", title: "Meet your buddy", text: "He explains each piece as you type it. <strong>Click him</strong> whenever you're stuck. In practice you get 3 hints.", place: "left" },
     { target: "#run-btn", title: "Run your code", text: "Press Run (or Ctrl+Enter) to see what your program does.", place: "bottom" },
     { target: "#next-btn", title: "Reading → Coding → Practice → Quiz", text: "Reading lessons teach the ideas (click through the cards). Coding lessons use them. Practice proves it. Each module ends with a quiz.", place: "top" },
-    { target: "#settings-btn", title: "Settings", text: "Turn on his voice and pick one, set how fast he talks, sound effects, ghost letters, text size, and more.", place: "bottom" },
-    { target: "#tour-btn", title: "See this again", text: "Click Tutorial any time to replay this walkthrough.", place: "bottom" },
+    { target: "#settings-btn", title: "Settings", text: "Turn on his voice, set how fast he talks, sound effects, ghost letters, text size, and more. Redo tutorial is in here too.", place: "bottom" },
   ], () => {
     progress.toured = true; saveProgress();
     editor.setOption("readOnly", false);
@@ -1292,7 +1309,7 @@ renderHeader();
 renderSidebar();
 editorCard.classList.add("loading");
 startWorker(); // Python loads in the background; Run stays disabled until it's ready
-open({ lessonIndex: progress.lessonIndex || 0, stage: progress.stage || "lesson" });
+open({ lessonIndex, stage });
 if (!progress.toured) showWelcome();
 else if (needsName()) setTimeout(() => askName(refocus), 900);   // toured before names existed
 window.addEventListener("resize", () => floatBuddyToLine(editor.getCursor().line));

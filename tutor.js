@@ -220,6 +220,11 @@ const tutor = (() => {
   const part = () => stepParts(step(), stepIndex)[partIndex];
 
   // "Type" section: the piece the learner should type right now
+  // "go to the next section": names the real button ("Practice", "Next lesson"...)
+  function keepGoing() {
+    const label = ui.nextLabel && ui.nextLabel();
+    return label ? `# Keep going\nPress *${label}* to go to the next section.` : "# Keep going\nThat was the last one. You finished everything!";
+  }
   function typeSection(label = "Type") {
     if (complete) return "# Next\nEverything is typed, so press Run!";
     const p = part();
@@ -536,7 +541,7 @@ const tutor = (() => {
       complete = true; awaitingRun = false;
       ui.ghost(); ui.markWrong(); ui.stuckTag(false);
       const done = mode === "practice" ? "You solved it on your own!" : earlyFix ? "You fixed the bug before it even crashed. Nice catch!" : lesson.done;
-      say(`# Ran your code\nYes! It worked. ${done}\n# What now?\nClick the *Next* button when you're ready to move on.`, "celebrate");
+      say(`# Ran your code\nYes! It worked. ${done}\n# What now?\n${keepGoing().split("\n")[1]}`, "celebrate");
       ui.onComplete(mode);
     } else if (celebrated && !complete && output.trim() === expected) {
       // retyped after deleting: it's whole again
@@ -630,8 +635,8 @@ const tutor = (() => {
     if (saved.finished) {
       ui.ghost(); ui.markWrong();
       say(mode === "practice"
-        ? `# Welcome back!\nYou already solved this practice. You can run it again, change something, or move on.`
-        : `# Welcome back!\nYou already finished this lesson, and your code is still here. Try the practice next, or run it again.`, "happy");
+        ? `# Welcome back!\nYou already solved this practice. Your code is still here.\n${keepGoing()}`
+        : `# Welcome back!\nYou already finished this lesson. Your code is still here.\n${keepGoing()}`, "happy");
       return;
     }
     // Pick up the conversation where it stopped: the buddy repeats what he

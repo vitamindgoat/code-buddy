@@ -100,12 +100,11 @@ const badges = (() => {
         <span class="trophy-hint">${on ? `Earned ${when}` : b.hint}</span>
       </div>`;
     }).join("");
-    root.hidden = false;
-    root.classList.remove("show"); void root.offsetWidth; root.classList.add("show");
+    fx.open(root);
     if (window.sfx) sfx.pop();
     setTimeout(() => $("trophies-close").focus(), 400);
   }
-  function hide() { root.hidden = true; }
+  function hide() { fx.close(root); }
   $("trophies-close").addEventListener("click", hide);
   root.addEventListener("click", (e) => { if (e.target === root) hide(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !root.hidden) hide(); });

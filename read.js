@@ -35,6 +35,7 @@ const read = (() => {
     card.innerHTML = `
       <div class="read-head">
         <span class="read-label">Reading · ${escapeHtml(lesson.title)}</span>
+        <button class="btn btn-ghost read-aloud" type="button" aria-pressed="false">${icon("volume_up")}<span>Read aloud</span></button>
         <div class="read-dots">${lesson.cards.map((_, i) => `<span class="${i < index ? "done" : i === index ? "on" : ""}"></span>`).join("")}</div>
       </div>
       <div class="read-body">
@@ -55,12 +56,12 @@ const read = (() => {
     card.querySelector(".read-prev").addEventListener("click", () => { if (index > 0) { index--; card.dataset.dir = "prev"; render(); } });
     card.querySelector(".read-next").addEventListener("click", (e) => { e.currentTarget.disabled = true; index++; card.dataset.dir = "next"; index < lesson.cards.length ? render() : finish(); });
     if (c.checks) { passed = false; askQuestion(c, pickQuestion(c)); }
+    card.querySelector(".read-aloud").addEventListener("click", toggleAloud);
     card.classList.remove("swap-in"); void card.offsetWidth; card.classList.add("swap-in");
     sfx.pop();
-    // the voice says one short key line per card (the check question on a
-    // check card), not the whole text: reading is the learner's job
+    // Buddy stays quiet on readings (even with his voice on): the
+    // "Read aloud" button reads the whole page when the learner wants it
     voice.stop();
-    if (!c.checks && c.say) voice.speak(c.say.replace(/[*`]/g, ""));
   }
 
   // ---------- check questions ----------
@@ -117,8 +118,6 @@ const read = (() => {
     answered = false;
     box.querySelectorAll(".quiz-choice").forEach((b) => b.addEventListener("click", () => choose(+b.dataset.i, items, q, c)));
     box.querySelector(".read-more").addEventListener("click", () => askQuestion(c, pickQuestion(c), { extra: true }));
-    voice.stop();
-    voice.speak(first);
   }
 
   function choose(i, items, q, c) {
@@ -139,13 +138,36 @@ const read = (() => {
       fb.innerHTML = `<strong>Correct!</strong> ${escapeHtml(q.explain)}`;
       card.querySelector(".read-next").disabled = false;
       box.querySelector(".read-check-actions").hidden = false;
-      voice.speak(q.explain);
     } else {
       fb.innerHTML = `<strong>Not quite.</strong> ${escapeHtml(q.explain)}${passed ? "" : `<div class="read-retry">Let's try a different one.</div>`}`;
-      voice.speak(q.explain);
       if (passed) box.querySelector(".read-check-actions").hidden = false;
       else setTimeout(() => askQuestion(c, pickQuestion(c)), 3200);   // time to read the answer
     }
+  }
+
+  // ---------- "Read aloud": Buddy reads the whole page, word by word ----------
+  function pageText() {
+    const parts = [];
+    const add = (el) => { if (el) { const t = el.textContent.replace(/\s+/g, " ").trim(); if (t) parts.push(/[.!?:]$/.test(t) ? t : t + "."); } };
+    add(card.querySelector(".read-title"));
+    card.querySelectorAll(".read-text > p").forEach(add);
+    const rem = card.querySelector(".read-remember");
+    if (rem) { const t = rem.cloneNode(true); t.querySelector(".read-remember-label")?.remove(); parts.push("Remember: " + t.textContent.trim()); }
+    const q = card.querySelector(".read-check .read-check-q");
+    add(q);
+    card.querySelectorAll(".read-check .quiz-choice code").forEach((c2, i) => parts.push(`${"ABCD"[i]}: ${c2.textContent}.`));
+    return parts.join(" ");
+  }
+  function setAloud(onNow) {
+    const b = card.querySelector(".read-aloud"); if (!b) return;
+    b.setAttribute("aria-pressed", String(onNow));
+    b.classList.toggle("on", onNow);
+    b.innerHTML = onNow ? `${icon("stop")}<span>Stop</span>` : `${icon("volume_up")}<span>Read aloud</span>`;
+  }
+  function toggleAloud() {
+    if (card.querySelector(".read-aloud.on")) { voice.stop(); setAloud(false); return; }
+    const ok = voice.speak(pageText(), { force: true, onEnd: () => setAloud(false) });
+    if (ok !== false) setAloud(true);
   }
 
   function finish() {
