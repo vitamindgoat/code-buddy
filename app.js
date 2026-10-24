@@ -506,7 +506,6 @@ function renderSidebar() {
         const reading = l.type === "read";
         return `<button class="sb-lesson ${cur ? "current" : ""} ${reading ? "sb-read" : ""} ${l.final ? "sb-final" : ""}" data-idx="${idx}" type="button">
           <span class="sb-lnum">${mi + 1}.${li + 1}</span>
-          <span class="sb-kindslot">${icon(reading ? "menu_book" : l.final ? "sports_esports" : "code", "sb-kind")}</span>
           <span class="sb-ltitle">${l.title}</span>
           <span class="sb-marks">
             <span class="sb-mark ${isDone(l.id) ? "on" : ""}" title="${reading ? "Reading" : "Lesson"}">${reading ? "R" : "L"}</span>
@@ -514,7 +513,7 @@ function renderSidebar() {
           </span></button>`;
       }).join("")}
       <button class="sb-lesson sb-quiz ${lessonIndex === LESSONS.findIndex((x) => x.id === m.lessons[m.lessons.length - 1].id) && stage === "quiz" ? "current" : ""}" data-quiz="${mi}" type="button">
-        <span class="sb-lnum">${icon("star")}</span><span class="sb-kindslot"></span><span class="sb-ltitle">Module ${mi + 1} quiz</span>
+        <span class="sb-lnum">${icon("star")}</span><span class="sb-ltitle">Module ${mi + 1} quiz</span>
         <span class="sb-marks">${sc && isDone(m.id + "-quiz") ? `<span class="sb-score ${sc.score === sc.total ? "perfect" : ""}">${sc.score}/${sc.total}</span>` : ""}<span class="sb-mark ${isDone(m.id + "-quiz") ? "on" : ""}">Q</span></span></button>
     </div>`; }).join("");
   list.querySelectorAll(".sb-lesson[data-idx]").forEach((b) => b.addEventListener("click", () => open({ lessonIndex: +b.dataset.idx, stage: "lesson" })));
