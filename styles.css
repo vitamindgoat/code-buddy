@@ -1350,3 +1350,10 @@ body.kb-open .layout { padding-bottom: 72px; }
 /* ---------- Shortcuts: keys press down when you press them ---------- */
 .keys-card kbd { transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.08s ease, color 0.08s ease; }
 .keys-card kbd.pressed { transform: translateY(2px); box-shadow: 0 0 0 var(--blue-line); background: var(--blue); border-color: var(--blue); color: #fff; }
+
+/* Autocorrect: a check icon in the pill; on tap the pill floats off and the fixed letters flash green */
+.fixpill::before { content: ""; display: inline-block; width: 15px; height: 15px; margin-right: 4px; vertical-align: -3px; background: var(--green); -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; --m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Cpath d='M378-246 154-470l43-43 181 181 384-384 43 43-427 427Z'/%3E%3C/svg%3E"); }
+.fixpill-out { pointer-events: none; animation: fixpill-out 0.26s ease-in forwards; }
+@keyframes fixpill-out { to { opacity: 0; transform: translateY(-8px) scale(0.92); } }
+.fixed-flash { animation: fixed-flash 0.7s ease-out; border-radius: 3px; }
+@keyframes fixed-flash { 0% { background: rgba(23, 166, 115, 0.35); } 100% { background: transparent; } }

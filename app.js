@@ -737,14 +737,47 @@ tutor.ui.markWrong = (lineNumber, fromCh, toCh, target) => {
     to = from; while (to < target.length && !sep.test(target[to])) to++;
     typedTo = fromCh; while (typedTo < typed.length && !sep.test(typed[typedTo])) typedTo++;
   }
-  const text = target.slice(from, to);
-  if (!text || text === typed.slice(from, typedTo)) return;
+  let text = target.slice(from, to);
+  const word = typed.slice(from, typedTo);
+  if (!text || text === word) return;
+  if (sep.test(target[from])) {
+    // a wrong symbol: only offer it when a key or two is off, not to wipe a pile of random keys
+    if (typed.length - from > 2) return;
+  } else {
+    // a misspelled word: only a real near-miss gets a fix, and the fix only
+    // corrects the letters typed so far (it never finishes the word for you)
+    const best = closestPrefix(word, text);
+    if (!best || best.dist === 0 || best.dist > (word.length <= 4 ? 1 : 2)) return;
+    text = best.text;
+    if (text === word) return;
+  }
   fix = { line: lineNumber, from, to: typedTo, text };
   fixPill.textContent = text;
   fixPill.hidden = false;
   fixPill.classList.remove("pop"); void fixPill.offsetWidth; fixPill.classList.add("pop");
   placeFixPill();
 };
+// How far a typed word is from the right word's start: the closest prefix
+// of about the same length, by edit distance (a swap of two letters counts as one)
+function editDistance(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) {
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+  }
+  return d[a.length][b.length];
+}
+function closestPrefix(word, right) {
+  if (!word) return null;
+  let best = null;
+  for (const k of [word.length, word.length - 1, word.length + 1]) {
+    if (k < 1 || k > right.length) continue;
+    const dist = editDistance(word.toLowerCase(), right.slice(0, k).toLowerCase());
+    if (!best || dist < best.dist) best = { dist, text: right.slice(0, k) };
+  }
+  return best;
+}
 function placeFixPill() {
   if (!fix || fixPill.hidden) return;
   const pos = editor.charCoords({ line: fix.line, ch: fix.from }, "window");
@@ -760,7 +793,13 @@ function placeFixPill() {
 function applyFix() {
   if (!fix) return;
   const { line, from, to, text } = fix;
+  // the pill floats away while the corrected letters flash green
+  const ghostPill = fixPill.cloneNode(true);
+  ghostPill.hidden = false; ghostPill.classList.remove("pop"); ghostPill.classList.add("fixpill-out");
+  editorWrap.appendChild(ghostPill); setTimeout(() => ghostPill.remove(), 300);
   editor.replaceRange(text, { line, ch: from }, { line, ch: Math.min(to, editor.getLine(line).length) });
+  const flash = editor.markText({ line, ch: from }, { line, ch: from + text.length }, { className: "fixed-flash" });
+  setTimeout(() => flash.clear(), 700);
   editor.setCursor({ line, ch: editor.getLine(line).length });   // carry on from the end of the line
   editor.focus();
   sfx.pop();
